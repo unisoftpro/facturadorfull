@@ -6,7 +6,6 @@
                 :show-close="false"> 
 
             <div class="row">
-<<<<<<< HEAD
                 <div class="col-lg-4 col-md-6 col-sm-6 text-center font-weight-bold">
                     <p>Descargar PDF</p>
                     <button type="button" class="btn btn-lg btn-info waves-effect waves-light" @click="clickDownload()">
@@ -25,24 +24,6 @@
                         <i class="fa fa-file-alt"></i>
                     </button>
                 </div>
-=======
-                <div class="col-lg-12 col-md-12 col-sm-12  ">
-                    <el-tabs v-model="activeName"  >
-                        <el-tab-pane label="Imprimir A4" name="first">                                    
-                            <embed :src="form.print_a4" type="application/pdf" width="100%" height="400px"/>
-                        </el-tab-pane>  
-                        <el-tab-pane label="Imprimir A5" name="second">                                    
-                            <embed :src="form.print_a5" type="application/pdf" width="100%" height="400px"/>
-                        </el-tab-pane> 
-                        <el-tab-pane label="Imprimir Ticket" name="third">
-                            <embed :src="form.print_ticket" type="application/pdf" width="100%" height="400px"/>                                    
-                        </el-tab-pane> 
-                                                
-                    </el-tabs>
-                </div>
-               
-
->>>>>>> 834e088a74a30e449b98e830f1e5af66c68b01bd
             </div> 
             <span slot="footer" class="dialog-footer">
                 <template v-if="showClose">

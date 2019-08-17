@@ -370,12 +370,7 @@ if ($hostname) {
             Route::get('sale-notes/print/{external_id}/{format?}', 'Tenant\SaleNoteController@toPrint');
             
          //   Route::get('sale-notes/recreate_pdf/{sale_note}', 'Tenant\SaleNoteController@recreatePdf');
-<<<<<<< HEAD
             Route::get('sale-notes/print/{sale_note_id}/{format}', 'Tenant\SaleNotePaymentController@toPrint');
-=======
-            // Route::get('sale-notes/print/{sale_note_id}', 'Tenant\SaleNotePaymentController@toPrint');
-            Route::get('sale-notes/print-a5/{sale_note_id}', 'Tenant\SaleNotePaymentController@toPrint');
->>>>>>> 834e088a74a30e449b98e830f1e5af66c68b01bd
 
            Route::get('sale_note_payments/records/{sale_note}', 'Tenant\SaleNotePaymentController@records');
            Route::get('sale_note_payments/document/{sale_note}', 'Tenant\SaleNotePaymentController@document');
