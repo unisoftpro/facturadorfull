@@ -3,8 +3,7 @@
 @section('content')
 
     <tenant-documents-index :is-client="{{ json_encode($is_client) }}"
-                            :type-user="{{ json_encode(auth()->user()->type) }}"
-                            :import_documents="{{ json_encode($import_documents) }}"></tenant-documents-index>
+                            :type-user="{{ json_encode(auth()->user()->type) }}"></tenant-documents-index>
 
 @endsection
 

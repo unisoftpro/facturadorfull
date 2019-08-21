@@ -11,7 +11,8 @@
                 </div>
                 <div class="card-body">
                     <div>
-                        <form action="{{route('tenant.search')}}" class="el-form demo-form-inline el-form--inline" method="GET">
+                        <form action="{{route('tenant.search')}}" class="el-form demo-form-inline el-form--inline" method="POST">
+                            {{csrf_field()}}
                             <tenant-calendar :document_types="{{json_encode($documentTypes)}}" :establishments="{{json_encode($establishments)}}" establishment="{{$establishment ?? null}}" data_d="{{$d ?? ''}}" data_a="{{$a ?? ''}}" td="{{$td ?? null}}"></tenant-calendar>
                         </form>
                     </div>
@@ -44,10 +45,18 @@
                                 $acum_total_taxed=0;
                                 $acum_total_igv=0;
                                 $acum_total=0;
+                              
+                                $serie_affec = '';
 
-                                $acum_total_taxed_usd=0;
-                                $acum_total_igv_usd=0;
-                                $acum_total_usd=0;
+                                $acum_total_exonerado=0;
+                                $acum_total_inafecto=0;
+                             
+                                $acum_total_free=0;
+
+
+
+                            
+
                             @endphp
                             <table width="100%" class="table table-striped table-responsive-xl table-bordered table-hover">
                                 <thead class="">
@@ -56,10 +65,13 @@
                                         <th class="">Tipo Documento</th>
                                         <th class="">Comprobante</th>
                                         <th class="">Fecha emisión</th>
+                                        <th>Documento que Modifica</th>
                                         <th class="">Cliente</th>
                                         <th class="">RUC</th>
                                         <th class="">Estado</th>
-                                        <th class="">Moneda</th>
+                                        <th class="">Total Exonerado</th>
+                                        <th class="">Total Inafecto</th>
+                                        <th class="">Total Gratutio</th>
                                         <th class="">Total Gravado</th>
                                       
                                         <th class="">Total IGV</th>
@@ -73,25 +85,60 @@
                                         <td>{{$value->document_type->id}}</td>
                                         <td>{{$value->series}}-{{$value->number}}</td>
                                         <td>{{$value->date_of_issue->format('Y-m-d')}}</td>
+                                         
+                                        @if($value->document_type_id == "07" && $value->note)
+
+                                          @php
+                                            $serie = $value->note->affected_document->series;
+                                            $number =  $value->note->affected_document->number;
+                                            $serie_affec = $serie.' - '.$number;
+
+                                          @endphp
+                                        
+
+                                        @endif
+                                        
+                                       
+                                        <td>{{$serie_affec}} </td>
                                         <td>{{$value->person->name}}</td>
                                         <td>{{$value->person->number}}</td>
                                         <td>{{$value->state_type->description}}</td>
-                                        <td>{{$value->currency_type_id}}</td>
-                                        <td>{{$value->total_taxed}}</td>
-                                        <td>{{$value->total_igv}}</td>
-                                        <td>{{$value->total}}</td>
+
+                                        @php
+                                         $signal = $value->document_type_id;
+                                        @endphp
+                                      
+                                        
+                                        <td>{{$signal == '07' ? "-" : ""  }}{{$value->total_exonerated}} </td>
+                                        <td>{{$signal == '07' ? "-" : ""  }}{{$value->total_unaffected}}</td>
+                                        <td>{{$signal == '07' ? "-" : ""  }}{{$value->total_free}}</td>
+                                        <td>{{$signal == '07' ? "-" : ""  }}{{$value->total_taxed}}</td>
+                                      
+                                        <td>{{$signal == '07' ? "-" : ""  }}{{$value->total_igv}}</td>
+                                        <td>{{$signal == '07' ? "-" : ""  }}{{$value->total}}</td>
                                     </tr>
                                     @php
-                                        if($value->currency_type_id == 'PEN'){
-                                            $acum_total_taxed += $value->total_taxed;
-                                            $acum_total_igv += $value->total_igv;
+                                        $acum_total_taxed += $value->total_taxed;
+                                        $acum_total_igv += $value->total_igv;
+                                       
+
+                                        if($signal == '07')
+                                        {
+                                           $acum_total -= $value->total;
+                                        }
+                                        else{
                                             $acum_total += $value->total;
-                                        }else if($value->currency_type_id == 'USD'){
-                                            $acum_total_taxed_usd += $value->total_taxed;
-                                            $acum_total_igv_usd += $value->total_igv;
-                                            $acum_total_usd += $value->total;
                                         }
 
+                                        $acum_total_exonerado += $value->total_exonerated;
+                                      
+                                        
+                                        $acum_total_inafecto +=  $value->total_unaffected;
+                                     
+                                       
+                                        $acum_total_free += $value->total_free;
+
+                                        $serie_affec =  '';
                                     @endphp
                                     @endforeach
                                     <tr>
@@ -105,20 +152,12 @@
                                         <td>{{$acum_total_igv}}</td>
                                         <td>{{$acum_total}}</td>
                                     </tr>
-                                    <tr>
-                                        <td colspan="7"></td>
-                                        <td >Totales USD</td>
-                                        <td>{{$acum_total_taxed_usd}}</td>
-                                        <td>{{$acum_total_igv_usd}}</td>
-                                        <td>{{$acum_total_usd}}</td>
-                                    </tr>
                                 </tbody>
                             </table>
-                            Total {{$reports->total()}}
-                            <label class="pagination-wrapper ml-2">
+                            <div class="pagination-wrapper">
                                 {{-- {{ $reports->appends(['search' => Session::get('form_document_list')])->render()  }} --}}
-                                {{$reports->appends($_GET)->render()}} 
-                            </label>
+                                {{-- {{$reports->links()}} --}}
+                            </div>
                         </div>
                     </div>
                     @else

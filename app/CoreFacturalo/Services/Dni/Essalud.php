@@ -17,20 +17,10 @@ class Essalud
             ];
         }
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL,"https://ww1.essalud.gob.pe/sisep/postulante/postulante/postulante_obtenerDatosPostulante.htm?strDni={$number}");        
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $response = curl_exec ($ch);         
-        curl_close ($ch);
-
-        // $client = new  Client(['base_uri' => 'https://ww1.essalud.gob.pe/sisep/postulante/postulante/']);
-        // $response = $client->request('GET', 'postulante_obtenerDatosPostulante.htm?strDni='.$number);
-        // if ($response->getStatusCode() == 200 && $response != "") {
-
-        if ($response) {
-
-            // $json = (object) json_decode($response->getBody()->getContents(), true);
-            $json = (object) json_decode($response, true);
+        $client = new  Client(['base_uri' => 'https://ww1.essalud.gob.pe/sisep/postulante/postulante/']);
+        $response = $client->request('GET', 'postulante_obtenerDatosPostulante.htm?strDni='.$number);
+        if ($response->getStatusCode() == 200 && $response != "") {
+            $json = (object) json_decode($response->getBody()->getContents(), true);
             $data_person = $json->DatosPerson[0];
             if (isset($data_person) && count($data_person) > 0 &&
                 strlen($data_person['DNI']) >= 8 && $data_person['Nombres'] !== '') {

@@ -20,8 +20,7 @@ class PersonController extends Controller
 {
     public function index($type)
     {
-        $api_service_token = config('configuration.api_service_token');
-        return view('tenant.persons.index', compact('type','api_service_token'));
+        return view('tenant.persons.index', compact('type'));
     }
 
     public function columns()

@@ -48,9 +48,13 @@
                         $acum_total_taxed=0;
                         $acum_total_igv=0;
                         $acum_total=0;
-                        $acum_total_taxed_usd=0;
-                        $acum_total_igv_usd=0;
-                        $acum_total_usd=0;
+                      
+                        $serie_affec = '';
+                        $acum_total_exonerado=0;
+                        $acum_total_inafecto=0;
+
+                        $acum_total_free=0;
+                        
                     @endphp
                     <table class="">
                         <thead>
@@ -59,10 +63,13 @@
                                 <th>Tipo Doc</th>
                                 <th>Número</th>
                                 <th>Fecha emisión</th>
+                                <th>Documento Modifica</th>
                                 <th>Cliente</th>
                                 <th>RUC</th>
                                 <th>Estado</th>
-                                <th class="">Moneda</th>
+                                <th>Total Exonerado</th>
+                                <th>Total Inafecto</th>
+                                <th>Total Gratuito</th>
                                 <th>Total Gravado</th>
                                 <th>Total IGV</th>
                                 <th>Total</th>
@@ -133,13 +140,6 @@
                                 <td>{{$acum_total_taxed}}</td>
                                 <td>{{$acum_total_igv}}</td>
                                 <td>{{$acum_total}}</td>
-                            </tr>
-                            <tr>
-                                <td colspan="7"></td>
-                                <td >Totales USD</td>
-                                <td>{{$acum_total_taxed_usd}}</td>
-                                <td>{{$acum_total_igv_usd}}</td>
-                                <td>{{$acum_total_usd}}</td>
                             </tr>
                         </tbody>
                     </table>

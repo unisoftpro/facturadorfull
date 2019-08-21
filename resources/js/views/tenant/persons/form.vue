@@ -15,25 +15,18 @@
                     <div class="col-md-6">
                         <div class="form-group" :class="{'has-danger': errors.number}">
                             <label class="control-label">Número <span class="text-danger">*</span></label>
-                            
-                            <div v-if="api_service_token != false">
-                                <x-input-service :identity_document_type_id="form.identity_document_type_id" v-model="form.number" @search="searchNumber"></x-input-service>
-                            </div>
-                            <div v-else>
-                                <el-input v-model="form.number" :maxlength="maxLength" dusk="number">
-                                    <template v-if="form.identity_document_type_id === '6' || form.identity_document_type_id === '1'">
-                                        <el-button type="primary" slot="append" :loading="loading_search" icon="el-icon-search" @click.prevent="searchCustomer">
-                                            <template v-if="form.identity_document_type_id === '6'">
-                                                SUNAT
-                                            </template>
-                                            <template v-if="form.identity_document_type_id === '1'">
-                                                RENIEC
-                                            </template>
-                                        </el-button>
-                                    </template>
-                                </el-input>
-                            </div>
-
+                            <el-input v-model="form.number" :maxlength="maxLength" dusk="number">
+                                <template v-if="form.identity_document_type_id === '6' || form.identity_document_type_id === '1'">
+                                    <el-button type="primary" slot="append" :loading="loading_search" icon="el-icon-search" @click.prevent="searchCustomer">
+                                        <template v-if="form.identity_document_type_id === '6'">
+                                            SUNAT
+                                        </template>
+                                        <template v-if="form.identity_document_type_id === '1'">
+                                            RENIEC
+                                        </template>
+                                    </el-button>
+                                </template>
+                            </el-input>
                             <small class="form-control-feedback" v-if="errors.number" v-text="errors.number[0]"></small>
                         </div>
                     </div>
@@ -161,7 +154,7 @@
 
     export default {
         mixins: [serviceNumber],
-        props: ['showDialog', 'type', 'recordId', 'external', 'document_type_id', 'api_service_token'],
+        props: ['showDialog', 'type', 'recordId', 'external', 'document_type_id'],
         data() {
             return {
                 loading_submit: false,
@@ -208,7 +201,7 @@
                     id: null,
                     type: this.type,
                     identity_document_type_id: '6',
-                    number: '',
+                    number: null,
                     name: null,
                     trade_name: null,
                     country_id: 'PE',
@@ -285,10 +278,10 @@
             setDataDefaultCustomer(){
 
                 if(this.form.identity_document_type_id == '0'){
-                    this.form.number = '99999999'
+                    this.form.number = 99999999
                     this.form.name = "Clientes - Varios"
                 }else{
-                    this.form.number = ''
+                    this.form.number = null
                     this.form.name = null
                 }
 
@@ -299,20 +292,7 @@
             },
             searchCustomer() {
                 this.searchServiceNumberByType()
-            },
-            searchNumber(data) {
-                this.form.name = (this.form.identity_document_type_id === '1')?data.nombre_completo:data.nombre_o_razon_social;
-                this.form.trade_name = (this.form.identity_document_type_id === '6')?data.nombre_o_razon_social:'';
-                this.form.location_id = data.ubigeo;
-                this.form.address = data.direccion;
-                this.form.department_id = data.ubigeo[0];
-                this.form.province_id = data.ubigeo[1];
-                this.form.district_id = data.ubigeo[2];
-
-                this.filterProvinces()
-                this.filterDistricts()
-//                this.form.addresses[0].telephone = data.telefono;
-           },
+            }
         }
     }
 </script>

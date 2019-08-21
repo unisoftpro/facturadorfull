@@ -64,19 +64,9 @@ class SummaryQueryCommand extends Command
                 ->get();
             
             foreach ($summaries as $summary) {
-
-                if(file_exists(base_path(config('tenant.name_certificate_cron')))){
-                    $constructor_params = [
-                        'base_uri' => config('tenant.force_https') ? "https://{$hostname->fqdn}" : "http://{$hostname->fqdn}",
-                        'verify' => base_path(config('tenant.name_certificate_cron'))
-                    ];
-                }else{
-                    $constructor_params = [
-                        'base_uri' => config('tenant.force_https') ? "https://{$hostname->fqdn}" : "http://{$hostname->fqdn}"
-                    ];
-                }
-
-                $clientGuzzleHttp = new ClientGuzzleHttp($constructor_params);
+                $clientGuzzleHttp = new ClientGuzzleHttp([
+                    'base_uri' => config('tenant.force_https') ? "https://{$hostname->fqdn}" : "http://{$hostname->fqdn}"
+                ]);
                 
                 $response = $clientGuzzleHttp->post('/api/summaries/status', [
                     'http_errors' => false,

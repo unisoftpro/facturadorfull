@@ -8,9 +8,11 @@ use Barryvdh\DomPDF\Facade as PDF;
 use App\Exports\PurchaseExport;
 use Illuminate\Http\Request;
 use App\Traits\ReportTrait;
-use App\Models\Tenant\Establishment;
-use App\Models\Tenant\Purchase;
-use App\Models\Tenant\Company;
+use App\Models\Tenant\{
+    Establishment,
+    Purchase,
+    Company,
+};
 use Carbon\Carbon;
 
 class ReportPurchaseController extends Controller
@@ -54,31 +56,33 @@ class ReportPurchaseController extends Controller
             if (is_null($td)) {
                 $reports = Purchase::with([ 'state_type', 'supplier'])
                     ->whereBetween('date_of_issue', [$d, $a])
-                    ->latest();
+                    ->latest()
+                    ->get();
             }
             else {
                 $reports = Purchase::with([ 'state_type', 'supplier'])
                     ->whereBetween('date_of_issue', [$d, $a])
                     ->latest()
-                    ->where('document_type_id', $td);
+                    ->where('document_type_id', $td)
+                    ->get();
             }
         }
         else {
             if (is_null($td)) {
                 $reports = Purchase::with([ 'state_type', 'supplier'])
-                    ->latest();
+                    ->latest()
+                    ->get();
             } else {
                 $reports = Purchase::with([ 'state_type', 'supplier'])
                     ->latest()
-                    ->where('document_type_id', $td);
+                    ->where('document_type_id', $td)
+                    ->get();
             }
         }
 
         if(!is_null($establishment_id)){
             $reports = $reports->where('establishment_id', $establishment_id);
         }
-
-        $reports = $reports->paginate(config('tenant.items_per_page'));
 
         return view('tenant.reports.purchases.index', compact('reports', 'a', 'd', 'td', 'documentTypes',"establishment","establishments"));
     }

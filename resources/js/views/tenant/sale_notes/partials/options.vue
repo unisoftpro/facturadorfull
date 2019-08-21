@@ -1,6 +1,6 @@
 <template>
     <div>
-        <el-dialog :title="titleDialog" :visible="showDialog" @open="create" 
+        <el-dialog :title="titleDialog" :visible="showDialog" @open="create" width="30%"
                 :close-on-click-modal="false"
                 :close-on-press-escape="false"
                 :show-close="false"> 
@@ -25,14 +25,9 @@
                     </button>
                 </div>
             </div> 
-            <span slot="footer" class="dialog-footer">
-                <template v-if="showClose">
-                    <el-button @click="clickClose">Cerrar</el-button>
-                </template>
-                <template v-else>
+            <span slot="footer" class="dialog-footer"> 
                     <el-button @click="clickFinalize">Ir al listado</el-button>
                     <el-button type="primary" @click="clickNewSaleNote">Nueva nota de venta</el-button>
-                </template>
             </span>
         </el-dialog>
  
@@ -60,7 +55,7 @@
                 loading_submit:false,
                 showDialogOptions: false,
                 documentNewId: null,
-                activeName: 'first',
+                
             }
         },
         created() {
@@ -73,11 +68,7 @@
                     id: null,
                     external_id: null, 
                     identifier: null,
-                    date_of_issue:null,                    
-                    print_ticket: null,
-                    print_a4: null,
-                    print_a5: null,
-
+                    date_of_issue:null
                 }
             },      
             create() { 

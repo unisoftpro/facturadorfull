@@ -95,9 +95,10 @@
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Tipo Doc</th>
+                                <th>Tipo sssDoc</th>
                                 <th>Número</th>
                                 <th>Fecha emisión</th>
+                                <th>Documento Modifica</th>
                                 <th>Cliente</th>
                                 <th>RUC</th>
                                 <th>Estado</th>
@@ -180,13 +181,6 @@
                                 <td class="celda">{{$acum_total_taxed}}</td>
                                 <td class="celda">{{$acum_total_igv}}</td>
                                 <td class="celda">{{$acum_total}}</td>
-                            </tr>
-                            <tr>
-                                <td class="celda" colspan="7"></td>
-                                <td class="celda" >Totales USD</td>
-                                <td class="celda">{{$acum_total_taxed_usd}}</td>
-                                <td class="celda">{{$acum_total_igv_usd}}</td>
-                                <td class="celda">{{$acum_total_usd}}</td>
                             </tr>
                         </tbody>
                     </table>

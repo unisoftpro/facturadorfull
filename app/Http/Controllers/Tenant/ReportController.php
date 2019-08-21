@@ -49,23 +49,27 @@ class ReportController extends Controller
             if (is_null($td)) {
                 $reports = Document::with([ 'state_type', 'person'])
                     ->whereBetween('date_of_issue', [$d, $a])
-                    ->latest();
+                    ->latest()
+                    ->get();
             }
             else {
                 $reports = Document::with([ 'state_type', 'person'])
                     ->whereBetween('date_of_issue', [$d, $a])
                     ->latest()
-                    ->where('document_type_id', $td);
+                    ->where('document_type_id', $td)
+                    ->get();
             }
         }
         else {
             if (is_null($td)) {
                 $reports = Document::with([ 'state_type', 'person'])
-                    ->latest();
+                    ->latest()
+                    ->get();
             } else {
                 $reports = Document::with([ 'state_type', 'person'])
                     ->latest()
-                    ->where('document_type_id', $td);
+                    ->where('document_type_id', $td)
+                    ->get();
             }
         }
 
@@ -125,8 +129,6 @@ class ReportController extends Controller
             $reports = $reports->where('establishment_id', $establishment_id);
         }
 
-        set_time_limit(0); 
-        
         $pdf = PDF::loadView('tenant.reports.report_pdf', compact("reports", "company", "establishment"));
         $filename = 'Reporte_Documentos'.date('YmdHis');
         

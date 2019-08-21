@@ -64,8 +64,7 @@ class Document extends ModelTenant
         'send_server',
         'shipping_status',
         'sunat_shipping_status',
-        'query_status',
-        'total_plastic_bag_taxes',
+        'query_status'
     ];
 
     protected $casts = [
@@ -222,10 +221,7 @@ class Document extends ModelTenant
         return $this->belongsTo(CurrencyType::class, 'currency_type_id');
     }
 
-    public function getCompanyAttribute()
-    {
-        return Company::first();
-    }
+    
 
     public function invoice()
     {

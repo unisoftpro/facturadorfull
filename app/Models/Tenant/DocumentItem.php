@@ -43,8 +43,7 @@ class DocumentItem extends ModelTenant
 
         'attributes',
         'charges',
-        'discounts',
-        'total_plastic_bag_taxes',
+        'discounts'
     ];
 
     public function getItemAttribute($value)

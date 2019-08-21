@@ -38,8 +38,7 @@
 
             <persons-form :showDialog.sync="showDialog"
                           :type="type"
-                          :recordId="recordId"
-                          :api_service_token="api_service_token"></persons-form>
+                          :recordId="recordId"></persons-form>
 
             <persons-import :showDialog.sync="showImportDialog"
                             :type="type"></persons-import>
@@ -56,7 +55,7 @@
 
     export default {
         mixins: [deletable],
-        props: ['type', 'typeUser','api_service_token'],
+        props: ['type', 'typeUser'],
         components: {PersonsForm, PersonsImport, DataTable},
         data() {
             return {

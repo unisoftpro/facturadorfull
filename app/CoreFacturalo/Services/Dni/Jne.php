@@ -17,19 +17,10 @@ class Jne
             ];
         }
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL,"http://aplicaciones007.jne.gob.pe/srop_publico/Consulta/Afiliado/GetNombresCiudadano?DNI={$number}");        
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $response = curl_exec ($ch);         
-        curl_close ($ch);
- 
-        // $client = new  Client(['base_uri' => 'http://aplicaciones007.jne.gob.pe/']);
-        // $response = $client->request('GET', 'srop_publico/Consulta/Afiliado/GetNombresCiudadano?DNI='.$number);
-
-        // if ($response->getStatusCode() == 200 && $response != "") {
-        if ($response) {
-            // $text = $response->getBody()->getContents();
-            $text = $response;
+        $client = new  Client(['base_uri' => 'http://aplicaciones007.jne.gob.pe/']);
+        $response = $client->request('GET', 'srop_publico/Consulta/Afiliado/GetNombresCiudadano?DNI='.$number);
+        if ($response->getStatusCode() == 200 && $response != "") {
+            $text = $response->getBody()->getContents();
             $parts = explode('|', $text);
             if (count($parts) === 3) {
                 $person = new Person();
