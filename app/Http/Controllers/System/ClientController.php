@@ -122,6 +122,7 @@ class ClientController extends Controller
             $client->number = $request->input('number');
             $client->plan_id = $request->input('plan_id');
             $client->locked_emission = $request->input('locked_emission');
+            $client->import_documents = $request->input('import_documents');
             $client->save();
 
             DB::connection('system')->commit();
@@ -150,6 +151,7 @@ class ClientController extends Controller
         DB::connection('tenant')->table('configurations')->insert([
             'send_auto' => true,
             'locked_emission' =>  $request->input('locked_emission'),
+            'import_documents' =>  $request->input('import_documents'),
             'limit_documents' =>  $plan->limit_documents,
             'limit_users' =>  $plan->limit_users
         ]);
@@ -256,6 +258,24 @@ class ClientController extends Controller
 
     }
 
+
+
+    public function importDocuments(Request $request){
+
+        $client = Client::findOrFail($request->id);
+        $client->import_documents = $request->import_documents;
+        $client->save();
+
+        $tenancy = app(Environment::class);
+        $tenancy->tenant($client->hostname->website);
+        DB::connection('tenant')->table('configurations')->where('id', 1)->update(['import_documents' => $client->import_documents]);
+
+        return [
+            'success' => true,
+            'message' => ($client->import_documents) ? 'Importador de documentos activado' : 'Importador de documentos desactivado'
+        ];
+
+    }
 
     public function destroy($id)
     {

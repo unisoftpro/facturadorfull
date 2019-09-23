@@ -81,6 +81,14 @@
                         </div>
                     </div> 
                 </div>
+                <div class="row"> 
+                    <div class="col-md-6 center-el-checkbox mt-4">
+                        <div class="form-group" :class="{'has-danger': errors.import_documents}">
+                            <el-checkbox v-model="form.import_documents">Importador de documentos</el-checkbox><br>
+                            <small class="form-control-feedback" v-if="errors.import_documents" v-text="errors.import_documents[0]"></small>
+                        </div>
+                    </div> 
+                </div>
             </div>
             <div class="form-actions text-right pt-2">
                 <el-button @click.prevent="close()">Cancelar</el-button>
@@ -139,6 +147,7 @@
                     password:null,
                     plan_id:null,
                     locked_emission:false,
+                    import_documents:false,
                     type:null
                 }
             },

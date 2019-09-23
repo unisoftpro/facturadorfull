@@ -42,6 +42,7 @@
                         {{ ($path[0] === 'contingencies')?'nav-active nav-expanded':'' }}
                         {{ ($path[0] === 'pos')?'nav-active nav-expanded':'' }}
                         {{ ($path[0] === 'cash')?'nav-active nav-expanded':'' }}
+                        {{ ($path[0] === 'imports')?'nav-active nav-expanded':'' }}
                         ">
                         <a class="nav-link" href="#">
                             <i class="fas fa-receipt" aria-hidden="true"></i>
@@ -140,11 +141,15 @@
                                     Notas de Venta
                                 </a>
                             </li>
-                            {{-- <li class="#">
-                                <a class="nav-link" href="#">
-                                    Ventas sin facturar (Pronto)
+
+                            @if($vc_configuration->import_documents)
+                            <li class="{{ ($path[0] === 'imports')?'nav-active':'' }}">
+                                <a class="nav-link" href="{{route('tenant.imports.documents.index')}}">
+                                    Importador ventas XLSX
                                 </a>
-                            </li> --}}
+                            </li>                            
+                            @endif
+
                             @endif
                         </ul>
                     </li>

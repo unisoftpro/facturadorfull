@@ -461,6 +461,7 @@ if ($hostname) {
             Route::delete('clients/{client}', 'System\ClientController@destroy');
             Route::post('clients/password/{client}', 'System\ClientController@password');
             Route::post('clients/locked_emission', 'System\ClientController@lockedEmission');
+            Route::post('clients/import_documents', 'System\ClientController@importDocuments');
 
             
             Route::get('client_payments/records/{client_id}', 'System\ClientPaymentController@records');

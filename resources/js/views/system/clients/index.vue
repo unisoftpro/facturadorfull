@@ -89,6 +89,7 @@
                             <th class="text-center">Comprobantes</th>
                             <th class="text-center">Usuarios</th>
                             <th class="text-center">F.Creación</th>
+                            <th class="text-center">Activar Importador</th>
                             <th class="text-right">Limitar Doc.</th>
                             <th class="text-right">Acciones</th>
                             <th class="text-right">Pagos</th>
@@ -133,6 +134,13 @@
                                 
                             </td>
                             <td class="text-center">{{ row.created_at }}</td>
+                            <td class="text-center">
+                                <el-switch
+                                    style="display: block"
+                                    v-model="row.import_documents" 
+                                    @change="changeImportDocuments(row)">
+                                </el-switch>
+                            </td>
                             <td class="text-center">
                                 <el-switch
                                     style="display: block"
@@ -235,6 +243,28 @@
         methods: {
             changeLockedEmission(row){
                 this.$http.post(`${this.resource}/locked_emission`, row)
+                    .then(response => {
+                        if (response.data.success) {
+                            this.$message.success(response.data.message)
+                            this.$eventHub.$emit('reloadData')
+                        } else {
+                            this.$message.error(response.data.message)
+                        }
+                    })
+                    .catch(error => {
+                        if(error.response.status === 500){
+                            this.$message.error(error.response.data.message);
+                        }
+                         else {
+                            console.log(error.response)
+                        }
+                    })
+                    .then(() => {
+                    })
+            },
+            changeImportDocuments(row){
+
+                this.$http.post(`${this.resource}/import_documents`, row)
                     .then(response => {
                         if (response.data.success) {
                             this.$message.success(response.data.message)
