@@ -6,13 +6,15 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use App\Models\Tenant\Configuration;
+use Modules\Import\Models\ImportDocument;
+use Modules\Import\Http\Resources\ImportDocumentCollection;
+use App\Imports\CustomDocumentsImport;
+use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Excel;
 
 class ImportController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     * @return Response
-     */
+     
     public function index()
     {
         if(!Configuration::first()->import_documents)
@@ -20,64 +22,84 @@ class ImportController extends Controller
 
         return view('import::documents.index');
     }
-
-    /**
-     * Show the form for creating a new resource.
-     * @return Response
-     */
-    public function create()
+ 
+    public function columns()
     {
-        return view('import::create');
+        return [
+            'id' => 'Identificador',
+        ];
     }
 
-    /**
-     * Store a newly created resource in storage.
-     * @param Request $request
-     * @return Response
-     */
-    public function store(Request $request)
+    public function records(Request $request)
     {
-        //
+        $records = ImportDocument::where($request->column, 'like', "%{$request->value}%")
+                            ->latest();
+
+        return new ImportDocumentCollection($records->paginate(config('tenant.items_per_page')));
     }
 
-    /**
-     * Show the specified resource.
-     * @param int $id
-     * @return Response
-     */
-    public function show($id)
+
+    
+    public function import(Request $request)
     {
-        return view('import::show');
+
+
+        if ($request->hasFile('file')) {
+            try {
+                $import = new CustomDocumentsImport();
+                $import->import($request->file('file'), null, Excel::XLSX);
+                $data = $import->getData();
+                return [
+                    'success' => true,
+                    'message' =>  __('app.actions.upload.success'),
+                    'data' => $data
+                ];
+            } catch (Exception $e) {
+                return [
+                    'success' => false,
+                    'message' =>  $e->getMessage()
+                ];
+            }
+        }
+        return [
+            'success' => false,
+            'message' =>  __('app.actions.upload.error'),
+        ];
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     * @param int $id
-     * @return Response
-     */
-    public function edit($id)
-    {
-        return view('import::edit');
-    }
 
-    /**
-     * Update the specified resource in storage.
-     * @param Request $request
-     * @param int $id
-     * @return Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
 
-    /**
-     * Remove the specified resource from storage.
-     * @param int $id
-     * @return Response
-     */
-    public function destroy($id)
-    {
-        //
-    }
+
+ 
+
+
+
+    // public function store(ExpenseRequest $request)
+    // {
+    //     $data = self::merge_inputs($request);
+
+    //     $expense = DB::connection('tenant')->transaction(function () use ($data) {
+
+    //         $doc = Expense::create($data);
+    //         foreach ($data['items'] as $row)
+    //         {
+    //             $doc->items()->create($row);
+    //         } 
+
+    //         foreach ($data['payments'] as $row)
+    //         {
+    //             $doc->payments()->create($row);
+    //         }             
+
+    //         return $doc;
+    //     });       
+ 
+    //     return [
+    //         'success' => true,
+    //         'data' => [
+    //             'id' => $expense->id,
+    //         ],
+    //     ];
+    // }
+
 }

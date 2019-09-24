@@ -11,6 +11,9 @@ if($current_hostname) {
 
                 Route::get('documents', 'ImportController@index')->name('tenant.imports.documents.index');
                 
+                Route::get('columns', 'ImportController@columns');
+                Route::get('records', 'ImportController@records');
+                Route::post('documents', 'ImportController@import');
 
             });
 
