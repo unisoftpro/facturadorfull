@@ -61,6 +61,14 @@
                 this.titleDialog = 'Importar Documentos'
             },
             async submit() {
+
+                this.$message({
+                    showClose: true,
+                    message: 'Cuando termine de procesar el archivo, la ventana se ocultará, espere por favor ',
+                    type: 'warning',
+                    duration: 7000
+                });
+
                 this.loading_submit = true
                 await this.$refs.upload.submit()
                 this.loading_submit = false
