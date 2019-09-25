@@ -49,6 +49,31 @@ class ImportController extends Controller
         return new ImportDocumentCollection($records->paginate(config('tenant.items_per_page')));
     }
 
+    
+    public function destroy($id)
+    {
+
+        $import_document = ImportDocument::findOrFail($id); 
+        $documents = $import_document->documents->where('state_type_id','!=','01')->count();
+
+        if($documents > 0){
+
+            return [
+                'success' => false,
+                'message' => 'No puede eliminar, al menos un documento ha sido enviado'
+            ];
+
+        }else{
+            $import_document->documents()->delete();
+        }
+
+        $import_document->delete();
+
+        return [
+            'success' => true,
+            'message' => 'Importación de documentos eliminada con éxito'
+        ];
+    }
 
     
     public function import(Request $request)
@@ -100,6 +125,7 @@ class ImportController extends Controller
     }
     
     public function createPdf($documents = [], $format_pdf = null, $filename = null) {
+        ini_set("pcre.backtrack_limit", "5000000");
 
         $template = new Template();
         $pdf = new Mpdf();

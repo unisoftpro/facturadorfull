@@ -20,6 +20,7 @@
                         <th>Fecha y Hora subida</th>
                         <th class="text-center">Número de documentos</th> 
                         <th class="text-center">PDF</th> 
+                        <th class="text-center">Acciones</th> 
                     <tr>
                     <tr slot-scope="{ index, row }">
                         <td>{{ index }}</td>
@@ -39,6 +40,11 @@
                             <!-- <button type="button" class="btn btn-xs btn-info waves-effect waves-light" @click="clickPrint(row.id,'custom')">
                                   Personalizado
                             </button> -->
+                        </td>  
+                        <td class="text-center">
+                            <button type="button" class="btn btn-xs btn-danger waves-effect waves-light" @click="clickDelete(row.id)">
+                                  Eliminar
+                            </button>
                         </td>  
                         
                     </tr>
@@ -70,6 +76,37 @@
         async created() { 
         },
         methods: { 
+            clickDelete(id) {
+                return new Promise((resolve) => {
+                    this.$confirm('¿Desea eliminar el registro?', 'Eliminar', {
+                        confirmButtonText: 'Eliminar',
+                        cancelButtonText: 'Cancelar',
+                        type: 'warning'
+                    }).then(() => {
+                        this.$http.delete(`/${this.resource}/documents/${id}`)
+                            .then(res => {
+                                if(res.data.success) {
+                                    this.$eventHub.$emit('reloadData')
+
+                                    this.$message.success(res.data.message)
+                                    resolve()
+                                }else{
+                                    this.$message.error(res.data.message)
+                                    resolve()
+                                }
+                            })
+                            .catch(error => {
+                                if (error.response.status === 500) {
+                                    this.$message.error('Error al intentar eliminar');
+                                } else {
+                                    console.log(error.response.data.message)
+                                }
+                            })
+                    }).catch(error => {
+                        console.log(error)
+                    });
+                })
+            },
              
             clickPrint(import_document,format){
                 window.open(`/${this.resource}/documents/print/${import_document}/${format}`, '_blank');

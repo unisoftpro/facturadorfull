@@ -15,6 +15,7 @@ if($current_hostname) {
                 Route::get('records', 'ImportController@records');
                 Route::post('documents', 'ImportController@import');
                 Route::get('documents/print/{import_document}/{format?}', 'ImportController@toPrint');
+                Route::delete('documents/{import_document}', 'ImportController@destroy');
 
             });
 
