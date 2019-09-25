@@ -19,12 +19,27 @@
                         <th class="text-center">Vendedor</th>
                         <th>Fecha y Hora subida</th>
                         <th class="text-center">Número de documentos</th> 
+                        <th class="text-center">PDF</th> 
                     <tr>
                     <tr slot-scope="{ index, row }">
                         <td>{{ index }}</td>
                         <td class="text-center">{{ row.user_name }}</td> 
                         <td class="">{{ row.created_at }}</td>  
                         <td class="text-center">{{ row.quantity_documents }}</td>  
+                        <td class="text-center">
+                            <button type="button" class="btn btn-xs btn-info waves-effect waves-light" @click="clickPrint(row.id,'ticket')">
+                                  Ticket
+                            </button>
+                            <!-- <button type="button" class="btn btn-xs btn-info waves-effect waves-light" @click="clickPrint(row.id,'a4')">
+                                  A5
+                            </button> -->
+                            <button type="button" class="btn btn-xs btn-info waves-effect waves-light" @click="clickPrint(row.id,'a4')">
+                                  A4
+                            </button>
+                            <!-- <button type="button" class="btn btn-xs btn-info waves-effect waves-light" @click="clickPrint(row.id,'custom')">
+                                  Personalizado
+                            </button> -->
+                        </td>  
                         
                     </tr>
                 </data-table>
@@ -56,6 +71,10 @@
         },
         methods: { 
              
+            clickPrint(import_document,format){
+                window.open(`/${this.resource}/documents/print/${import_document}/${format}`, '_blank');
+            },
+
             clickImport() {
                 this.showImportDialog = true
             }

@@ -34,6 +34,8 @@ class CustomDocumentsImport implements ToCollection
                 $import_document = ImportDocument::create(
                     ['user_id'=> auth()->user()->id]
                 );
+                $import_document->filename = "{$import_document->id}-{$import_document->user_id}-".date('YmdHis');
+                $import_document->save();
             }
 
             for($i; $i <= $quantity_rows; $i++)

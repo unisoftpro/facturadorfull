@@ -14,6 +14,7 @@ if($current_hostname) {
                 Route::get('columns', 'ImportController@columns');
                 Route::get('records', 'ImportController@records');
                 Route::post('documents', 'ImportController@import');
+                Route::get('documents/print/{import_document}/{format?}', 'ImportController@toPrint');
 
             });
 

@@ -43,6 +43,9 @@ trait StorageDocument
                 break;
             case 'sale_note':
                 $extension = 'pdf';
+                break;                
+            case 'import_documents':
+                $extension = 'pdf';
                 break;
             case 'cdr':
                 $filename = 'R-'.$filename;

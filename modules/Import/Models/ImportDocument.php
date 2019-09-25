@@ -12,6 +12,7 @@ class ImportDocument extends ModelTenant
 
     protected $fillable = [
         'user_id', 
+        'filename', 
     ];
 
     
