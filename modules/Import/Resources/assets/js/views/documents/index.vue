@@ -37,9 +37,9 @@
                             <button type="button" class="btn btn-xs btn-info waves-effect waves-light" @click="clickPrint(row.id,'a4')">
                                   A4
                             </button>
-                            <!-- <button type="button" class="btn btn-xs btn-info waves-effect waves-light" @click="clickPrint(row.id,'custom')">
+                            <button type="button" class="btn btn-xs btn-info waves-effect waves-light" @click="clickPrint(row.id,'custom')">
                                   Personalizado
-                            </button> -->
+                            </button>
                         </td>  
                         <td class="text-center">
                             <button type="button" class="btn btn-xs btn-danger waves-effect waves-light" @click="clickDelete(row.id)">

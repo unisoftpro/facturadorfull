@@ -65,6 +65,8 @@ class DocumentInput
             'customer' => $customer,
             'currency_type_id' => $inputs['currency_type_id'],
             'purchase_order' => $inputs['purchase_order'],
+            'order_number' => Functions::valueKeyInArray($inputs, 'order_number'),
+            'import_document_id' => Functions::valueKeyInArray($inputs, 'import_document_id'),
             'quotation_id' => Functions::valueKeyInArray($inputs, 'quotation_id'),
             'sale_note_id' => Functions::valueKeyInArray($inputs, 'sale_note_id'),
             'exchange_rate_sale' => $inputs['exchange_rate_sale'],
@@ -146,6 +148,7 @@ class DocumentInput
                     'attributes' => self::attributes($row),
                     'discounts' => self::discounts($row),
                     'charges' => self::charges($row),
+                    'order' => Functions::valueKeyInArray($row, 'order'),
                 ];
             }
             return $items;

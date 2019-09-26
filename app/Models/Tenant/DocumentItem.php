@@ -45,6 +45,7 @@ class DocumentItem extends ModelTenant
         'charges',
         'discounts',
         'total_plastic_bag_taxes',
+        'order'
     ];
 
     public function getItemAttribute($value)
@@ -85,6 +86,16 @@ class DocumentItem extends ModelTenant
     public function setDiscountsAttribute($value)
     {
         $this->attributes['discounts'] = (is_null($value))?null:json_encode($value);
+    }
+
+    public function getOrderAttribute($value)
+    {
+        return (is_null($value))?null:(object) json_decode($value);
+    }
+
+    public function setOrderAttribute($value)
+    {
+        $this->attributes['order'] = (is_null($value))?null:json_encode($value);
     }
 
     public function affectation_igv_type()

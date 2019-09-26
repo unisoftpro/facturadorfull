@@ -316,6 +316,13 @@ class ImportController extends Controller
                     'margin-top' => 2,
                     'margin-bottom' => 0,
                 ]);
+            }else if ($format_pdf == 'custom') {
+                $pdf->AddPageByArray([
+                    'margin-left' => 15,
+                    'margin-right' => 15,
+                    'margin-top' => 16,
+                    'margin-bottom' => 1,
+                ]);
             }else{
                 $pdf->AddPageByArray([
                     'margin-left' => 1,

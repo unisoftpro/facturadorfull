@@ -1,22 +1,13 @@
 @php
     $establishment = $document->establishment;
+    $items = $document->items;
     $customer = $document->customer;
     $invoice = $document->invoice;
     $document_base = ($document->note) ? $document->note : null;
-    $path_style = app_path('CoreFacturalo'.DIRECTORY_SEPARATOR.'Templates'.DIRECTORY_SEPARATOR.'pdf'.DIRECTORY_SEPARATOR.'import_documents'.DIRECTORY_SEPARATOR.'style.css');
-
+    $path_style = app_path('CoreFacturalo'.DIRECTORY_SEPARATOR.'Templates'.DIRECTORY_SEPARATOR.'pdf'.DIRECTORY_SEPARATOR.'import_documents'.DIRECTORY_SEPARATOR.'bootstrap.css');
+    //dd($items[0]->order->seller_sku);
     $document_number = $document->series.'-'.str_pad($document->number, 8, '0', STR_PAD_LEFT);
-    $accounts = \App\Models\Tenant\BankAccount::all();
-
-    if($document_base) {
-
-        $affected_document_number = ($document_base->affected_document) ? $document_base->affected_document->series.'-'.str_pad($document_base->affected_document->number, 8, '0', STR_PAD_LEFT) : $document_base->data_affected_document->series.'-'.str_pad($document_base->data_affected_document->number, 8, '0', STR_PAD_LEFT);
-
-    } else {
-        
-        $affected_document_number = null;
-    }
-
+    
     $payments = $document->payments;
 
 @endphp
@@ -24,347 +15,166 @@
 <head>
     {{--<title>{{ $document_number }}</title>--}}
     <link href="{{ $path_style }}" rel="stylesheet" />
+    <style>
+        @page {
+            margin-header: 1mm; 
+            margin-top: 1cm;
+            margin-bottom: 1cm;
+            margin-left: 10mm;
+            margin-right: 8mm;
+        }
+        .product-list{margin-bottom:2px;font-size:11px;}
+        .product-list th,.product-list td{background:#F5F5F5;padding:5px 1;}
+        .product-return{font-size: 12px;}
+        span.title{color: #F58230;font-size: 13px;font-weight: bold;}
+        .product-bottom{
+            padding: 10px; 
+            background: #FF6600;
+            color: #ffffff;
+            font-size:11px;
+        }
+        .product-bottom a{color: #ffffff;}
+    </style>
 </head>
-<body>
-<table class="full-width">
+<body> 
+
+
+<table style="width: 100%;">
+    <tr><td width="30%"><img src="{{asset('images/logo.png')}}" class="img-responsive" alt="Cinque Terre"></td>
+    <td width="70%" style="text-align:right;">
+            <p><strong>Fecha: </strong> {{$document->date_of_issue->format("m-d-Y")}}</p>
+            <p><strong>Número  de  órden: </strong>{{$document->order_number}}</p>
+            <p><strong>Nota  de  cobranza  # </strong> 100009267530054469 </p>
+            <p><small><em class="text-muted">*Noremplazalafacturadelvendedor</em></small></p>
+    </td></tr>
+</table>
+<table style="width: 100%;margin-top:30px;">
     <tr>
-        @if($company->logo)
-            <td width="20%">
-                <div class="company_logo_box">
-                    <img src="data:{{mime_content_type(public_path("storage/uploads/logos/{$company->logo}"))}};base64, {{base64_encode(file_get_contents(public_path("storage/uploads/logos/{$company->logo}")))}}" alt="{{$company->name}}" class="company_logo" style="max-width: 150px;">
-                </div>
-            </td>
-        @else
-            <td width="20%">
-                {{--<img src="{{ asset('logo/logo.jpg') }}" class="company_logo" style="max-width: 150px">--}}
-            </td>
-        @endif
-        <td width="50%" class="pl-3">
-            <div class="text-left">
-                <h4 class="">{{ $company->name }}</h4>
-                <h5>{{ 'RUC '.$company->number }}</h5>
-                <h6>
-                    {{ ($establishment->address !== '-')? $establishment->address : '' }}
-                    {{ ($establishment->district_id !== '-')? ', '.$establishment->district->description : '' }}
-                    {{ ($establishment->province_id !== '-')? ', '.$establishment->province->description : '' }}
-                    {{ ($establishment->department_id !== '-')? '- '.$establishment->department->description : '' }}
-                </h6>
-
-                @isset($establishment->trade_address)
-                    <h6>{{ ($establishment->trade_address !== '-')? 'D. Comercial: '.$establishment->trade_address : '' }}</h6>
-                @endisset  
-
-                <h6>{{ ($establishment->telephone !== '-')? 'Central telefónica: '.$establishment->telephone : '' }}</h6>
-
-                <h6>{{ ($establishment->email !== '-')? 'Email: '.$establishment->email : '' }}</h6>
-                
-                @isset($establishment->web_address)
-                    <h6>{{ ($establishment->web_address !== '-')? 'Web: '.$establishment->web_address : '' }}</h6>
-                @endisset
-
-                @isset($establishment->aditional_information)
-                    <h6>{{ ($establishment->aditional_information !== '-')? $establishment->aditional_information : '' }}</h6>
-                @endisset
-            </div>
+        <td width="40%" style="background:#FF6600;padding:20px;color:#ffffff;height:10px;">
+            <p><strong>Datos de envío:  </strong></p>
+            <p>{{ $customer->name }}</p>
+            <p>{{ $customer->address }}</p>
+            <p>{{ $items[0]->order->shipping_city}} </p>
+            <p><strong>DNI/RUC  </strong>{{ $customer->number }}</p>
         </td>
-        <td width="30%" class="border-box py-4 px-2 text-center">
-            <h5 class="text-center">{{ $document->document_type->description }}</h5>
-            <h3 class="text-center">{{ $document_number }}</h3>
+        <td width="60%" style="text-align:right;background:#F0F0F0;">
         </td>
     </tr>
 </table>
-<table class="full-width mt-5">
-    <tr>
-        <td width="120px">FECHA DE EMISIÓN</td>
-        <td width="8px">:</td>
-        <td>{{$document->date_of_issue->format('Y-m-d')}}</td>
-    </tr>
-    @if($invoice)
+<h5>LISTA DE PRODUCTOS</h5>
+    <table class="table table-borderless product-list">
+        <thead>
         <tr>
-            <td>FECHA DE VENCIMIENTO</td>
-            <td width="8px">:</td>
-            <td>{{$invoice->date_of_due->format('Y-m-d')}}</td>
+            <th style="width:5%">#</th>
+            <th style="width:30%">Nombre</th>
+            <th style="width:18%">// SKU vendedor</th>
+            <th style="width:18%">// Digital SKU </th>
+            <th style="width:14%">* Precio</th>
+            <th style="width:15%">* Precio pagado</th>
         </tr>
-    @endif
-    <tr>
-        <td>CLIENTE:</td>
-        <td>:</td>
-        <td>{{ $customer->name }}</td>
-    </tr>
-    <tr>
-        <td>{{ $customer->identity_document_type->description }}</td>
-        <td>:</td>
-        <td>{{$customer->number}}</td>
-    </tr>
-    @if ($customer->address !== '')
-    <tr>
-        <td class="align-top">DIRECCIÓN:</td>
-        <td>:</td>
-        <td>
-            {{ $customer->address }}
-            {{ ($customer->district_id !== '-')? ', '.$customer->district->description : '' }}
-            {{ ($customer->province_id !== '-')? ', '.$customer->province->description : '' }}
-            {{ ($customer->department_id !== '-')? '- '.$customer->department->description : '' }}
-        </td>
-    </tr>
-    @endif
-</table>
-
-{{--<table class="full-width mt-3">--}}
-    {{--@if ($document->purchase_order)--}}
-        {{--<tr>--}}
-            {{--<td width="25%">Orden de Compra: </td>--}}
-            {{--<td>:</td>--}}
-            {{--<td class="text-left">{{ $document->purchase_order }}</td>--}}
-        {{--</tr>--}}
-    {{--@endif--}}
-    {{--@if ($document->quotation_id)--}}
-        {{--<tr>--}}
-            {{--<td width="15%">Cotización:</td>--}}
-            {{--<td class="text-left" width="85%">{{ $document->quotation->identifier }}</td>--}}
-        {{--</tr>--}}
-    {{--@endif--}}
-{{--</table>--}}
-
-@if ($document->guides)
-<br/>
-{{--<strong>Guías:</strong>--}}
-<table>
-    @foreach($document->guides as $guide)
-        <tr>
-            @if(isset($guide->document_type_description))
-            <td>{{ $guide->document_type_description }}</td>
-            @else
-            <td>{{ $guide->document_type_id }}</td>
+        </thead>
+        @foreach($items as $it)
+            @if($it->item->internal_id !== 'ENVIO')
+            <tr>
+                <td>{{ round($it->quantity,0)}}</td>
+                <td valign="top">{{$it->item->description}}</td>
+                <td valign="top">{{$it->order->seller_sku}}</td>
+                <td valign="top">{{$it->order->linio_sku}}</td>
+                <td valign="top">* {{round($it->unit_price,2)}}</td>
+                <td valign="top">* {{$it->order->paid_price}}</td>
+            </tr> 
             @endif
-            <td>:</td>
-            <td>{{ $guide->number }}</td>
-        </tr>
-    @endforeach
-</table>
-@endif
-
-<table class="full-width mt-3">
-    @if ($document->purchase_order)
-        <tr>
-            <td>ORDEN DE COMPRA</td>
-            <td>:</td>
-            <td>{{ $document->purchase_order }}</td>
-        </tr>
-    @endif
-    @if ($document->quotation_id)
-        <tr>
-            <td>COTIZACIÓN</td>
-            <td>:</td>
-            <td>{{ $document->quotation->identifier }}</td>
-        </tr>
-    @endif
-    @if(!is_null($document_base))
-    <tr>
-        <td width="120px">DOC. AFECTADO</td>
-        <td width="8px">:</td>
-        <td>{{ $affected_document_number }}</td>
-    </tr>
-    <tr>
-        <td>TIPO DE NOTA</td>
-        <td>:</td>
-        <td>{{ ($document_base->note_type === 'credit')?$document_base->note_credit_type->description:$document_base->note_debit_type->description}}</td>
-    </tr>
-    <tr>
-        <td>DESCRIPCIÓN</td>
-        <td>:</td>
-        <td>{{ $document_base->note_description }}</td>
-    </tr>
-    @endif
-</table>
-
-{{--<table class="full-width mt-3">--}}
-    {{--<tr>--}}
-        {{--<td width="25%">Documento Afectado:</td>--}}
-        {{--<td width="20%">{{ $document_base->affected_document->series }}-{{ $document_base->affected_document->number }}</td>--}}
-        {{--<td width="15%">Tipo de nota:</td>--}}
-        {{--<td width="40%">{{ ($document_base->note_type === 'credit')?$document_base->note_credit_type->description:$document_base->note_debit_type->description}}</td>--}}
-    {{--</tr>--}}
-    {{--<tr>--}}
-        {{--<td class="align-top">Descripción:</td>--}}
-        {{--<td class="text-left" colspan="3">{{ $document_base->note_description }}</td>--}}
-    {{--</tr>--}}
-{{--</table>--}}
-
-<table class="full-width mt-10 mb-10">
-    <thead class="">
-    <tr class="bg-grey">
-        <th class="border-top-bottom text-center py-2" width="8%">CANT.</th>
-        <th class="border-top-bottom text-center py-2" width="8%">UNIDAD</th>
-        <th class="border-top-bottom text-left py-2">DESCRIPCIÓN</th>
-        <th class="border-top-bottom text-right py-2" width="12%">P.UNIT</th>
-        <th class="border-top-bottom text-right py-2" width="8%">DTO.</th>
-        <th class="border-top-bottom text-right py-2" width="12%">TOTAL</th>
-    </tr>
-    </thead>
-    <tbody>
-    @foreach($document->items as $row)
-        <tr>
-            <td class="text-center align-top">
-                @if(((int)$row->quantity != $row->quantity))
-                    {{ $row->quantity }}
-                @else
-                    {{ number_format($row->quantity, 0) }}
-                @endif
-            </td>
-            <td class="text-center align-top">{{ $row->item->unit_type_id }}</td>
-            <td class="text-left align-top">
-                {!!$row->item->description!!} @if (!empty($row->item->presentation)) {!!$row->item->presentation->description!!} @endif
-                @if($row->attributes)
-                    @foreach($row->attributes as $attr)
-                        <br/><span style="font-size: 9px">{!! $attr->description !!} : {{ $attr->value }}</span>
-                    @endforeach
-                @endif
-                @if($row->discounts)
-                    @foreach($row->discounts as $dtos)
-                        <br/><span style="font-size: 9px">{{ $dtos->factor * 100 }}% {{$dtos->description }}</span>
-                    @endforeach
-                @endif
-            </td>
-            <td class="text-right align-top">{{ number_format($row->unit_price, 2) }}</td>
-            <td class="text-right align-top">
-                @if($row->discounts)
-                    @php
-                        $total_discount_line = 0;
-                        foreach ($row->discounts as $disto) {
-                            $total_discount_line = $total_discount_line + $disto->amount;
-                        }
-                    @endphp
-                    {{ number_format($total_discount_line, 2) }}
-                @else
-                0
-                @endif
-            </td>
-            <td class="text-right align-top">{{ number_format($row->total, 2) }}</td>
-        </tr>
-        <tr>
-            <td colspan="6" class="border-bottom"></td>
-        </tr>
-    @endforeach
-        @if($document->total_exportation > 0)
-            <tr>
-                <td colspan="5" class="text-right font-bold">OP. EXPORTACIÓN: {{ $document->currency_type->symbol }}</td>
-                <td class="text-right font-bold">{{ number_format($document->total_exportation, 2) }}</td>
-            </tr>
-        @endif
-        @if($document->total_free > 0)
-            <tr>
-                <td colspan="5" class="text-right font-bold">OP. GRATUITAS: {{ $document->currency_type->symbol }}</td>
-                <td class="text-right font-bold">{{ number_format($document->total_free, 2) }}</td>
-            </tr>
-        @endif
-        @if($document->total_unaffected > 0)
-            <tr>
-                <td colspan="5" class="text-right font-bold">OP. INAFECTAS: {{ $document->currency_type->symbol }}</td>
-                <td class="text-right font-bold">{{ number_format($document->total_unaffected, 2) }}</td>
-            </tr>
-        @endif
-        @if($document->total_exonerated > 0)
-            <tr>
-                <td colspan="5" class="text-right font-bold">OP. EXONERADAS: {{ $document->currency_type->symbol }}</td>
-                <td class="text-right font-bold">{{ number_format($document->total_exonerated, 2) }}</td>
-            </tr>
-        @endif
-        @if($document->total_taxed > 0)
-            <tr>
-                <td colspan="5" class="text-right font-bold">OP. GRAVADAS: {{ $document->currency_type->symbol }}</td>
-                <td class="text-right font-bold">{{ number_format($document->total_taxed, 2) }}</td>
-            </tr>
-        @endif
-        @if($document->total_discount > 0)
-            <tr>
-                <td colspan="5" class="text-right font-bold">DESCUENTO TOTAL: {{ $document->currency_type->symbol }}</td>
-                <td class="text-right font-bold">{{ number_format($document->total_discount, 2) }}</td>
-            </tr>
-        @endif
-        @if($document->total_plastic_bag_taxes > 0)
-            <tr>
-                <td colspan="5" class="text-right font-bold">ICBPER: {{ $document->currency_type->symbol }}</td>
-                <td class="text-right font-bold">{{ number_format($document->total_plastic_bag_taxes, 2) }}</td>
-            </tr>
-        @endif
-        <tr>
-            <td colspan="5" class="text-right font-bold">IGV: {{ $document->currency_type->symbol }}</td>
-            <td class="text-right font-bold">{{ number_format($document->total_igv, 2) }}</td>
-        </tr>
-        <tr>
-            <td colspan="5" class="text-right font-bold">TOTAL A PAGAR: {{ $document->currency_type->symbol }}</td>
-            <td class="text-right font-bold">{{ number_format($document->total, 2) }}</td>
-        </tr>
-    </tbody>
-</table>
-<table class="full-width">
-    <tr>
-        <td width="65%" style="text-align: top; vertical-align: top;">
-            @foreach(array_reverse( (array) $document->legends) as $row)
-                @if ($row->code == "1000")
-                    <p>Son: <span class="font-bold">{{ $row->value }} {{ $document->currency_type->description }}</span></p>                      
-                    @if (count((array) $document->legends)>1)
-                        <p><span class="font-bold">Leyendas</span></p>
-                    @endif                  
-                @else
-                    <p> {{$row->code}}: {{ $row->value }} </p>                                    
-                @endif
-            
-            @endforeach
-            <br/>
-            @if ($customer->department_id == 16)
-                <br/><br/><br/>                       
-                <div>
-                    <center>
-                        Representación impresa del Comprobante de Pago Electrónico. 
-                        <br/>Esta puede ser consultada en:
-                        <br/><b>{!! url('/buscar') !!}</b>
-                        <br/> "Bienes transferidos en la Amazonía 
-                        <br/>para ser consumidos en la misma".
-                    </center>
-                </div>
-                <br/>
-            @endif
-            @foreach($document->additional_information as $information)
-                @if ($information)
-                    @if ($loop->first)
-                        <strong>Información adicional</strong>
-                    @endif
-                    <p>{{ $information }}</p>
-                @endif
-            @endforeach
-            <br>
-            @if(in_array($document->document_type->id,['01','03']))
-                @foreach($accounts as $account)
-                    <p><span class="font-bold">{{$account->bank->description}}</span> {{$account->currency_type->description}} {{$account->number}}</p>
-                @endforeach
-            @endif
-        </td>
-        <td width="35%" class="text-right">
-            <img src="data:image/png;base64, {{ $document->qr }}" style="margin-right: -10px;" />
-            <p style="font-size: 9px">Código Hash: {{ $document->hash }}</p>
-        </td>
-    </tr>
-</table>
-@if($payments->count())
-    <table class="full-width">
-        <tr>
-            <td>
-                <strong>PAGOS:</strong> 
-            </td>
-        </tr>
-            @php
-                $payment = 0;
-            @endphp
-            @foreach($payments as $row)
-                <tr>
-                    <td>- {{ $row->reference }} {{ $document->currency_type->symbol }} {{ $row->payment }}</td>
-                </tr> 
-            @endforeach
-        </tr>
-
+        @endforeach
     </table>
-@endif
+
+
+    <table style="width: 100%;" class="total">
+        <tr>
+            <td width="20%"><img src="{{asset('images/help.png')}}" class="img-responsive" alt="help"></td>
+            <td width="30%" style="font-size:12px;padding-right:50px;line-height:20px;">
+                <p>Compras 100% seguras <br>¿NO TE CONVENCIÓ? Devuélvelo gratis y sin preguntas ¿TIENES DUDAS? Consulta nuestras preguntas frecuentes en </p>
+                <p><a href="{!! url('/') !!}">{!! url('/') !!}</a></p>
+            </td>
+            @php
+                $envio = $document->items->where('order','!=',null)->sum('order.shipping_fee');
+            @endphp
+            <td width="45%" style="text-align:right;background:#F0F0F0;padding:10px;line-height: 30px;">
+                <p><strong>Subtotal : </strong>{{number_format($document->total - $envio ,2)}}</p>
+                <p><strong>Cupón : </strong>0.00</p>
+                <p><strong>Total productos : </strong>{{number_format($document->total,2)}}</p>
+                <p><strong>Costo de envío : </strong>{{number_format($envio, 2)}}</p>
+            </td>
+        </tr>
+    </table>
+
+    <br>
+
+    <div class="row product-question text-center">
+        <p><em><strong>¿Compraste vario sproductos en la misma orden?</strong>, recuerda que los recibirás por separado si eran de proveedores diferentes. Para verificar el envío de cada producto o si tienes dudas ingresa a "Mis Pedidos"</em></p>
+    </div>
+
+    <table class="product-return" style="width: 90%; margin:20px auto;" border="0">
+        <tr>
+            <td colspan="2">
+                <div class="row text-center">
+                <p><strong>En caso de devolución, recuerda que cuentas con 10 dias para realizarla siguiendo los siguientes pasos : </strong></p>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td width="50%" valign="top">
+                <table border="0" style="width:100%;">
+                    <tr>
+                        <td width="35%" align="right" ><img src="{{asset('images/computer.png')}}" class="img-responsive" alt="" style="width:80px;"></td>
+                        <td><span class="title">1. CONECTATE</span></td>
+                    </tr>
+                    <tr>
+                    <td colspan="2" style="padding:5px;"><p><strong>Inicia session en Digitalcrazy,</strong> ingresa a "Mis Pedidos", elige el producto que deseas devolver y dale click al boton "Devolver"</p></td>
+                    </tr>
+                </table>
+            </td>
+            <td width="50%" valign="top">
+                <table border="0" style="width:100%">
+                    <tr>
+                        <td width="30%" align="right" ><img src="{{asset('images/product-box.png')}}" class="img-responsive" alt="" style="width:80px;"></td>
+                        <td><span class="title" style="padding:5px;">3. GUARDA TU PRODUCTO <br>EN SU CAJA ORIGINAL</span></td>
+                    </tr>
+                    <tr>
+                    <td colspan="2"><p><strong>Protegiendola de cualquier dano que pueda sufrir,</strong> Dentro se debera de encontrar todos los accesorios y documentacion recibida, el producto no debe tener senales de uso.</p></td>
+                    </tr>
+                </table>
+
+            </td>
+        </tr>
+        <tr>
+            <td width="50%" valign="top">
+                <table border="0" style="width:100%">
+                    <tr>
+                        <td width="30%" align="right" ><img src="{{asset('images/printer.png')}}" class="img-responsive" alt="" style="width:80px;"></td>
+                        <td><span class="title">2. DESCARGA E IMPRIME <br>TU GUIA DE DEVOLUCION</span></td>
+                    </tr>
+                    <tr>
+                    <td colspan="2" style="padding:5px;"><p><strong>Inicia session en Digitalcrazy,</strong> ingresa a "Mis Pedidos", elige el producto que deseas devolver y dale click al boton "Devolver"</p></td>
+                    </tr>
+                </table>
+            </td>
+            <td width="50%" valign="top">
+                <table border="0" style="width:100%;">
+                    <tr>
+                        <td width="35%" align="right" ><img src="{{asset('images/truck.png')}}" class="img-responsive" alt="" style="width:80px;"></td>
+                        <td><span class="title">4. EVIANOS TU PAUETE</span></td>
+                    </tr>
+                    <tr>
+                    <td colspan="2" style="padding:5px;"><p><strong>Lleva el producto empacado a cualquier oficina principal de Olva Courier ,</strong> la atencion ed de lunes a vierned hasta las 5pm y ssabados hasta las 12:00pm <br>En cuanto lo recibamos, tardaremo un maxio de 3 diao habiled en revisarlo y aprobar tu devolucion</p></td>
+                    </tr>
+                </table>
+
+            </td>
+        </tr>
+    </table>
+    <div class="row product-bottom text-center">
+        *Aplican condiciones, para mayor información y verificar que tu producto aplica para devolución, visita <a href="{!! url('/') !!}/dev">{!! url('/') !!}/dev</a>
+    </div>
+
 </body>
 </html>

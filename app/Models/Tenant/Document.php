@@ -68,6 +68,7 @@ class Document extends ModelTenant
         'total_plastic_bag_taxes',
         'sale_note_id',
         'import_document_id',
+        'order_number',
 
     ];
 

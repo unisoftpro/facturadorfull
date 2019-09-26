@@ -52,6 +52,7 @@ class CustomDocumentsImport implements ToCollection
                 $total_igv_item = $unit_price - $unit_value;
                 $total_valor_item = $unit_value * $quantity;
                 $total_item = $unit_price * $quantity;
+                $order_number = (string)$row[6];
 
                 $row_items [] = [
                     "codigo_interno" => $row[3],
@@ -68,26 +69,10 @@ class CustomDocumentsImport implements ToCollection
                     "total_igv" => $total_igv_item,
                     "total_impuestos" => $total_igv_item,
                     "total_valor_item" => $total_valor_item,
-                    "total_item" => $total_item
+                    "total_item" => $total_item,
+                    "order" => self::order($row)
                 ];
-
-                $row_items [] = [
-                    "codigo_interno" => "ENVIO",
-                    "descripcion" => "ENVIO",
-                    "codigo_producto_sunat" => "",
-                    "unidad_de_medida" => $unit_type,
-                    "cantidad" => 1,
-                    "valor_unitario" => round($row[33]/1.18,2),
-                    "codigo_tipo_precio" => "01",
-                    "precio_unitario" => $row[33],
-                    "codigo_tipo_afectacion_igv" => "10",
-                    "total_base_igv" => round($row[33]/1.18,2),
-                    "porcentaje_igv" => "18",
-                    "total_igv" => $row[33] - round($row[33]/1.18,2),
-                    "total_impuestos" => $row[33] - round($row[33]/1.18,2),
-                    "total_valor_item" => round($row[33]/1.18,2),
-                    "total_item" => $row[33]
-                ];
+ 
 
                 for ($j=$i+1; $j <= $quantity_rows; $j++) { 
                
@@ -119,27 +104,10 @@ class CustomDocumentsImport implements ToCollection
                             "total_igv" => $total_igv_item,
                             "total_impuestos" => $total_igv_item,
                             "total_valor_item" => $total_valor_item,
-                            "total_item" => $total_item
+                            "total_item" => $total_item,
+                            "order" => self::order($row_temp)
                         ];
-
-                        $row_items [] = [
-                            "codigo_interno" => "ENVIO",
-                            "descripcion" => "ENVIO",
-                            "codigo_producto_sunat" => "",
-                            "unidad_de_medida" => $unit_type,
-                            "cantidad" => 1,
-                            "valor_unitario" => round($row_temp[33]/1.18,2),
-                            "codigo_tipo_precio" => "01",
-                            "precio_unitario" => $row_temp[33],
-                            "codigo_tipo_afectacion_igv" => "10",
-                            "total_base_igv" => round($row_temp[33]/1.18,2),
-                            "porcentaje_igv" => "18",
-                            "total_igv" => $row_temp[33] - round($row_temp[33]/1.18,2),
-                            "total_impuestos" => $row_temp[33] - round($row_temp[33]/1.18,2),
-                            "total_valor_item" => round($row_temp[33]/1.18,2),
-                            "total_item" => $row_temp[33]
-                        ];
-
+ 
                         unset($rows[$j]);
                         $i = $j;
                         // dd($j);
@@ -190,13 +158,41 @@ class CustomDocumentsImport implements ToCollection
 
                 //totales
                 $acum_total_item = 0;
+                $acum_total_envio = 0;
 
                 foreach ($row_items as $item) {
+                    
                     // dd($item);
                     $acum_total_item += $item['total_item'];
+                    $acum_total_envio += $item['order']['shipping_fee'];
+                     
                 }
 
-                $mtototal = $acum_total_item;
+                //envio
+                if ($acum_total_envio) {
+
+                    $item_send = [
+                        "codigo_interno" => "ENVIO",
+                        "descripcion" => "ENVÍO",
+                        "codigo_producto_sunat" => "",
+                        "unidad_de_medida" => $unit_type,
+                        "cantidad" => $quantity,
+                        "valor_unitario" => round($acum_total_envio/1.18,2),
+                        "codigo_tipo_precio" => "01",
+                        "precio_unitario" => $acum_total_envio,
+                        "codigo_tipo_afectacion_igv" => "10",
+                        "total_base_igv" => round($acum_total_envio/1.18,2),
+                        "porcentaje_igv" => "18",
+                        "total_igv" => $acum_total_envio - round($acum_total_envio/1.18,2),
+                        "total_impuestos" => $acum_total_envio - round($acum_total_envio/1.18,2),
+                        "total_valor_item" => round($acum_total_envio/1.18,2),
+                        "total_item" => $acum_total_envio,
+                    ];
+
+                    array_push($row_items, $item_send);
+                }
+
+                $mtototal = $acum_total_item + $acum_total_envio;
                 $mtosubtotal = round($mtototal/1.18,2);
                 $mtoimpuesto = $mtototal - $mtosubtotal;
 
@@ -220,7 +216,8 @@ class CustomDocumentsImport implements ToCollection
                     "codigo_tipo_documento" => $document_type,
                     "codigo_tipo_moneda" => $currency,
                     "fecha_de_vencimiento" => $date_create,
-                    "numero_orden_de_compra" => "-",
+                    "numero_orden" => $order_number,
+                    "id_importacion_documento" => $import_document->id,
                     "totales" => [
                         "total_exportacion" => 0.00,
                         "total_operaciones_gravadas" => $mtosubtotal,
@@ -245,49 +242,10 @@ class CustomDocumentsImport implements ToCollection
                         "correo_electronico" => "",
                         "telefono" => ""
                     ],
-                    "items" => $row_items
-                    // "items" => [
-                    //     [
-                    //         "codigo_interno" => $row[3],
-                    //         "descripcion" => rtrim($row[35]),
-                    //         "codigo_producto_sunat" => "",
-                    //         "unidad_de_medida" => $unit_type,
-                    //         "cantidad" => $quantity, //todo
-                    //         "valor_unitario" => $unit_value,
-                    //         "codigo_tipo_precio" => "01",
-                    //         "precio_unitario" => $unit_price,
-                    //         "codigo_tipo_afectacion_igv" => "10",
-                    //         "total_base_igv" => $unit_value * $quantity, //todo
-                    //         "porcentaje_igv" => "18",
-                    //         "total_igv" => $total_igv_item,
-                    //         "total_impuestos" => $total_igv_item,
-                    //         "total_valor_item" => $total_valor_item,
-                    //         "total_item" => $total_item
-                    //     ]
-                    // ]
+                    "items" => $row_items 
                 );
 
-                //envio
-                // if ($row[33]) {
-                //     $new_item = [
-                //             "codigo_interno" => "ENVIO",
-                //             "descripcion" => "ENVIO",
-                //             "codigo_producto_sunat" => "",
-                //             "unidad_de_medida" => $unit_type,
-                //             "cantidad" => 1,
-                //             "valor_unitario" => round($row[33]/1.18,2),
-                //             "codigo_tipo_precio" => "01",
-                //             "precio_unitario" => $row[33],
-                //             "codigo_tipo_afectacion_igv" => "10",
-                //             "total_base_igv" => round($row[33]/1.18,2),
-                //             "porcentaje_igv" => "18",
-                //             "total_igv" => $row[33] - round($row[33]/1.18,2),
-                //             "total_impuestos" => $row[33] - round($row[33]/1.18,2),
-                //             "total_valor_item" => round($row[33]/1.18,2),
-                //             "total_item" => $row[33]
-                //         ];
-                //     array_push($json["items"], $new_item);
-                // }
+                 
 
                 $url = url('/api/documents');
                 $token = auth()->user()->api_token;
@@ -308,7 +266,7 @@ class CustomDocumentsImport implements ToCollection
 
                     $response = json_decode($res->getBody()->getContents(), true);
 // dd($res);
-                    Document::where('external_id', $response['data']['external_id'])->update(['import_document_id' => $import_document->id]);
+                    // Document::where('external_id', $response['data']['external_id'])->update(['import_document_id' => $import_document->id]);
                     // dd($response['data']['external_id']);
 
                 } catch (Exception $e) {
@@ -318,7 +276,49 @@ class CustomDocumentsImport implements ToCollection
 
                 $registered += 1;
             }
+
             $this->data = compact('total', 'registered');
+
+    }
+
+    private static function order($row){
+
+        return  [
+            "order_item_id" => $row[0],
+            "linio_id" => $row[1],
+            "seller_sku" => $row[2],
+            "linio_sku" => $row[3],
+            "created_at" => $row[4],
+            "updated_at" => $row[5],
+            "order_number" => $row[6],
+            "order_source" => $row[7],
+            "order_currency" => $row[8],
+            "invoice_required" => $row[9],
+            "customer_name" => $row[10],
+            "national_registration_number" => $row[11],
+            "shipping_name" => $row[12],
+            "shipping_address" => $row[13],
+            "shipping_address2" => $row[14],
+            "shipping_city" => $row[18],
+            "shipping_country" => $row[20],
+            "billing_name" => $row[21],
+            "billing_address" => $row[22], 
+            "payment_method" => $row[30],
+            "paid_price" => $row[31],
+            "unit_price" => $row[32],
+            "shipping_fee" => $row[33],
+            "item_name" => $row[35], 
+            "shipping_provider" => $row[38],
+            "shipping_type_name" => $row[39],
+            "shipping_provider_type" => $row[40],
+            "cd_traking_code" => $row[41],
+            "traking_code" => $row[42],
+            "traking_url" => $row[43],
+            "promised_shipping_time" => $row[44],
+            "premium" => $row[45],
+            "status" => $row[46],
+            "reason" => $row[47]
+        ];
 
     }
 

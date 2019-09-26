@@ -22,6 +22,8 @@ class DocumentTransform
             'currency_type_id' => Functions::valueKeyInArray($inputs, 'codigo_tipo_moneda'),
             'exchange_rate_sale' => Functions::valueKeyInArray($inputs, 'factor_tipo_de_cambio', 1),
             'purchase_order' => Functions::valueKeyInArray($inputs, 'numero_orden_de_compra'),
+            'order_number' => Functions::valueKeyInArray($inputs, 'numero_orden'),
+            'import_document_id' => Functions::valueKeyInArray($inputs, 'id_importacion_documento'),
 //            'establishment' => EstablishmentTransform::transform($inputs['datos_del_emisor']),
             'customer' => PersonTransform::transform($inputs['datos_del_cliente_o_receptor']),
             'total_prepayment' => Functions::valueKeyInArray($totals, 'total_anticipos'),
@@ -107,6 +109,7 @@ class DocumentTransform
                     'attributes' => self::attributes($row),
                     'discounts' => self::discounts($row),
                     'charges' => self::charges($row),
+                    'order' => Functions::valueKeyInArray($row, 'order'),
                 ];
             }
 
