@@ -237,7 +237,7 @@ class CustomDocumentsImport implements ToCollection
                         "numero_documento" => $company_number,
                         "apellidos_y_nombres_o_razon_social" => rtrim($company_name),
                         "codigo_pais" => "PE",
-                        "ubigeo" => "010101",
+                        "ubigeo" => "150101",
                         "direccion" => rtrim($company_address),
                         "correo_electronico" => "",
                         "telefono" => ""
