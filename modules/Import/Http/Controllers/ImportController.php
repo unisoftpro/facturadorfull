@@ -85,8 +85,8 @@ class ImportController extends Controller
                 $import->import($request->file('file'), null, Excel::XLSX);
                 $data = $import->getData();
                 return [
-                    'success' => true,
-                    'message' =>  __('app.actions.upload.success'),
+                    'success' => $data['success'],
+                    'message' => $data['message'],
                     'data' => $data
                 ];
             } catch (Exception $e) {

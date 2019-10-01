@@ -5,6 +5,8 @@ namespace App\Imports;
 use App\Models\Tenant\Item;
 use App\Models\Tenant\Series;
 use App\Models\Tenant\Document;
+use App\Models\Tenant\Person;
+use App\Http\Resources\Tenant\PersonResource;
 use App\Models\Tenant\Warehouse;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\Importable;
@@ -12,6 +14,7 @@ use Maatwebsite\Excel\Concerns\ToCollection;
 use Carbon\Carbon;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use Modules\Import\Models\ImportDocument;
+use Modules\Services\Data\ServiceData;
 
 class CustomDocumentsImport implements ToCollection
 {
@@ -24,6 +27,8 @@ class CustomDocumentsImport implements ToCollection
 
         
             $total = count($rows);
+            $message = "El archivo fue cargado satisfactoriamente";
+            $success = true;
             $registered = 0;
             unset($rows[0]);
             $i = 1;
@@ -43,6 +48,7 @@ class CustomDocumentsImport implements ToCollection
 
                 $row = $rows[$i];
                 $row_items = [];
+
 
                 //unidad de medida 
                 $unit_type = 'NIU';
@@ -130,7 +136,13 @@ class CustomDocumentsImport implements ToCollection
                 if($record_serie){
                     $serie = $record_serie->number;
                 }else{
-                    throw new Exception("No tiene serie registrada");                        
+                    if($row[9] == 'Yes'){
+                        $message = "Se procesaron {$registered} documentos del total: No tiene serie registrada para factura";
+                    } elseif($row[9] == 'No'){
+                        $message = "Se procesaron {$registered} documentos del total: No tiene serie registrada para boleta";
+                    } 
+                    $success = false;
+                    return $this->data = compact('total', 'registered','message','success');            
                 }
                  
 
@@ -152,9 +164,86 @@ class CustomDocumentsImport implements ToCollection
                     }
                 } 
 
+                if($document_type == '01'){
+                    if(strlen($co_number) !== 11){
+                        $success = false;
+                        $message = "Se procesaron {$registered} documentos del total: No puede generar una factura con DNI";
+                        return $this->data = compact('total', 'registered','message','success');
+                    }
+                    // $this->data = compact('total', 'registered');
+                }
+
                 $company_address = $row[13];
                 $company_name = $row[10];
+ 
 
+                
+                if($document_type == '01'){
+                    
+                    $search_customer = ServiceData::service('ruc', $company_number);
+
+                    if($search_customer['success']){
+
+                        $datos_del_cliente_o_receptor = [
+                            "codigo_tipo_documento_identidad" => $client_document_type,
+                            "numero_documento" => $search_customer['data']['ruc'],
+                            "apellidos_y_nombres_o_razon_social" => $search_customer['data']['nombre_o_razon_social'],
+                            "codigo_pais" => 'PE',
+                            "ubigeo" => (count($search_customer['data']['ubigeo'])  == 3) ? $search_customer['data']['ubigeo'][2] : null,
+                            "direccion" => $search_customer['data']['direccion'],
+                            "correo_electronico" => "",
+                            "telefono" => ""
+                        ];
+
+                    }else{
+
+                        $datos_del_cliente_o_receptor = [
+                            "codigo_tipo_documento_identidad" => $client_document_type,
+                            "numero_documento" => $company_number,
+                            "apellidos_y_nombres_o_razon_social" => rtrim($company_name),
+                            "codigo_pais" => "PE",
+                            "ubigeo" => null,
+                            "direccion" => rtrim($company_address),
+                            "correo_electronico" => "",
+                            "telefono" => ""
+                        ];
+                    }
+                    // dd($search_customer);
+                }else{
+
+                    $search_customer = ServiceData::service('dni', $company_number);
+                    
+                    if($search_customer['success']){
+
+                        $datos_del_cliente_o_receptor = [
+                            "codigo_tipo_documento_identidad" => $client_document_type,
+                            "numero_documento" => $search_customer['data']['numero'],
+                            "apellidos_y_nombres_o_razon_social" => $search_customer['data']['nombre_completo'],
+                            "codigo_pais" => 'PE',
+                            "ubigeo" => null,
+                            "direccion" => "",
+                            "correo_electronico" => "",
+                            "telefono" => ""
+                        ];
+
+                    }else{
+
+                        $datos_del_cliente_o_receptor = [
+                            "codigo_tipo_documento_identidad" => $client_document_type,
+                            "numero_documento" => $company_number,
+                            "apellidos_y_nombres_o_razon_social" => rtrim($company_name),
+                            "codigo_pais" => "PE",
+                            "ubigeo" => null,
+                            "direccion" => "",
+                            "correo_electronico" => "",
+                            "telefono" => ""
+                        ];
+                    }
+                    // dd($search_customer);                    
+
+                }
+
+                
 
                 //totales
                 $acum_total_item = 0;
@@ -196,16 +285,7 @@ class CustomDocumentsImport implements ToCollection
                 $mtosubtotal = round($mtototal/1.18,2);
                 $mtoimpuesto = $mtototal - $mtosubtotal;
 
-                
-
-                // $unit_price = $row[32];
-                // $unit_value = round($unit_price/1.18,2);
-                // $quantity = 1;
-                // $total_igv_item = $unit_price - $unit_value;
-                // $total_valor_item = $unit_value * $quantity;
-                // $total_item = $unit_price * $quantity;
-
-                //genero json y envio a api para no hacer insert 
+                 
                 
                 $json = array(
                     "serie_documento" => $serie,
@@ -232,16 +312,7 @@ class CustomDocumentsImport implements ToCollection
                     "datos_del_emisor" => [
                         "codigo_del_domicilio_fiscal" => "0000"
                     ],
-                    "datos_del_cliente_o_receptor" => [
-                        "codigo_tipo_documento_identidad" => $client_document_type,
-                        "numero_documento" => $company_number,
-                        "apellidos_y_nombres_o_razon_social" => rtrim($company_name),
-                        "codigo_pais" => "PE",
-                        "ubigeo" => "150101",
-                        "direccion" => rtrim($company_address),
-                        "correo_electronico" => "",
-                        "telefono" => ""
-                    ],
+                    "datos_del_cliente_o_receptor" => $datos_del_cliente_o_receptor,
                     "items" => $row_items 
                 );
 
@@ -277,7 +348,8 @@ class CustomDocumentsImport implements ToCollection
                 $registered += 1;
             }
 
-            $this->data = compact('total', 'registered');
+            
+            $this->data = compact('total', 'registered','message','success');
 
     }
 
