@@ -209,37 +209,18 @@ class CustomDocumentsImport implements ToCollection
                         ];
                     }
                     // dd($search_customer);
-                }else{
+                }else{ 
 
-                    $search_customer = ServiceData::service('dni', $company_number);
-                    
-                    if($search_customer['success']){
-
-                        $datos_del_cliente_o_receptor = [
-                            "codigo_tipo_documento_identidad" => $client_document_type,
-                            "numero_documento" => $search_customer['data']['numero'],
-                            "apellidos_y_nombres_o_razon_social" => $search_customer['data']['nombre_completo'],
-                            "codigo_pais" => 'PE',
-                            "ubigeo" => null,
-                            "direccion" => "",
-                            "correo_electronico" => "",
-                            "telefono" => ""
-                        ];
-
-                    }else{
-
-                        $datos_del_cliente_o_receptor = [
-                            "codigo_tipo_documento_identidad" => $client_document_type,
-                            "numero_documento" => $company_number,
-                            "apellidos_y_nombres_o_razon_social" => rtrim($company_name),
-                            "codigo_pais" => "PE",
-                            "ubigeo" => null,
-                            "direccion" => "",
-                            "correo_electronico" => "",
-                            "telefono" => ""
-                        ];
-                    }
-                    // dd($search_customer);                    
+                    $datos_del_cliente_o_receptor = [
+                        "codigo_tipo_documento_identidad" => $client_document_type,
+                        "numero_documento" => $company_number,
+                        "apellidos_y_nombres_o_razon_social" => rtrim($company_name),
+                        "codigo_pais" => "PE",
+                        "ubigeo" => null,
+                        "direccion" => "",
+                        "correo_electronico" => "",
+                        "telefono" => ""
+                    ];                    
 
                 }
 
