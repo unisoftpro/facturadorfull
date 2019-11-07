@@ -176,6 +176,9 @@ return [
 
         Intervention\Image\ImageServiceProvider::class,
 
+        Rap2hpoutre\LaravelLogViewer\LaravelLogViewerServiceProvider::class,
+
+
     ],
 
     /*
