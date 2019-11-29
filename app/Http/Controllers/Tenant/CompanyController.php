@@ -19,6 +19,7 @@ class CompanyController extends Controller
     {
         $soap_sends = config('tables.system.soap_sends');
         $soap_types = SoapType::all();
+        
 
         return compact('soap_types', 'soap_sends');
     }
@@ -51,13 +52,20 @@ class CompanyController extends Controller
             $company = Company::active();
             
             $type = $request->input('type');
+            
             $file = $request->file('file');
             $ext = $file->getClientOriginalExtension();
             $name = $type.'_'.$company->number.'.'.$ext;
+         
             
             if (($type === 'logo')) request()->validate(['file' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048']);
             
             $file->storeAs(($type === 'logo') ? 'public/uploads/logos' : 'certificates', $name);
+
+            if (($type === 'logo_store')) request()->validate(['file' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048']);
+
+            $file->storeAs(($type === 'logo_store') ? 'public/uploads/logos' : 'certificates', $name);
+
 
             $company->$type = $name;
 

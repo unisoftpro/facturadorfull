@@ -7,7 +7,8 @@
             </ol>
             <div class="right-wrapper pull-right">
                 <!--<button type="button" class="btn btn-custom btn-sm  mt-2 mr-2" @click.prevent="clickImport()"><i class="fa fa-upload"></i> Importar</button>-->
-                <button type="button" class="btn btn-custom btn-sm  mt-2 mr-2" @click.prevent="clickCreate()"><i class="fa fa-plus-circle"></i> Ingreso</button>
+                <button type="button" class="btn btn-custom btn-sm  mt-2 mr-2" @click.prevent="clickCreate('input')"><i class="fa fa-plus-circle"></i> Ingreso</button>
+                <button type="button" class="btn btn-custom btn-sm  mt-2 mr-2" @click.prevent="clickCreate('output')"><i class="fa fa-minus-circle"></i> Salida</button>
             </div>
         </div>
         <div class="card mb-0">
@@ -25,7 +26,7 @@
                     <tr>
                     <tr slot-scope="{ index, row }">
                         <td>{{ index }}</td>
-                        <td>{{ row.item_description }}</td>
+                        <td>{{ row.item_fulldescription }}</td>
                         <td>{{ row.warehouse_description }}</td>
                         <td class="text-right">{{ row.stock }}</td>
                         <td class="text-right">
@@ -38,7 +39,10 @@
                 </data-table>
             </div>
 
-            <inventories-form :showDialog.sync="showDialog"></inventories-form>
+            <inventories-form 
+                            :showDialog.sync="showDialog"
+                            :type="typeTransaction"
+                                ></inventories-form>
             <inventories-move :showDialog.sync="showDialogMove"
                               :recordId="recordId"></inventories-move>
             <inventories-remove :showDialog.sync="showDialogRemove"
@@ -65,6 +69,7 @@
                 showDialogRemove: false,
                 resource: 'inventory',
                 recordId: null,
+                typeTransaction:null,
             }
         },
         created() {
@@ -75,8 +80,9 @@
                 this.recordId = recordId
                 this.showDialogMove = true
             },
-            clickCreate() {
+            clickCreate(type) {
                 this.recordId = null
+                this.typeTransaction = type
                 this.showDialog = true
             },
             clickRemove(recordId) {

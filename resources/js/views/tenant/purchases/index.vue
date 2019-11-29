@@ -23,9 +23,9 @@
                         <!-- <th>Estado</th> -->
                         <th class="text-center">Moneda</th>
                         <!-- <th class="text-right">T.Exportación</th> -->
-                        <!-- <th class="text-right">T.Gratuita</th> -->
-                        <!-- <th class="text-right">T.Inafecta</th> -->
-                        <!-- <th class="text-right">T.Exonerado</th> -->
+                        <th class="text-right">T.Gratuita</th>
+                        <th class="text-right">T.Inafecta</th>
+                        <th class="text-right">T.Exonerado</th>
                         <th class="text-right">T.Gravado</th>
                         <th class="text-right">T.Igv</th>
                         <th>Percepcion</th>
@@ -45,10 +45,10 @@
                         <td>{{ row.payment_method_type_description }}</td>
                         <!-- <td>{{ row.state_type_description }}</td> -->
                         <td class="text-center">{{ row.currency_type_id }}</td>
-                        <!-- <td class="text-right">{{ row.total_exportation }}</td>
+                        <!-- <td class="text-right">{{ row.total_exportation }}</td> -->
                         <td class="text-right">{{ row.total_free }}</td>
                         <td class="text-right">{{ row.total_unaffected }}</td>
-                        <td class="text-right">{{ row.total_exonerated }}</td> -->
+                        <td class="text-right">{{ row.total_exonerated }}</td>
                         <td class="text-right">{{ row.total_taxed }}</td>
                         <td class="text-right">{{ row.total_igv }}</td>
                         <td class="text-right">{{ row.total_perception ? row.total_perception : 0 }}</td>
@@ -57,6 +57,9 @@
                             
                             <a v-if="row.state_type_id != '11'" :href="`/${resource}/edit/${row.id}`" type="button" class="btn waves-effect waves-light btn-xs btn-info">Editar</a>
                             <button v-if="row.state_type_id != '11'" type="button" class="btn waves-effect waves-light btn-xs btn-danger" @click.prevent="clickAnulate(row.id)">Anular</button>
+                            <button v-if="row.state_type_id == '11'" type="button" class="btn waves-effect waves-light btn-xs btn-danger" @click.prevent="clickDelete(row.id)">Eliminar</button>
+
+
 
                         </td>
                         
@@ -97,7 +100,7 @@
      import {deletable} from '../../../mixins/deletable'
 
     export default {
-          mixins: [deletable],
+        mixins: [deletable],
         // components: {DocumentsVoided, DocumentOptions, DataTable},
         components: {DataTable},
         data() {
@@ -125,6 +128,12 @@
             clickAnulate(id)
             {
                 this.anular(`/${this.resource}/anular/${id}`).then(() =>
+                    this.$eventHub.$emit('reloadData')
+                )
+            },
+            clickDelete(id)
+            {
+                this.delete(`/${this.resource}/delete/${id}`).then(() =>
                     this.$eventHub.$emit('reloadData')
                 )
             }

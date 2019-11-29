@@ -77,6 +77,7 @@ function calculateRowItem(row_old, currency_type_id_new, exchange_rate_sale) {
         total_taxes: 0,
         price_type_id: '01',
         unit_price: unit_price,
+        input_unit_price_value: row_old.input_unit_price_value,
         total_value: 0,
         total_discount: 0,
         total_charge: 0,
@@ -171,8 +172,8 @@ function calculateRowItem(row_old, currency_type_id_new, exchange_rate_sale) {
         }
         row.charges.splice(index, charge)
     })
-    console.log('total base charge:'+charge_base)
-    console.log('total no base charge:'+charge_no_base)
+    // console.log('total base charge:'+charge_base)
+    // console.log('total no base charge:'+charge_no_base)
 
     let total_isc = 0
     let total_other_taxes = 0

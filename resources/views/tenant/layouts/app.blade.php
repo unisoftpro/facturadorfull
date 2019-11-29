@@ -23,7 +23,8 @@
 
     <link rel="stylesheet" href="{{ asset('porto-light/vendor/bootstrap/css/bootstrap.css') }}" />
     <link rel="stylesheet" href="{{ asset('porto-light/vendor/animate/animate.css') }}" />
-    <link rel="stylesheet" href="{{ asset('porto-light/vendor/font-awesome/css/fontawesome-all.min.css') }}" />
+    {{-- <link rel="stylesheet" href="{{ asset('porto-light/vendor/font-awesome/css/fontawesome-all.min.css') }}" /> --}}
+    <link rel="stylesheet" href="{{ asset('porto-light/vendor/font-awesome/5.11/css/all.min.css') }}" />
     <link rel="stylesheet" href="{{ asset('porto-light/vendor/select2/css/select2.css') }}" />
     <link rel="stylesheet" href="{{ asset('porto-light/vendor/select2-bootstrap-theme/select2-bootstrap.min.css') }}" />
     <link rel="stylesheet" href="{{ asset('porto-light/vendor/datatables/media/css/dataTables.bootstrap4.css') }}" />
@@ -52,7 +53,7 @@
     @if (file_exists(public_path('theme/custom_styles.css')))
         <link rel="stylesheet" href="{{ asset('theme/custom_styles.css') }}" />
     @endif
-    
+
 
     @stack('styles')
 
@@ -90,6 +91,7 @@
         .center-el-checkbox .el-checkbox {
             margin-bottom: 0
         }
+
     </style>
 
 </head>
@@ -143,9 +145,6 @@
     {{--<script src="{{ asset('porto-light/vendor/bootstrap-timepicker/bootstrap-timepicker.js') }}"></script>--}}
     {{--<script src="{{ asset('porto-light/vendor/bootstrap-daterangepicker/daterangepicker.js') }}"></script>--}}
 
-    <!-- Theme Custom -->
-    <script src="{{asset('porto-light/js/custom.js')}}"></script>
-
     <!-- Theme Initialization Files -->
     {{-- <script src="{{asset('porto-light/js/theme.init.js')}}"></script> --}}
 
@@ -157,8 +156,11 @@
     <script src="{{ asset('js/app.js') }}"></script>
     <!-- Theme Base, Components and Settings -->
     <script src="{{asset('porto-light/js/theme.js')}}"></script>
+
+    <!-- Theme Custom -->
+    <script src="{{asset('porto-light/js/custom.js')}}"></script>
     <script>
-     
+
     </script>
     <!-- <script src="//code.tidio.co/1vliqewz9v7tfosw5wxiktpkgblrws5w.js"></script> -->
 </body>

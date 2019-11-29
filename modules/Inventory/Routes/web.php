@@ -4,7 +4,7 @@ $hostname = app(Hyn\Tenancy\Contracts\CurrentHostname::class);
 
 if($hostname) {
     Route::domain($hostname->fqdn)->group(function () {
-        Route::middleware(['auth', 'redirect.module'])->group(function() {
+        Route::middleware(['auth', 'redirect.module', 'locked.tenant'])->group(function() {
             // Config inventory
 
             Route::prefix('warehouses')->group(function () {
@@ -22,11 +22,13 @@ if($hostname) {
                 Route::get('records', 'InventoryController@records');
                 Route::get('columns', 'InventoryController@columns');
                 Route::get('tables', 'InventoryController@tables');
+                Route::get('tables/transaction/{type}', 'InventoryController@tables_transaction');
                 Route::get('record/{inventory}', 'InventoryController@record');
                 Route::post('/', 'InventoryController@store');
+                Route::post('/transaction', 'InventoryController@store_transaction');
                 Route::post('move', 'InventoryController@move');
                 Route::post('remove', 'InventoryController@remove');
-                Route::get('initialize', 'InventoryController@initialize'); 
+                Route::get('initialize', 'InventoryController@initialize');
             });
 
             Route::prefix('reports')->group(function () {
@@ -40,10 +42,10 @@ if($hostname) {
                 Route::post('kardex/pdf', 'ReportKardexController@pdf')->name('reports.kardex.pdf');
                 Route::post('kardex/excel', 'ReportKardexController@excel')->name('reports.kardex.report_excel');
             });
- 
+
 
             Route::prefix('inventories')->group(function () {
-                
+
                 Route::get('configuration', 'InventoryConfigurationController@index')->name('tenant.inventories.configuration.index');
                 Route::get('configuration/record', 'InventoryConfigurationController@record');
                 Route::post('configuration', 'InventoryConfigurationController@store');

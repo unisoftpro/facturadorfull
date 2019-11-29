@@ -1,13 +1,13 @@
 <template>
-    <el-dialog :title="titleDialog" :visible="showDialog" @close="close" @open="create">
+    <el-dialog :title="titleDialog" :visible="showDialog" @close="close" @open="create" :close-on-click-modal="false">
         <form autocomplete="off" @submit.prevent="submit">
             <div class="form-body">
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group" :class="{'has-danger': errors.number}">
                             <label class="control-label">RUC</label>
-                            <el-input v-model="form.number" :maxlength="11" dusk="number">
-                                <el-button type="primary" slot="append" :loading="loading_search" icon="el-icon-search" @click.prevent="searchSunat">
+                            <el-input :disabled="form.is_update" v-model="form.number" :maxlength="11" dusk="number">
+                                <el-button :disabled="form.is_update" type="primary" slot="append" :loading="loading_search" icon="el-icon-search" @click.prevent="searchSunat">
                                     SUNAT
                                 </el-button>
                             </el-input>
@@ -20,16 +20,21 @@
                         <!--</div>-->
                     </div>
                     <div class="col-md-6">
+
                         <div class="form-group" :class="{'has-danger': errors.name}">
                             <label class="control-label">Nombre de la Empresa</label>
-                            <el-input v-model="form.name" dusk="name"></el-input>
+                            <el-input :disabled="form.is_update" v-model="form.name" dusk="name"></el-input>
                             <small class="form-control-feedback" v-if="errors.name" v-text="errors.name[0]"></small>
                         </div>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-6">
-                        <div class="form-group" :class="{'has-danger': (errors.subdomain || errors.uuid)}">
+                        <div v-if="form.is_update" class="form-group" :class="{'has-danger': (errors.subdomain || errors.uuid)}">
+                            <label class="control-label">Nombre de Subdominio</label>
+                            <el-input :disabled="form.is_update" v-model="form.hostname" dusk="name"></el-input>
+                        </div>
+                        <div v-else class="form-group" :class="{'has-danger': (errors.subdomain || errors.uuid)}">
                             <label class="control-label">Nombre de Subdominio</label>
                             <el-input v-model="form.subdomain" dusk="subdomain">
                                 <template slot="append">{{ url_base }}</template>
@@ -41,17 +46,17 @@
                     <div class="col-md-6">
                         <div class="form-group" :class="{'has-danger': errors.email}">
                             <label class="control-label">Correo de Acceso</label>
-                            <el-input v-model="form.email" dusk="email"></el-input>
+                            <el-input :disabled="form.is_update" v-model="form.email" dusk="email"></el-input>
                             <small class="form-control-feedback" v-if="errors.email" v-text="errors.email[0]"></small>
                         </div>
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-6" v-if="!form.is_update">
                         <div class="form-group" :class="{'has-danger': (errors.password)}">
                             <label class="control-label">Contraseña</label>
-                            <el-input type="password" v-model="form.password" dusk="password"></el-input>
-                            <small class="form-control-feedback" v-if="errors.password" v-text="errors.password[0]"></small> 
+                            <el-input type="password" :disabled="form.is_update" v-model="form.password" dusk="password"></el-input>
+                            <small class="form-control-feedback" v-if="errors.password" v-text="errors.password[0]"></small>
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -62,13 +67,12 @@
                             </el-select>
                             <small class="form-control-feedback" v-if="errors.plan_id" v-text="errors.plan_id[0]"></small>
                         </div>
-                    </div>                   
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group" :class="{'has-danger': errors.type}">
+                    </div>
+
+                    <div class="col-md-6" v-if="!form.is_update">
+                        <div  class="form-group" :class="{'has-danger': errors.type}">
                             <label class="control-label">Perfil</label>
-                            <el-select v-model="form.type">
+                            <el-select :disabled="form.is_update" v-model="form.type">
                                 <el-option v-for="option in types" :key="option.type" :value="option.type" :label="option.description"></el-option>
                             </el-select>
                             <small class="form-control-feedback" v-if="errors.type" v-text="errors.type[0]"></small>
@@ -76,25 +80,41 @@
                     </div>
                     <div class="col-md-6 center-el-checkbox mt-4">
                         <div class="form-group" :class="{'has-danger': errors.locked_emission}">
-                            <el-checkbox v-model="form.locked_emission">Limitar emisión de documentos</el-checkbox><br>
+                            <el-checkbox :disabled="form.is_update" v-model="form.locked_emission">Limitar emisión de documentos</el-checkbox><br>
                             <small class="form-control-feedback" v-if="errors.locked_emission" v-text="errors.locked_emission[0]"></small>
                         </div>
-                    </div> 
+                    </div>
+
+
                 </div>
-                <div class="row"> 
+                <div class="row">
+                </div>
+                <div class="row mt-2">
+                    <div class="col-md-12" >
+                        <div class="form-group">
+                            <label class="control-label">Módulos</label>
+                            <div class="row">
+                                <div class="col-4" v-for="(module,ind) in form.modules" :key="ind">
+                                    <el-checkbox v-model="module.checked">{{ module.description }}</el-checkbox>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
                     <div class="col-md-6 center-el-checkbox mt-4">
                         <div class="form-group" :class="{'has-danger': errors.import_documents}">
                             <el-checkbox v-model="form.import_documents">Importador de documentos</el-checkbox><br>
                             <small class="form-control-feedback" v-if="errors.import_documents" v-text="errors.import_documents[0]"></small>
                         </div>
-                    </div> 
+                    </div>
                 </div>
             </div>
             <div class="form-actions text-right pt-2">
                 <el-button @click.prevent="close()">Cancelar</el-button>
                 <el-button type="primary" native-type="submit" :loading="loading_submit" dusk="submit">
                     <template v-if="loading_submit">
-                        Creando base de datos...
+                        {{button_text}}
                     </template>
                     <template v-else>
                         Guardar
@@ -118,22 +138,28 @@
                 loading_submit: false,
                 loading_search: false,
                 titleDialog: null,
+                button_text:null,
                 resource: 'clients',
                 error: {},
+                errors: {},
                 form: {},
                 url_base: null,
                 plans:[],
+                modules: [],
                 types:[],
             }
         },
-        created() {
-            this.initForm()
-            this.$http.get(`/${this.resource}/tables`)
+        async created() {
+            await this.$http.get(`/${this.resource}/tables`)
                 .then(response => {
                     this.url_base = response.data.url_base
                     this.plans = response.data.plans
+                    this.modules = response.data.modules
                     this.types = response.data.types
                 })
+
+            await this.initForm()
+
         },
         methods: {
             initForm() {
@@ -148,18 +174,50 @@
                     plan_id:null,
                     locked_emission:false,
                     import_documents:false,
-                    type:null
+                    type:null,
+                    is_update:false,
+                    modules: []
                 }
+
+                this.modules.forEach(module => {
+                    this.form.modules.push({
+                        id: module.id,
+                        description: module.description,
+                        checked: true
+                    })
+                })
             },
             create() {
                 this.titleDialog = (this.recordId)? 'Editar Cliente':'Nuevo Cliente'
                 if (this.recordId) {
                     this.$http.get(`/${this.resource}/record/${this.recordId}`)
+                        .then(response => {
+                                this.form = response.data.data
+                                this.form.is_update = true
+                            })
                 }
             },
-            submit() {
+            hasModules(){
+
+                let modules_checked = 0
+                this.form.modules.forEach(module =>{
+                    if(module.checked){
+                        modules_checked++
+                    }
+                })
+
+                return (modules_checked > 0) ? true:false
+
+            },
+            async submit() {
+                // console.log(this.form)
+                let has_modules = await this.hasModules()
+                if(!has_modules)
+                    return this.$message.error('Debe seleccionar al menos un módulo')
+
+                this.button_text = (this.form.is_update) ? 'Actualizando cliente...':'Creando base de datos...'
                 this.loading_submit = true
-                this.$http.post(`${this.resource}`, this.form)
+                await this.$http.post(`${this.resource}${(this.form.is_update ? '/update' : '')}`, this.form)
                     .then(response => {
                         if (response.data.success) {
                             this.$message.success(response.data.message)

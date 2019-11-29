@@ -3,6 +3,7 @@
         <!-- <div class="card-header bg-info">
             <h3 class="my-0">Nuevo Comprobante</h3>
         </div> -->
+        
         <div class="tab-content"  v-if="company && establishment">
             <div class="invoice">
                 <header class="clearfix">
@@ -137,7 +138,7 @@
                                         <tbody v-if="form.items.length > 0">
                                             <tr v-for="(row, index) in form.items">
                                                 <td>{{ index + 1 }}</td>
-                                                <td>{{ row.item.description }}<br/><small>{{ row.affectation_igv_type.description }}</small></td>
+                                                <td>{{ row.item.description }} <template v-if="row.item.presentation">{{row.item.presentation.hasOwnProperty('description') ? row.item.presentation.description : ''}}</template><br/><small>{{ row.affectation_igv_type.description }}</small></td>
                                                 <td class="text-center">{{ row.item.unit_type_id }}</td>
                                                 <td class="text-right">{{ row.quantity }}</td>
                                                 <td class="text-right">{{ currency_type.symbol }} {{ row.unit_price }}</td>
@@ -145,7 +146,14 @@
                                                 <!--<td class="text-right">{{ currency_type.symbol }} {{ row.total_charge }}</td>-->
                                                 <td class="text-right">{{ currency_type.symbol }} {{ row.total }}</td>
                                                 <td class="text-right">
-                                                    <button type="button" class="btn waves-effect waves-light btn-xs btn-danger" @click.prevent="clickRemoveItem(index)">x</button>
+                                                     
+                                                    <template v-if="row.id">
+                                                        <button type="button" class="btn waves-effect waves-light btn-xs btn-danger" @click.prevent="clickDeleteSNItem(row.id, index)">x</button>
+                                                    </template>
+                                                    <template v-else>
+                                                        <button type="button" class="btn waves-effect waves-light btn-xs btn-danger" @click.prevent="clickRemoveItem(index)">x</button>
+                                                    </template>
+
                                                 </td>
                                             </tr>
                                             <tr><td colspan="8"></td></tr>
@@ -264,18 +272,54 @@
                 this.reloadDataCustomers(customer_id)
             })
 
-            if (this.id) {
-                // console.log(this.id);
-                await this.$http.get(`/${this.resource}/record2/${this.id}`)
-                    .then(response => {
-                        this.form = response.data.data;
-//                        this.filterProvinces();
-//                        this.filterDistricts();
-                    })
-            }
+            this.isUpdate()
+            
         },
         methods: {
+            async clickDeleteSNItem(id, index){
+                
+                await this.$http.delete(`/${this.resource}/destroy_sale_note_item/${id}`)
+                    .then(res => { 
+                        this.clickRemoveItem(index)
+                    })
+                    .catch(error => {
+                        if (error.response.status === 500) {
+                            this.$message.error('Error al intentar eliminar');
+                        } else {
+                            console.log(error.response.data.message)
+                        }
+                    })
 
+                await this.$http.post(`/${this.resource}`, this.form).then(response => {
+                    if (response.data.success) {
+                        this.isUpdate()
+                    }
+                    else {
+                        this.$message.error(response.data.message);
+                    }
+                }).catch(error => {
+                    if (error.response.status === 422) {
+                        this.errors = error.response.data;
+                    }
+                    else {
+                        this.$message.error(error.response.data.message);
+                    }
+                })
+
+            },
+            async isUpdate(){
+
+                if (this.id) {
+                    // console.log(this.id);
+                    await this.$http.get(`/${this.resource}/record2/${this.id}`)
+                        .then(response => {
+                            this.form = response.data.data;
+    //                        this.filterProvinces();
+    //                        this.filterDistricts();
+                        })
+                }
+
+            },
             clickAddPayment() {
                 this.form.payments.push({
                     id: null,
@@ -381,7 +425,8 @@
                 this.customers = this.all_customers
             }, 
             addRow(row) {
-                this.form.items.push(row)
+                // this.form.items.push(row)
+                this.form.items.push(JSON.parse(JSON.stringify(row)));
                 this.calculateTotal()
             },
             clickRemoveItem(index) {
@@ -462,6 +507,7 @@
                         this.resetForm();
                         this.saleNotesNewId = response.data.data.id;
                         this.showDialogOptions = true;
+                        this.isUpdate()
 
                     }
                     else {

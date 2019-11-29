@@ -31,17 +31,16 @@ class Person extends ModelTenant
         'state',
         'condition',
         'percentage_perception',
-
     ];
 
-    protected static function boot()
-    {
-        parent::boot();
+    // protected static function boot()
+    // {
+    //     parent::boot();
 
-        static::addGlobalScope('active', function (Builder $builder) {
-            $builder->where('status', 1);
-        });
-    }
+    //     static::addGlobalScope('active', function (Builder $builder) {
+    //         $builder->where('status', 1);
+    //     });
+    // }
 
     public function identity_document_type()
     {

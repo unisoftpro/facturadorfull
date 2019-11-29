@@ -46,6 +46,29 @@
                                 <div class="sub-title text-danger"><small>Se recomienda resoluciones 700x300</small></div>
                             </div>
                         </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="control-label">Logo Tienda Virtual</label>
+                                <el-input v-model="form.logo_store" :readonly="true">
+                                    <el-upload slot="append"
+                                               :headers="headers"
+                                               :data="{'type': 'logo_store'}"
+                                               action="/companies/uploads"
+                                               :show-file-list="false"
+                                               :on-success="successUpload">
+                                        <el-button type="primary" icon="el-icon-upload"></el-button>
+                                    </el-upload>
+                                </el-input>
+                                <div class="sub-title text-danger"><small>Se recomienda resoluciones 700x300</small></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group" :class="{'has-danger': errors.detraction_account}">
+                                <label class="control-label">N° Cuenta de detracción</label>
+                                <el-input v-model="form.detraction_account"></el-input>
+                                <small class="form-control-feedback" v-if="errors.detraction_account" v-text="errors.detraction_account[0]"></small>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="row">
@@ -159,6 +182,9 @@
                     soap_url: null,
                     certificate: null,
                     logo: null,
+                    logo_store: null,
+                    detraction_account: null,
+
                 }
             },
             submit() {

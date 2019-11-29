@@ -4,18 +4,18 @@ $current_hostname = app(Hyn\Tenancy\Contracts\CurrentHostname::class);
 
 if($current_hostname) {
     Route::domain($current_hostname->fqdn)->group(function () {
-        Route::middleware(['auth', 'redirect.module'])->group(function () {
+        Route::middleware(['auth', 'redirect.module', 'locked.tenant'])->group(function () {
 
 
-            Route::prefix('reports')->group(function () { 
+            Route::prefix('reports')->group(function () {
 
-                
+
                 Route::get('purchases', 'ReportPurchaseController@index')->name('tenant.reports.purchases.index');
                 Route::get('purchases/pdf', 'ReportPurchaseController@pdf')->name('tenant.reports.purchases.pdf');
                 Route::get('purchases/excel', 'ReportPurchaseController@excel')->name('tenant.reports.purchases.excel');
                 Route::get('purchases/filter', 'ReportPurchaseController@filter')->name('tenant.reports.purchases.filter');
                 Route::get('purchases/records', 'ReportPurchaseController@records')->name('tenant.reports.purchases.records');
- 
+
                 Route::get('sales', 'ReportDocumentController@index')->name('tenant.reports.sales.index');
                 Route::get('sales/pdf', 'ReportDocumentController@pdf')->name('tenant.reports.sales.pdf');
                 Route::get('sales/excel', 'ReportDocumentController@excel')->name('tenant.reports.sales.excel');
@@ -33,12 +33,28 @@ if($current_hostname) {
                 Route::get('quotations/excel', 'ReportQuotationController@excel')->name('tenant.reports.quotations.excel');
                 Route::get('quotations/filter', 'ReportQuotationController@filter')->name('tenant.reports.quotations.filter');
                 Route::get('quotations/records', 'ReportQuotationController@records')->name('tenant.reports.quotations.records');
-                
+
                 Route::get('cash', 'ReportCashController@index')->name('tenant.reports.cash.index');
                 Route::get('cash/pdf', 'ReportCashController@pdf')->name('tenant.reports.cash.pdf');
                 Route::get('cash/excel', 'ReportCashController@excel')->name('tenant.reports.cash.excel');
                 Route::get('cash/filter', 'ReportCashController@filter')->name('tenant.reports.cash.filter');
                 Route::get('cash/records', 'ReportCashController@records')->name('tenant.reports.cash.records');
+
+
+
+                Route::get('document-hotels', 'ReportDocumentHotelController@index')->name('tenant.reports.document_hotels.index');
+                Route::get('document-hotels/pdf', 'ReportDocumentHotelController@pdf')->name('tenant.reports.document_hotels.pdf');
+                Route::get('document-hotels/excel', 'ReportDocumentHotelController@excel')->name('tenant.reports.document_hotels.excel');
+                Route::get('document-hotels/filter', 'ReportDocumentHotelController@filter')->name('tenant.reports.document_hotels.filter');
+                Route::get('document-hotels/records', 'ReportDocumentHotelController@records')->name('tenant.reports.document_hotels.records');
+
+                Route::get('no_paid/excel', 'ReportUnpaidController@excel')->name('tenant.reports.no_paid.excel');
+
+                Route::get('document-detractions', 'ReportDocumentDetractionController@index')->name('tenant.reports.document_detractions.index');
+                Route::get('document-detractions/pdf', 'ReportDocumentDetractionController@pdf')->name('tenant.reports.document_detractions.pdf');
+                Route::get('document-detractions/excel', 'ReportDocumentDetractionController@excel')->name('tenant.reports.document_detractions.excel');
+                Route::get('document-detractions/filter', 'ReportDocumentDetractionController@filter')->name('tenant.reports.document_detractions.filter');
+                Route::get('document-detractions/records', 'ReportDocumentDetractionController@records')->name('tenant.reports.document_hotels.records');
 
             });
 

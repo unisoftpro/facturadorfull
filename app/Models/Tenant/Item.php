@@ -7,10 +7,12 @@ use App\Models\Tenant\Catalogs\CurrencyType;
 use App\Models\Tenant\Catalogs\SystemIscType;
 use App\Models\Tenant\Catalogs\UnitType;
 use Modules\Account\Models\Account;
+use Modules\Item\Models\Category;
+use Modules\Item\Models\Brand;
 
 class Item extends ModelTenant
 {
-    protected $with = ['item_type', 'unit_type', 'currency_type', 'warehouses','item_unit_types'];
+    protected $with = ['item_type', 'unit_type', 'currency_type', 'warehouses','item_unit_types', 'tags'];
     protected $fillable = [
         'warehouse_id',
         'name',
@@ -42,20 +44,28 @@ class Item extends ModelTenant
         'has_perception',        
         'percentage_perception',        
         'image',
+        'image_medium',
+        'image_small',
+
         'account_id',
         'amount_plastic_bag_taxes',
         'date_of_due',
+        'is_set',
+        'sale_unit_price_set',
+        'apply_store',
+        'brand_id',
+        'category_id',
         // 'warehouse_id'
     ];
 
-     protected static function boot()
-    {
-        parent::boot();
+    //  protected static function boot()
+    // {
+    //     parent::boot();
 
-        static::addGlobalScope('active', function (Builder $builder) {
-            $builder->where('status', 1);
-        });
-    }
+    //     static::addGlobalScope('active', function (Builder $builder) {
+    //         $builder->where('status', 1);
+    //     });
+    // }
 
     public function getAttributesAttribute($value)
     {
@@ -135,15 +145,27 @@ class Item extends ModelTenant
         return ($user->type == 'seller') ? $this->scopeWhereWarehouse($query) : null; 
     }
 
+    public function scopeWhereNotIsSet($query)
+    {
+        return $query->where('is_set', false); 
+    }
+
+    public function scopeWhereIsSet($query)
+    {
+        return $query->where('is_set', true); 
+    }
+
     public function getStockByWarehouse()
     {
-        $establishment_id = auth()->user()->establishment_id;
-        $warehouse = Warehouse::where('establishment_id', $establishment_id)->first();
-
-        if ($warehouse) {
-            $item_warehouse = $this->warehouses->where('warehouse_id',$warehouse->id)->first();
-            return ($item_warehouse) ? $item_warehouse->stock : 0;
-        } 
+        if(auth()->user())
+        {
+            $establishment_id = auth()->user()->establishment_id;
+            $warehouse = Warehouse::where('establishment_id', $establishment_id)->first();
+            if ($warehouse) {
+                $item_warehouse = $this->warehouses->where('warehouse_id',$warehouse->id)->first();
+                return ($item_warehouse) ? $item_warehouse->stock : 0;
+            } 
+        }
         
         return 0;
     }
@@ -158,4 +180,25 @@ class Item extends ModelTenant
     {
         return $this->hasMany(ItemUnitType::class);
     }
+
+    public function tags()
+    {
+        return $this->hasMany(ItemTag::class);
+    }
+    
+    public function sets()
+    {
+        return $this->hasMany(ItemSet::class);
+    }
+    
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class);
+    }
+    
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
 }

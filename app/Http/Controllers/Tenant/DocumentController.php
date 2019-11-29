@@ -21,10 +21,13 @@ use App\Models\Tenant\Catalogs\OperationType;
 use App\Models\Tenant\Catalogs\PriceType;
 use App\Models\Tenant\Catalogs\SystemIscType;
 use App\Models\Tenant\Catalogs\AttributeType;
+use App\Models\Tenant\Catalogs\DetractionType;
+use App\Models\Tenant\Catalogs\PaymentMethodType as CatPaymentMethodType;
 use App\Models\Tenant\Company;
 use App\Models\Tenant\Configuration;
 use App\Models\Tenant\Document;
 use App\Models\Tenant\Establishment;
+use App\Models\Tenant\StateType;
 use App\Models\Tenant\PaymentMethodType;
 use App\Models\Tenant\Item;
 use App\Models\Tenant\Person;
@@ -39,11 +42,14 @@ use Illuminate\Http\Request;
 use Nexmo\Account\Price;
 use Illuminate\Support\Facades\Cache;
 use App\Imports\DocumentsImport;
+use App\Imports\DocumentsImportTwoFormat;
 use Maatwebsite\Excel\Excel;
+use Modules\BusinessTurn\Models\BusinessTurn;
+use App\Traits\OfflineTrait;
 
 class DocumentController extends Controller
 {
-    use StorageDocument;
+    use StorageDocument, OfflineTrait;
 
     public function __construct()
     {
@@ -52,15 +58,15 @@ class DocumentController extends Controller
 
     public function index()
     {
-        $is_client = config('tenant.is_client');
+        $is_client = $this->getIsClient();
         $import_documents = config('tenant.import_documents');
+        $import_documents_second = config('tenant.import_documents_second_format');
 
-        return view('tenant.documents.index', compact('is_client','import_documents'));
+        return view('tenant.documents.index', compact('is_client','import_documents','import_documents_second'));
     }
 
     public function columns()
     {
-        //return 'sd';
         return [
             'number' => 'Número',
             'date_of_issue' => 'Fecha de emisión'
@@ -69,7 +75,7 @@ class DocumentController extends Controller
 
     public function records(Request $request)
     {
-        
+
         $records = $this->getRecords($request);
 
         return new DocumentCollection($records->paginate(config('tenant.items_per_page')));
@@ -95,12 +101,12 @@ class DocumentController extends Controller
                                     'identity_document_type_id' => $row->identity_document_type_id,
                                     'identity_document_type_code' => $row->identity_document_type->code
                                 ];
-                            }); 
+                            });
 
         return compact('customers');
     }
 
- 
+
     public function create()
     {
         if(auth()->user()->type == 'integrator')
@@ -118,11 +124,12 @@ class DocumentController extends Controller
         $is_contingency = 0;
         return view('tenant.documents.form_tensu', compact('is_contingency'));
     }
-    
+
 
     public function tables()
     {
         $customers = $this->table('customers');
+        $prepayment_documents = $this->table('prepayment_documents');
         $establishments = Establishment::where('id', auth()->user()->establishment_id)->get();// Establishment::all();
         $series = collect(Series::all())->transform(function($row) {
             return [
@@ -144,9 +151,13 @@ class DocumentController extends Controller
         $company = Company::active();
         $document_type_03_filter = config('tenant.document_type_03_filter');
         $document_types_guide = DocumentType::whereIn('id', ['09', '31'])->get();
-        $user = \auth()->user();
+        $user = auth()->user()->type;
         $payment_method_types = PaymentMethodType::all();
+        $business_turns = BusinessTurn::where('active', true)->get();
         $enabled_discount_global = config('tenant.enabled_discount_global');
+        $is_client = $this->getIsClient();
+        $cat_payment_method_types = CatPaymentMethodType::whereActive()->get();
+        $detraction_types = DetractionType::whereActive()->get();
 
 //        return compact('customers', 'establishments', 'series', 'document_types_invoice', 'document_types_note',
 //                       'note_credit_types', 'note_debit_types', 'currency_types', 'operation_types',
@@ -157,11 +168,12 @@ class DocumentController extends Controller
         //                'note_credit_types', 'note_debit_types', 'currency_types', 'operation_types',
         //                'discount_types', 'charge_types', 'company', 'document_type_03_filter');
 
-                       
+
         return compact( 'customers','establishments', 'series', 'document_types_invoice', 'document_types_note',
                         'note_credit_types', 'note_debit_types', 'currency_types', 'operation_types',
                         'discount_types', 'charge_types', 'company', 'document_type_03_filter',
-                        'document_types_guide', 'user','payment_method_types','enabled_discount_global');
+                        'document_types_guide', 'user','payment_method_types','enabled_discount_global',
+                        'business_turns','prepayment_documents','is_client','cat_payment_method_types','detraction_types');
 
     }
 
@@ -176,9 +188,10 @@ class DocumentController extends Controller
         $discount_types = ChargeDiscountType::whereType('discount')->whereLevel('item')->get();
         $charge_types = ChargeDiscountType::whereType('charge')->whereLevel('item')->get();
         $attribute_types = AttributeType::whereActive()->orderByDescription()->get();
+        $is_client = $this->getIsClient();
 
         return compact('items', 'categories', 'affectation_igv_types', 'system_isc_types', 'price_types',
-                       'operation_types', 'discount_types', 'charge_types', 'attribute_types');
+                       'operation_types', 'discount_types', 'charge_types', 'attribute_types','is_client');
     }
 
     public function table($table)
@@ -196,13 +209,31 @@ class DocumentController extends Controller
             });
             return $customers;
         }
+
+        if ($table === 'prepayment_documents') {
+            $prepayment_documents = Document::whereHasPrepayment()->get()->transform(function($row) {
+                return [
+                    'id' => $row->id,
+                    'description' => $row->series.'-'.$row->number,
+                    'series' => $row->series,
+                    'number' => $row->number,
+                    'document_type_id' => ($row->document_type_id == '01') ? '02':'03',
+                    'amount' => $row->total_value,
+                    'total' => $row->total,
+
+                ];
+            });
+            return $prepayment_documents;
+        }
+
         if ($table === 'items') {
-            $items = Item::whereWarehouse()->orderBy('description')->get();
+            $items = Item::whereWarehouse()->whereNotIsSet()->orderBy('description')->get();
             return collect($items)->transform(function($row) {
-                $full_description = ($row->internal_id)?$row->internal_id.' - '.$row->description:$row->description;
+                $full_description = $this->getFullDescription($row);
                 return [
                     'id' => $row->id,
                     'full_description' => $full_description,
+                    'internal_id' => $row->internal_id,
                     'description' => $row->description,
                     'currency_type_id' => $row->currency_type_id,
                     'currency_type_symbol' => $row->currency_type->symbol,
@@ -226,13 +257,13 @@ class DocumentController extends Controller
                             'price3' => $row->price3,
                             'price_default' => $row->price_default,
                         ];
+                    }),
+                    'warehouses' => collect($row->warehouses)->transform(function($row) {
+                        return [
+                            'warehouse_description' => $row->warehouse->description,
+                            'stock' => $row->stock,
+                        ];
                     })
-                    // 'warehouses' => collect($row->warehouses)->transform(function($row) {
-                    //     return [
-                    //         'warehouse_description' => $row->warehouse->description,
-                    //         'stock' => $row->stock,
-                    //     ];
-                    // })
                 ];
             });
 //            return $items;
@@ -240,6 +271,18 @@ class DocumentController extends Controller
 
         return [];
     }
+
+    public function getFullDescription($row){
+
+        $desc = ($row->internal_id)?$row->internal_id.' - '.$row->description : $row->description;
+        $category = ($row->category) ? " - {$row->category->name}" : "";
+        $brand = ($row->brand) ? " - {$row->brand->name}" : "";
+
+        $desc = "{$desc} {$category} {$brand}";
+
+        return $desc;
+    }
+
 
     public function record($id)
     {
@@ -323,10 +366,10 @@ class DocumentController extends Controller
             'success' => true
         ];
     }
-    
+
     public function send($document_id) {
         $document = Document::find($document_id);
-        
+
         $fact = DB::connection('tenant')->transaction(function () use ($document) {
             $facturalo = new Facturalo();
             $facturalo->setDocument($document);
@@ -334,15 +377,15 @@ class DocumentController extends Controller
             $facturalo->onlySenderXmlSignedBill();
             return $facturalo;
         });
-        
+
         $response = $fact->getResponse();
-        
+
         return [
             'success' => true,
             'message' => $response['description'],
         ];
     }
-    
+
     public function consultCdr($document_id)
     {
         $document = Document::find($document_id);
@@ -360,23 +403,27 @@ class DocumentController extends Controller
             'message' => $response['description'],
         ];
     }
-    
+
     public function sendServer($document_id, $query = false) {
         $document = Document::find($document_id);
-        $bearer = config('tenant.token_server');
-        $api_url = config('tenant.url_server');
-        $client = new Client(['base_uri' => $api_url]);
-        
+        // $bearer = config('tenant.token_server');
+        // $api_url = config('tenant.url_server');
+        $bearer = $this->getTokenServer();
+        $api_url = $this->getUrlServer();
+        $client = new Client(['base_uri' => $api_url, 'verify' => false]);
+
        // $zipFly = new ZipFly();
-       
+        if(!$document->data_json) throw new Exception("Campo data_json nulo o inválido - Comprobante: {$document->fullnumber}");
+
         $data_json = (array) $document->data_json;
+        $data_json['numero_documento'] = $document->number;
         $data_json['external_id'] = $document->external_id;
         $data_json['hash'] = $document->hash;
         $data_json['qr'] = $document->qr;
         $data_json['query'] = $query;
         $data_json['file_xml_signed'] = base64_encode($this->getStorage($document->filename, 'signed'));
         $data_json['file_pdf'] = base64_encode($this->getStorage($document->filename, 'pdf'));
-        
+        // dd($data_json);
         $res = $client->post('/api/documents_server', [
             'http_errors' => false,
             'headers' => [
@@ -385,51 +432,51 @@ class DocumentController extends Controller
             ],
             'form_params' => $data_json
         ]);
-        
+
         $response = json_decode($res->getBody()->getContents(), true);
-        
+
         if ($response['success']) {
             $document->send_server = true;
             $document->save();
         }
-        
+
         return $response;
     }
-    
+
     public function checkServer($document_id) {
         $document = Document::find($document_id);
-        $bearer = config('tenant.token_server');
-        $api_url = config('tenant.url_server');
-        
-        $client = new Client(['base_uri' => $api_url]);
-        
+        $bearer = $this->getTokenServer();
+        $api_url = $this->getUrlServer();
+
+        $client = new Client(['base_uri' => $api_url, 'verify' => false]);
+
         $res = $client->get('/api/document_check_server/'.$document->external_id, [
             'headers' => [
                 'Authorization' => 'Bearer '.$bearer,
                 'Accept' => 'application/json',
             ],
         ]);
-        
+
         $response = json_decode($res->getBody()->getContents(), true);
-        
+
         if ($response['success']) {
             $state_type_id = $response['state_type_id'];
             $document->state_type_id = $state_type_id;
             $document->save();
-            
+
             if ($state_type_id === '05') {
                 $this->uploadStorage($document->filename, base64_decode($response['file_cdr']), 'cdr');
             }
         }
-        
+
         return $response;
     }
 
     public function searchCustomerById($id)
-    {        
-   
+    {
+
         $customers = Person::whereType('customers')
-                    ->where('id',$id) 
+                    ->where('id',$id)
                     ->get()->transform(function($row) {
                         return [
                             'id' => $row->id,
@@ -439,14 +486,14 @@ class DocumentController extends Controller
                             'identity_document_type_id' => $row->identity_document_type_id,
                             'identity_document_type_code' => $row->identity_document_type->code
                         ];
-                    }); 
+                    });
 
         return compact('customers');
     }
 
     public function getIdentityDocumentTypeId($document_type_id, $operation_type_id){
 
-        if($operation_type_id === '0101') {
+        if($operation_type_id === '0101' || $operation_type_id === '1001') {
             if($document_type_id == '01'){
                 $identity_document_type_id = [6];
             }else{
@@ -502,17 +549,43 @@ class DocumentController extends Controller
         ];
     }
 
+    public function importTwoFormat(Request $request)
+    {
+        if ($request->hasFile('file')) {
+            try {
+                $import = new DocumentsImportTwoFormat();
+                $import->import($request->file('file'), null, Excel::XLSX);
+                $data = $import->getData();
+                return [
+                    'success' => true,
+                    'message' =>  __('app.actions.upload.success'),
+                    'data' => $data
+                ];
+            } catch (Exception $e) {
+                return [
+                    'success' => false,
+                    'message' =>  $e->getMessage()
+                ];
+            }
+        }
+        return [
+            'success' => false,
+            'message' =>  __('app.actions.upload.error'),
+        ];
+    }
+
     public function messageLockedEmission(){
 
         $configuration = Configuration::first();
-        $quantity_documents = Document::count();
+        // $quantity_documents = Document::count();
+        $quantity_documents = $configuration->quantity_documents;
 
         if($configuration->limit_documents !== 0 && ($quantity_documents > $configuration->limit_documents))
             return [
                 'success' => false,
                 'message' => 'Alcanzó el límite permitido para la emisión de comprobantes',
             ];
-                
+
 
         return [
             'success' => true,
@@ -527,15 +600,17 @@ class DocumentController extends Controller
         $d_start = $request->d_start;
         $date_of_issue = $request->date_of_issue;
         $document_type_id = $request->document_type_id;
+        $state_type_id = $request->state_type_id;
         $number = $request->number;
         $series = $request->series;
- 
+
 
         if($d_start && $d_end){
 
             $records = Document::where('document_type_id', 'like', '%' . $document_type_id . '%')
                             ->where('series', 'like', '%' . $series . '%')
                             ->where('number', 'like', '%' . $number . '%')
+                            ->where('state_type_id', 'like', '%' . $state_type_id . '%')
                             ->whereBetween('date_of_issue', [$d_start , $d_end])
                             ->whereTypeUser()
                             ->latest();
@@ -544,11 +619,12 @@ class DocumentController extends Controller
 
             $records = Document::where('date_of_issue', 'like', '%' . $date_of_issue . '%')
                             ->where('document_type_id', 'like', '%' . $document_type_id . '%')
+                            ->where('state_type_id', 'like', '%' . $state_type_id . '%')
                             ->where('series', 'like', '%' . $series . '%')
                             ->where('number', 'like', '%' . $number . '%')
                             ->whereTypeUser()
                             ->latest();
-        }        
+        }
 
         return $records;
 
@@ -556,16 +632,39 @@ class DocumentController extends Controller
 
     public function data_table()
     {
-        
-        // $customers = $this->table('customers'); 
-        $customers = []; 
+
+        // $customers = $this->table('customers');
+        $customers = [];
+        $state_types = StateType::get();
         $document_types = DocumentType::whereIn('id', ['01', '03','07', '08'])->get();
         // $series = Series::where('contingency', false)->whereIn('document_type_id', ['01', '03','07', '08'])->get();
         $series = Series::whereIn('document_type_id', ['01', '03','07', '08'])->get();
         $establishments = Establishment::where('id', auth()->user()->establishment_id)->get();// Establishment::all();
-                       
-        return compact( 'customers', 'document_types','series','establishments');
 
+        return compact( 'customers', 'document_types','series','establishments', 'state_types');
+
+    }
+
+    
+    public function destroyDocument($document_id)
+    {
+        try {
+            
+            $record = Document::findOrFail($document_id);
+            $record->delete();
+
+            return [
+                'success' => true,
+                'message' => 'Documento eliminado con éxito'
+            ];
+
+        } catch (Exception $e) {
+
+            return ($e->getCode() == '23000') ? ['success' => false,'message' => 'El Documento esta siendo usada por otros registros, no puede eliminar'] : ['success' => false,'message' => 'Error inesperado, no se pudo eliminar el Documento'];
+
+        }
+
+        
     }
 
 }

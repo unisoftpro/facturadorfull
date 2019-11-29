@@ -55,8 +55,9 @@ class PersonController extends Controller
         $districts = District::whereActive()->orderByDescription()->get();
         $identity_document_types = IdentityDocumentType::whereActive()->get();
         $locations = $this->getLocationCascade();
+        $api_service_token = config('configuration.api_service_token');
 
-        return compact('countries', 'departments', 'provinces', 'districts', 'identity_document_types', 'locations');
+        return compact('countries', 'departments', 'provinces', 'districts', 'identity_document_types', 'locations','api_service_token');
     }
 
     public function record($id)
@@ -87,15 +88,23 @@ class PersonController extends Controller
 
     public function destroy($id)
     {
-        $person = Person::findOrFail($id);
-        $person->delete();
-        $person->status = 0;
-        $person->save();
+        try {            
+            
+            $person = Person::findOrFail($id);
+            $person_type = ($person->type == 'customers') ? 'Cliente':'Proveedor';
+            $person->delete(); 
 
-        return [
-            'success' => true,
-            'message' => 'Cliente eliminado con éxito'
-        ];
+            return [
+                'success' => true,
+                'message' => $person_type.' eliminado con éxito'
+            ];
+
+        } catch (Exception $e) {
+
+            return ($e->getCode() == '23000') ? ['success' => false,'message' => "El {$person_type} esta siendo usado por otros registros, no puede eliminar"] : ['success' => false,'message' => "Error inesperado, no se pudo eliminar el {$person_type}"];
+
+        }
+        
     }
 
     public function import(Request $request)

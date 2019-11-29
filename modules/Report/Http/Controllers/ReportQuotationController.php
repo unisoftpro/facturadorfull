@@ -11,13 +11,13 @@ use App\Models\Tenant\Establishment;
 use App\Models\Tenant\Quotation;
 use App\Models\Tenant\Company;
 use Carbon\Carbon;
-use App\Http\Resources\Tenant\QuotationCollection;
+use Modules\Report\Http\Resources\QuotationCollection;
 
 class ReportQuotationController extends Controller
 {
 
-    use ReportTrait;   
-     
+    use ReportTrait;
+
     public function filter() {
 
         $document_types = [];
@@ -28,16 +28,16 @@ class ReportQuotationController extends Controller
                 'name' => $row->description
             ];
         });
-        
+
         return compact('document_types','establishments');
     }
-      
+
 
     public function index() {
-       
+
         return view('report::quotations.index');
     }
-   
+
     public function records(Request $request)
     {
         $records = $this->getRecords($request->all(), Quotation::class);
@@ -45,29 +45,29 @@ class ReportQuotationController extends Controller
         return new QuotationCollection($records->paginate(config('tenant.items_per_page')));
     }
 
- 
+
 
     public function pdf(Request $request) {
 
         $company = Company::first();
-        $establishment = ($request->establishment_id) ? Establishment::findOrFail($request->establishment_id) : auth()->user()->establishment; 
+        $establishment = ($request->establishment_id) ? Establishment::findOrFail($request->establishment_id) : auth()->user()->establishment;
         $records = $this->getRecords($request->all(), Quotation::class)->get();
-        
+
         $pdf = PDF::loadView('report::quotations.report_pdf', compact("records", "company", "establishment"));
 
         $filename = 'Reporte_Cotizaciones_'.date('YmdHis');
-        
+
         return $pdf->download($filename.'.pdf');
     }
-    
-  
-    
+
+
+
 
     public function excel(Request $request) {
-    
+
         $company = Company::first();
-        $establishment = ($request->establishment_id) ? Establishment::findOrFail($request->establishment_id) : auth()->user()->establishment; 
-        
+        $establishment = ($request->establishment_id) ? Establishment::findOrFail($request->establishment_id) : auth()->user()->establishment;
+
         $records = $this->getRecords($request->all(), Quotation::class)->get();
 
         return (new QuotationExport)

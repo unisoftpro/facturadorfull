@@ -57,6 +57,13 @@ class ItemRequest extends FormRequest
             'purchase_affectation_igv_type_id' => [
                 'required'
             ],
+            // 'category_id' => [
+            //     'required_if:is_set,false',
+            // ],
+            // 'brand_id' => [
+            //     'required_if:is_set,false',
+            // ],
+            
         ];
     }
 
@@ -64,6 +71,7 @@ class ItemRequest extends FormRequest
     {
         return [
             'description.required' => 'El campo nombre es obligatorio.',
+            'sale_unit_price.gt' => 'El precio unitario de venta debe ser mayor que 0.',
         ];
     }
 }

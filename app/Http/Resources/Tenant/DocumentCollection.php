@@ -21,14 +21,15 @@ class DocumentCollection extends ResourceCollection
             $btn_resend = false;
             $btn_voided = false;
             $btn_consult_cdr = false;
-            
+            $btn_delete_doc_type_03 = false;
+
             $affected_document = null;
-            
+
             if ($row->group_id === '01') {
                 if ($row->state_type_id === '01') {
                     $btn_resend = true;
                 }
-                
+
                 if ($row->state_type_id === '05') {
                     $has_cdr = true;
                     $btn_note = true;
@@ -36,7 +37,7 @@ class DocumentCollection extends ResourceCollection
                     $btn_voided = true;
                     $btn_consult_cdr = true;
                 }
-                
+
                 if(in_array($row->document_type_id, ['07', '08'])) {
                     $btn_note = false;
                 }
@@ -46,10 +47,19 @@ class DocumentCollection extends ResourceCollection
                     $btn_note = true;
                     $btn_voided = true;
                 }
-                
+
                 if (in_array($row->document_type_id, ['07', '08'])) {
                     $btn_note = false;
                 }
+
+                if($row->document_type_id === '03' && config('tenant.delete_document_type_03')){
+                    
+                    if ($row->state_type_id === '01' && $row->doesntHave('summary_document')) {
+                        $btn_delete_doc_type_03 = true;
+                    }
+
+                }
+                
             }
 
             $btn_recreate_document = config('tenant.recreate_document');
@@ -93,6 +103,7 @@ class DocumentCollection extends ResourceCollection
                 'btn_consult_cdr' => $btn_consult_cdr,
                 'btn_recreate_document' => $btn_recreate_document,
                 'btn_change_to_registered_status' => $btn_change_to_registered_status,
+                'btn_delete_doc_type_03' => $btn_delete_doc_type_03,
                 'send_server' => (bool) $row->send_server,
 //                'voided' => $voided,
                 'affected_document' => $affected_document,

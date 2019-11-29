@@ -6,11 +6,13 @@ use Modules\Inventory\Models\{
     ItemWarehouse,
     Warehouse,
     InventoryConfiguration,
+    InventoryTransaction,
     Inventory
 };
 use App\Models\Tenant\{
     Configuration,
     Establishment,
+    SaleNoteItem,
     Item
 };
 use Exception;
@@ -29,7 +31,7 @@ trait InventoryTrait
     }
     
     public function optionsItem() {
-        $records = Item::where('item_type_id', '01')->get();
+        $records = Item::where([['item_type_id', '01'], ['unit_type_id', '!=','ZZ']])->whereNotIsSet()->get();
         
         return collect($records)->transform(function($row) {
             return  [
@@ -37,6 +39,32 @@ trait InventoryTrait
                 'description' => $row->description
             ];
         });
+    }
+
+    
+    public function optionsItemFull() {
+        $records = Item::where([['item_type_id', '01'], ['unit_type_id', '!=','ZZ']])->whereNotIsSet()->get();
+        
+        return collect($records)->transform(function($row) {
+            return  [
+                'id' => $row->id,
+                'description' => ($row->internal_id) ? "{$row->internal_id} - {$row->description}" :$row->description
+            ];
+        });
+    }
+
+    public function findInventoryTransaction($id) {
+
+        return InventoryTransaction::findOrFail($id);
+        
+    }
+    
+
+    public function optionsInventoryTransaction($type) {
+
+        $records = InventoryTransaction::where('type', $type)->get();
+        
+        return $records;
     }
     
     public function optionsWarehouse() {
@@ -88,6 +116,7 @@ trait InventoryTrait
         ]);
     }
     
+
     private function updateStock($item_id, $quantity, $warehouse_id) {
 
         $inventory_configuration = InventoryConfiguration::firstOrFail();
@@ -136,4 +165,34 @@ trait InventoryTrait
     public function findWarehouseById($warehouse_id) {
         return Warehouse::findOrFail($warehouse_id);
     }
+
+    
+    ////kardex sale note
+    public function findSaleNoteItem($sale_note_item_id) {
+        return SaleNoteItem::find($sale_note_item_id);
+    }
+    
+    private function createInventoryKardexSaleNote($model, $item_id, $quantity, $warehouse_id, $sale_note_item_id) {
+
+        $sale_note_kardex = $model->inventory_kardex()->create([
+            'date_of_issue' => date('Y-m-d'),
+            'item_id' => $item_id,
+            'warehouse_id' => $warehouse_id,
+            'quantity' => $quantity,
+        ]);
+
+        $sale_note_item = $this->findSaleNoteItem($sale_note_item_id);
+        $sale_note_item->inventory_kardex_id = $sale_note_kardex->id;
+        $sale_note_item->update();
+    }
+
+    private function deleteInventoryKardex($model, $inventory_kardex_id) {
+        $model->inventory_kardex()->where('id',$inventory_kardex_id)->delete();
+    }
+    ////kardex sale note
+
+    private function deleteAllInventoryKardexByModel($model) {
+        $model->inventory_kardex()->delete();
+    }
+
 }

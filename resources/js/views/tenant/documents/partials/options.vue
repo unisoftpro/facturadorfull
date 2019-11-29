@@ -24,6 +24,9 @@
                     <i class="fa fa-receipt"></i>
                 </button>
             </div>
+            <div class="col-lg-12 col-md-12 col-sm-12 text-center font-weight-bold mt-4" v-if="form.image_detraction">
+                <a :href="`${this.form.image_detraction}`" download class="text-center font-weight-bold text-dark">Descargar constancia de pago - detracción</a>
+            </div>
         </div>
         <!-- <div class="row mt-4">
             <div class="col-lg-6 col-md-6 col-sm-12 text-center">
@@ -45,12 +48,12 @@
                 <small class="form-control-feedback" v-if="errors.customer_email" v-text="errors.customer_email[0]"></small>
             </div>
         </div>
-        <div class="row mt-4" v-if="company.soap_type_id == '02'">
+        <!-- <div class="row mt-4" v-if="company.soap_type_id == '02'">
             <div class="col-md-12 text-center">
                 <button type="button" class="btn waves-effect waves-light btn-outline-primary"
                         @click.prevent="clickConsultCdr(form.id)">Consultar CDR</button>
             </div>
-        </div>
+        </div> -->
         <span slot="footer" class="dialog-footer">
             <template v-if="showClose">
                 <el-button @click="clickClose">Cerrar</el-button>
@@ -94,6 +97,7 @@
                     download_pdf: null,
                     external_id: null,
                     number: null,
+                    image_detraction: null,
                     id: null
                 };
                 this.locked_emission = {
@@ -117,6 +121,9 @@
             },
             clickPrint(format){
                 window.open(`/print/document/${this.form.external_id}/${format}`, '_blank');
+            },
+            clickDownloadImage() {
+                window.open(`${this.form.image_detraction}`, '_blank');
             },
             clickDownload(format) {
                 window.open(`${this.form.download_pdf}/${format}`, '_blank');
