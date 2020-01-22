@@ -116,17 +116,25 @@ function calculateRowItem(row_old, currency_type_id_new, exchange_rate_sale) {
     //     row.discounts.splice(index, discount)
     // })
 
+    let total_unit_price_value_partial = unit_price * row.quantity
+    let aux_initial_total_value_partial = total_value_partial
+
+
     row.discounts.forEach((discount, index) => {
 
+        total_value_partial = (discount.discount_type_id === '01') ? total_unit_price_value_partial : total_value_partial
+        
         if(discount.is_amount){
 
             discount.base = _.round(total_value_partial, 2)            
+            // discount.base = d_base            
+            
             //amount and percentage are equals in input
             discount.amount = _.round(discount.percentage, 2)
             
             discount.percentage =  _.round(100 * (parseFloat(discount.amount) / parseFloat(discount.base)),2)
 
-            discount.factor = _.round(discount.percentage / 100, 2)
+            discount.factor = _.round(discount.percentage / 100, 4)
 
             if (discount.discount_type.base) {
                 discount_base += discount.amount
@@ -139,6 +147,8 @@ function calculateRowItem(row_old, currency_type_id_new, exchange_rate_sale) {
             discount.percentage = parseFloat(discount.percentage)
             discount.factor = discount.percentage / 100
             discount.base = _.round(total_value_partial, 2)
+            // discount.base = d_base            
+            
             discount.amount = _.round(discount.base * discount.factor, 2)
             if (discount.discount_type.base) {
                 discount_base += discount.amount
@@ -147,12 +157,25 @@ function calculateRowItem(row_old, currency_type_id_new, exchange_rate_sale) {
             }
 
         }
+
+        let aux_total_v_partial = total_value_partial - discount_base - discount_no_base
+        
+        if(discount.discount_type_id === '01') {
+
+            total_value_partial = aux_total_v_partial / (1 + percentage_igv / 100)
+        }
+        else{
+
+            total_value_partial = aux_total_v_partial
+        }
         
         row.discounts.splice(index, discount)
     })
 
+    // console.log(row.discounts)
     // console.log('total base discount:'+discount_base)
     // console.log('total no base discount:'+discount_no_base)
+    // console.log('total_value_partial:'+total_value_partial)
 
 
 
@@ -180,8 +203,10 @@ function calculateRowItem(row_old, currency_type_id_new, exchange_rate_sale) {
 
     let total_discount = discount_base + discount_no_base
     let total_charge = charge_base + charge_no_base
-    let total_value = total_value_partial - total_discount + total_charge
-    let total_base_igv = total_value_partial - discount_base + total_isc
+    // let total_value = total_value_partial - total_discount + total_charge
+    // let total_base_igv = total_value_partial - discount_base + total_isc
+    let total_value = total_value_partial  + total_charge
+    let total_base_igv = total_value_partial  + total_isc
 
     let total_igv = 0
 
