@@ -195,8 +195,8 @@ function calculateRowItem(row_old, currency_type_id_new, exchange_rate_sale) {
         }
         row.charges.splice(index, charge)
     })
-    // console.log('total base charge:'+charge_base)
-    // console.log('total no base charge:'+charge_no_base)
+    console.log('total base charge:'+charge_base)
+    console.log('total no base charge:'+charge_no_base)
 
     let total_isc = 0
     let total_other_taxes = 0
@@ -244,7 +244,7 @@ function calculateRowItem(row_old, currency_type_id_new, exchange_rate_sale) {
         row.total_plastic_bag_taxes = _.round(row.quantity * row.item.amount_plastic_bag_taxes, 1)
     }
     
-    // console.log(row)
+    console.log(row)
     return row
 }
 
