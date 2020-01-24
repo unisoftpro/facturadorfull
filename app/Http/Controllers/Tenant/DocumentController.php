@@ -784,7 +784,7 @@ class DocumentController extends Controller
     public function report_payments()
     {
 
-        $records = Document::get();
+        $records = Document::whereIn('state_type_id', ['01','03','05','07','13'])->latest()->get();
 
         $source =  $this->transformReportPayment( $records );
 

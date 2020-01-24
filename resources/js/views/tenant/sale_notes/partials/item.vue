@@ -3,19 +3,42 @@
         <form autocomplete="off" @submit.prevent="clickAddItem">
             <div class="form-body">
                 <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group" :class="{'has-danger': errors.item_id}">
+
+                    <div class="col-md-7">
+                        <div class="form-group" id="custom-select" :class="{'has-danger': errors.item_id}">
                             <label class="control-label">
                                 Producto/Servicio
                                 <a href="#" v-if="typeUser != 'seller'" @click.prevent="showDialogNewItem = true">[+ Nuevo]</a>
                             </label>
-                            <el-select v-model="form.item_id" @change="changeItem" filterable>
+
+
+                            <!-- <el-select v-model="form.item_id" @change="changeItem" filterable>
                                 <el-option v-for="option in items" :key="option.id" :value="option.id" :label="option.full_description"></el-option>
-                            </el-select>
+                            </el-select> -->
+
+
+                            <template id="select-append">
+                                <el-input id="custom-input">
+                                    <el-select 
+                                            v-model="form.item_id" @change="changeItem"
+                                            filterable
+                                            placeholder="Buscar"
+                                            popper-class="el-select-items"
+                                            slot="prepend"
+                                            id="select-width">
+                                        <el-option v-for="option in items"  :key="option.id" :value="option.id" :label="option.full_description"></el-option>
+                                    </el-select>
+                                    <el-tooltip slot="append" class="item" effect="dark" content="Ver Stock del Producto" placement="bottom">
+                                        <el-button  @click.prevent="clickWarehouseDetail()"><i class="fa fa-search"></i></el-button>
+                                    </el-tooltip>
+                                </el-input>
+                            </template>
+
                             <small class="form-control-feedback" v-if="errors.item_id" v-text="errors.item_id[0]"></small>
                         </div>
                     </div>
-                    <div class="col-md-6">
+
+                    <div class="col-md-5">
                         <div class="form-group" :class="{'has-danger': errors.affectation_igv_type_id}">
                             <label class="control-label">Afectación Igv</label>
                             <el-select v-model="form.affectation_igv_type_id" :disabled="!change_affectation_igv_type_id" filterable>
@@ -214,6 +237,11 @@
             @addRowSelectLot="addRowSelectLot">
         </select-lots-form>
 
+        <warehouses-detail
+                :showDialog.sync="showWarehousesDetail"
+                :isUpdateWarehouseId="isUpdateWarehouseId"
+                :warehouses="warehousesDetail">
+            </warehouses-detail>
     </el-dialog>
 </template>
 <style>
@@ -227,19 +255,23 @@
     import itemForm from '../../items/form.vue'
     import {calculateRowItem} from '../../../../helpers/functions'
     import SelectLotsForm from './lots.vue'
+    import WarehousesDetail from './select_warehouses.vue'
 
     export default {
         props: ['showDialog', 'currencyTypeIdActive', 'exchangeRateSale', 'typeUser'],
-        components: {itemForm, SelectLotsForm},
+        components: {itemForm, SelectLotsForm, WarehousesDetail},
         data() {
             return {
                 titleDialog: 'Agregar Producto o Servicio',
                 resource: 'sale-notes',
                 showDialogNewItem: false,
+                showWarehousesDetail: false,
+                isUpdateWarehouseId:false,
                 showDialogSelectLots: false,
                 errors: {},
                 form: {},
                 items: [],
+                warehousesDetail: [],
                 affectation_igv_types: [],
                 system_isc_types: [],
                 discount_types: [],
@@ -256,8 +288,24 @@
             this.$eventHub.$on('reloadDataItems', (item_id) => {
                 this.reloadDataItems(item_id)
             })
+            
+            this.$eventHub.$on('selectWarehouseId', (warehouse_id) => {
+                // console.log(warehouse_id)
+                this.form.warehouse_id = warehouse_id
+            })
         },
         methods: {
+            clickWarehouseDetail(){
+                
+                if(!this.form.item_id){
+                    return this.$message.error('Seleccione un item');
+                }
+
+                let item = _.find(this.items, {'id': this.form.item_id});
+
+                this.warehousesDetail = item.warehouses
+                this.showWarehousesDetail = true
+            },
             addRowSelectLot(lots){
                 this.lots = lots
             },
@@ -323,7 +371,8 @@
                     attributes: [],
                     has_igv: null,
                     is_set: false,
-                    item_unit_types: []
+                    item_unit_types: [],
+                    warehouse_id:null,
                 }
                  this.item_unit_type = {};
             },

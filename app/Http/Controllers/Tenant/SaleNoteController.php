@@ -566,11 +566,13 @@ class SaleNoteController extends Controller
                         'has_igv' => (bool) $row->has_igv,
                         'lots_enabled' => (bool) $row->lots_enabled,
                         'is_set' => (bool) $row->is_set,
-                        'warehouses' => collect($row->warehouses)->transform(function($row) {
+                        'warehouses' => collect($row->warehouses)->transform(function($row) use($warehouse_id){
                             return [
                                 'warehouse_id' => $row->warehouse->id,
                                 'warehouse_description' => $row->warehouse->description,
                                 'stock' => $row->stock,
+                                'checked' => ($row->warehouse_id == $warehouse_id) ? true : false,
+
                             ];
                         }),
                         'item_unit_types' => $row->item_unit_types,

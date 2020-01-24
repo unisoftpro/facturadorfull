@@ -38,7 +38,7 @@
                         <th class="text-right">T.Igv</th>
                         <th class="text-right">Total</th>
                         <th class="text-center">Comprobantes</th>
-                        <th class="text-center"></th>
+                        <!-- <th class="text-center"></th> -->
                         <th class="text-center">Descarga</th>
                         <th class="text-center">
                             Recurrencia
@@ -78,14 +78,16 @@
                                 <label :key="i" v-text="document.number_full" class="d-block"></label>
                             </template>
                         </td>
-                        <td class="text-center">
-                            <button type="button" style="min-width: 41px" class="btn waves-effect waves-light btn-xs btn-info m-1__2"
-                                    @click.prevent="clickPayment(row.id)"  v-if="row.btn_payments">Pagos</button>
-                        </td>
+                        <!-- <td class="text-center">
+                        </td> -->
 
                         <td class="text-right">
-                            <button type="button" class="btn waves-effect waves-light btn-xs btn-info"
+
+                            <button type="button" class="btn waves-effect waves-light btn-xs btn-info m-1__2 mb-2"
                                     @click.prevent="clickDownload(row.external_id)">PDF</button>
+
+                            <button type="button" style="min-width: 41px" class="btn waves-effect waves-light btn-xs btn-info m-1__2"
+                                    @click.prevent="clickPayment(row.id)"  v-if="row.btn_payments">Pagos</button>
                         </td>
                         <td class="text-right">
                             <template v-if="row.type_period && row.quantity_period>0">
