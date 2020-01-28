@@ -16,6 +16,9 @@ class SaleNoteCollection extends ResourceCollection
     {
         return $this->collection->transform(function($row, $key) {
 
+            $total_paid = number_format($row->payments->sum('payment'), 2, ".", "");
+            $total_pending_paid = number_format($row->total - $total_paid, 2, ".", "");
+
             $btn_generate = (count($row->documents) > 0)?false:true;
             $btn_payments = (count($row->documents) > 0)?false:true;
 
@@ -25,6 +28,7 @@ class SaleNoteCollection extends ResourceCollection
                 'external_id' => $row->external_id,
                 'date_of_issue' => $row->date_of_issue->format('Y-m-d'),
                 'identifier' => $row->identifier,
+                'full_number' => $row->series.'-'.$row->number,
                 'customer_name' => $row->customer->name,
                 'customer_number' => $row->customer->number,
                 'currency_type_id' => $row->currency_type_id,
@@ -53,7 +57,9 @@ class SaleNoteCollection extends ResourceCollection
                 'created_at' => $row->created_at->format('Y-m-d H:i:s'),
                 'updated_at' => $row->updated_at->format('Y-m-d H:i:s'),
                 'paid' => (bool)$row->paid,
-                'license_plate' => $row->license_plate
+                'license_plate' => $row->license_plate,
+                'total_paid' => $total_paid,
+                'total_pending_paid' => $total_pending_paid,
             ];
         });
     }

@@ -120,7 +120,7 @@
                 });
 
 
-            await this.getRecords()
+            // await this.getRecords()
 
         },
         methods: {  
@@ -149,6 +149,10 @@
                 return (this.pagination.per_page * (this.pagination.current_page - 1)) + index + 1
             }, 
             async getRecordsByFilter(){
+
+                if(!this.form.item_id){
+                    return this.$message.error('El producto es obligatorio')
+                }
 
                 this.loading_submit = await true
                 await this.getRecords()

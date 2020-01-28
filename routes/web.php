@@ -378,7 +378,7 @@ if ($hostname) {
             Route::get('purchases', 'Tenant\PurchaseController@index')->name('tenant.purchases.index');
             Route::get('purchases/columns', 'Tenant\PurchaseController@columns');
             Route::get('purchases/records', 'Tenant\PurchaseController@records');
-            Route::get('purchases/create', 'Tenant\PurchaseController@create')->name('tenant.purchases.create');
+            Route::get('purchases/create/{purchase_order_id?}', 'Tenant\PurchaseController@create')->name('tenant.purchases.create');
             Route::get('purchases/tables', 'Tenant\PurchaseController@tables');
             Route::get('purchases/table/{table}', 'Tenant\PurchaseController@table');
             Route::post('purchases', 'Tenant\PurchaseController@store');
@@ -436,6 +436,7 @@ if ($hostname) {
             Route::get('sale-notes/columns2', 'Tenant\SaleNoteController@columns2');
 
             Route::get('sale-notes/records', 'Tenant\SaleNoteController@records');
+            Route::get('sale-notes/totals', 'Tenant\SaleNoteController@totals');
             // Route::get('sale-notes/create', 'Tenant\SaleNoteController@create')->name('tenant.sale_notes.create');
             Route::get('sale-notes/create/{salenote?}', 'Tenant\SaleNoteController@create')->name('tenant.sale_notes.create')->middleware('redirect.level');
 
@@ -473,6 +474,8 @@ if ($hostname) {
            Route::post('sale-notes/enabled-concurrency', 'Tenant\SaleNoteController@enabledConcurrency');
 
            Route::get('sale-notes/anulate/{id}', 'Tenant\SaleNoteController@anulate');
+
+           Route::get('sale-notes/downloadExternal/{external_id}', 'Tenant\SaleNoteController@downloadExternal');
 
 
            //POS

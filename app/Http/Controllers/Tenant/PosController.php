@@ -92,7 +92,7 @@ class PosController extends Controller
 
     public function payment_tables(){
 
-        $series = Series::whereIn('document_type_id',['01','03'])
+        $series = Series::whereIn('document_type_id',['01','03','80'])
                         ->where([['establishment_id', auth()->user()->establishment_id],['contingency',false]])
                         ->get();
 
@@ -124,7 +124,7 @@ class PosController extends Controller
 
             $configuration =  Configuration::first();
 
-            $items = Item::whereWarehouse()->orderBy('description')->take(20)
+            $items = Item::whereWarehouse()->where('unit_type_id', '!=', 'ZZ')->orderBy('description')->take(20)
                             ->get()->transform(function($row) use ($configuration) {
                                 $full_description = ($row->internal_id)?$row->internal_id.' - '.$row->description:$row->description;
                                 return [

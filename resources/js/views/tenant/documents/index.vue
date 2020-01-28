@@ -18,7 +18,7 @@
         </div>
         <div class="card mb-0">
             <div class="data-table-visible-columns">
-                <el-button class="submit" type="success" @click.prevent="clickDownloadReportPagos('excel')"><i class="fa fa-file-excel" ></i>  Descargar Pagos</el-button>
+                <!-- <el-button class="submit" type="success" @click.prevent="clickDownloadReportPagos('excel')"><i class="fa fa-file-excel" ></i>  Descargar Pagos</el-button> -->
                 <el-dropdown :hide-on-click="false">
                     <el-button type="primary">
                         Mostrar/Ocultar columnas<i class="el-icon-arrow-down el-icon--right"></i>

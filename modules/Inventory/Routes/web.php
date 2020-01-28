@@ -72,6 +72,24 @@ if($hostname) {
             });
 
 
+            Route::prefix('transfers')->group(function () {
+                Route::get('/', 'TransferController@index')->name('transfers.index');
+                Route::get('records', 'TransferController@records');
+                Route::get('columns', 'TransferController@columns');
+                Route::get('tables', 'TransferController@tables');
+                Route::get('record/{inventory}', 'TransferController@record');
+                Route::post('/', 'TransferController@store');
+
+                Route::delete('{inventory}', 'TransferController@destroy');
+
+                Route::get('create', 'TransferController@create')->name('transfer.create');
+
+                Route::get('stock/{item_id}/{warehouse_id}', 'TransferController@stock');
+
+                Route::get('items/{warehouse_id}', 'TransferController@items');
+
+
+            });
 
         });
     });

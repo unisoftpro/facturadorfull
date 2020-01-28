@@ -161,7 +161,8 @@ class DocumentController extends Controller
         $business_turns = BusinessTurn::where('active', true)->get();
         $enabled_discount_global = config('tenant.enabled_discount_global');
         $is_client = $this->getIsClient();
-        
+        $select_first_document_type_03 = config('tenant.select_first_document_type_03');
+
         $document_types_guide = DocumentType::whereIn('id', ['09', '31'])->get()->transform(function($row) {
             return [
                 'id' => $row->id,
@@ -187,7 +188,7 @@ class DocumentController extends Controller
                         'note_credit_types', 'note_debit_types', 'currency_types', 'operation_types',
                         'discount_types', 'charge_types', 'company', 'document_type_03_filter',
                         'document_types_guide', 'user','payment_method_types','enabled_discount_global',
-                        'business_turns','prepayment_documents','is_client');
+                        'business_turns','prepayment_documents','is_client','select_first_document_type_03');
 
     }
 
@@ -241,11 +242,14 @@ class DocumentController extends Controller
         }
 
         if ($table === 'items') {
-            
+
             $establishment_id = auth()->user()->establishment_id;
             $warehouse = ModuleWarehouse::where('establishment_id', $establishment_id)->first();
 
-            $items = Item::whereWarehouse()->whereNotIsSet()->orderBy('description')->get();
+            $items_u = Item::whereWarehouse()->whereNotIsSet()->orderBy('description')->get();
+            $items_s = Item::where('unit_type_id','ZZ')->orderBy('description')->get();
+            $items = $items_u->merge($items_s);
+
             return collect($items)->transform(function($row) use($warehouse){
                 $full_description = $this->getFullDescription($row, $warehouse);
                 return [
@@ -652,8 +656,8 @@ class DocumentController extends Controller
                             ->whereTypeUser()
                             ->latest();
         }
-        
-        if($pending_payment){ 
+
+        if($pending_payment){
             $records = $records->where('total_canceled', false);
         }
 
@@ -666,7 +670,7 @@ class DocumentController extends Controller
                                     $query->where('item_id', $item_id);
                                 });
         }
- 
+
         if($category_id){
 
             $records = $records->whereHas('items', function($query) use($category_id){
@@ -694,7 +698,7 @@ class DocumentController extends Controller
 
     }
 
-    
+
     public function getItems(){
 
         $items = Item::orderBy('description')->take(20)->get()->transform(function($row) {
@@ -703,16 +707,16 @@ class DocumentController extends Controller
                 'description' => ($row->internal_id) ? "{$row->internal_id} - {$row->description}" :$row->description,
             ];
         });
- 
+
         return $items;
 
     }
 
 
     public function getDataTableItem(Request $request) {
-        
+
         $items = Item::where('description','like', "%{$request->input}%")
-                        ->orWhere('internal_id','like', "%{$request->input}%") 
+                        ->orWhere('internal_id','like', "%{$request->input}%")
                         ->orderBy('description')
                         ->get()->transform(function($row) {
                             return [
@@ -793,13 +797,13 @@ class DocumentController extends Controller
                 ->records($source)
                 ->payment_count($this->max_count_payment)
                 ->download('Reporte_Pagos_'.Carbon::now().'.xlsx');
-                
+
     }
 
     public function destroyDocument($document_id)
     {
         try {
-            
+
             $record = Document::findOrFail($document_id);
             $record->delete();
 
@@ -814,7 +818,7 @@ class DocumentController extends Controller
 
         }
 
-        
+
     }
 
 }

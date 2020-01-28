@@ -173,7 +173,7 @@
 
                         </div>
                         <div class="form-group">
-                            <label class="control-label">Número <span class="text-danger">*</span></label>
+                            <label class="control-label">Ingrese Número <span> (Se debe validar el numero ingresado)</span> <span class="text-danger">*</span></label>
                             <div class="input-group mb-3">
                                 <input type="text" class="form-control" v-model="formIdentity.number"
                                     :maxlength="maxLength" aria-label="Recipient's username"
@@ -253,7 +253,8 @@
             aux_totals: {},
             form_document: {},
             user: {},
-            typeDocumentSelected: ''
+            typeDocumentSelected: '',
+            response_order_total:0
         },
         computed: {
             maxLength: function () {
@@ -317,11 +318,10 @@
                 });
 
                 let url_finally = '{{ route("tenant_ecommerce_payment_cash")}}';
-                let response = await axios.post(url_finally, this.getFormPaymentCash(), this
-                    .getHeaderConfig())
+                let response = await axios.post(url_finally, this.getFormPaymentCash(), this.getHeaderConfig())
                 if (response.data.success) {
-
                     this.clearShoppingCart()
+                    this.response_order_total = response.data.order.total
                     swal({
                         title: "Gracias por su pago!",
                         text: "En breve le enviaremos un correo electronico con los detalles de su compra.",
@@ -355,7 +355,7 @@
 
                 if (response.data.success) {
                     this.response_search.success = response.data.success
-                    this.response_search.message = 'Datos Encontrados'
+                    this.response_search.message = 'Datos Encontrados (Ahora puede enviar su comprobante.)'
                     // let data = response.data.data
                     this.formIdentity.validate = true
                     this.form_document.datos_del_cliente_o_receptor.codigo_tipo_documento_identidad = this
@@ -389,32 +389,49 @@
                 return axiosConfig;
             },
             checkDocument(typeDocument) {
-                this.formIdentity.identity_document_type_id = typeDocument
-                //this.typeDocumentSelected = typeDocument
-                let total = this.summary.total
 
-                if (total > 700 || typeDocument === '6') {
+                $('#modal_ask_document').modal('hide');
+
+                this.formIdentity.identity_document_type_id = typeDocument
+
+                $('#modal_identity_document').modal('show');
+                //this.typeDocumentSelected = typeDocument
+                //let total = parseFloat(this.response_order_total)
+                // console.log(total, this.response_order_total)
+
+                /*if (typeDocument == '6') {
                     let tipoDocumento = this.user.identity_document_type_id
                     let number = this.user.number
+                    // console.log(this.user)
 
-                    if (!tipoDocumento || !number || number.length !== 11) {
+                    // if (!tipoDocumento || !number || number.length !== 11) {
+                    $('#modal_identity_document').modal('show');
+                    // } else {
+                    //     this.form_document.datos_del_cliente_o_receptor.codigo_tipo_documento_identidad =
+                    //         tipoDocumento
+                    //     this.form_document.datos_del_cliente_o_receptor.numero_documento = number
+                    //     this.sendDocument()
+                    // }
+
+                } else {
+
+                    if(total > 700){
+
                         $('#modal_identity_document').modal('show');
-                    } else {
-                        this.form_document.datos_del_cliente_o_receptor.codigo_tipo_documento_identidad =
-                            tipoDocumento
-                        this.form_document.datos_del_cliente_o_receptor.numero_documento = number
+
+                    }else{
+
                         this.sendDocument()
                     }
 
-                } else {
-                    this.sendDocument()
-                }
+                }*/
 
             },
             finallyProcess(form) {
                 let url_finally = '{{ route("tenant_ecommerce_transaction_finally")}}';
                 axios.post(url_finally, form, this.getHeaderConfig())
                     .then(response => {
+                        console.log(response)
                         console.log('transaccion finalizada correctamente')
                         swal({
                             title: "Gracias por su pago!",
@@ -444,15 +461,17 @@
                     }
                 });
                 let doc = await this.getDocument()
-                // console.log(doc)
+               // console.log(doc)
+                // return
                 await axios.post('/api/documents', doc, this.getHeaderConfig())
                     .then(response => {
-                        console.log('documento generado correctamente')
+                       // console.log('documento generado correctamente')
                         this.finallyProcess(this.getDataFinally(response.data))
+                        this.initForm()
                     })
                     .catch(error => {
-                        console.log(error)
-                        console.log('error al generar documento')
+                      // console.log(error)
+                        //console.log('error al generar documento')
                         swal({
                             type: 'error',
                             title: 'Oops...',
@@ -608,6 +627,11 @@
                     },
                     "totales": {},
                     "items": [],
+                }
+
+
+                this.formIdentity = {
+                    identity_document_type_id: '6'
                 }
 
             },

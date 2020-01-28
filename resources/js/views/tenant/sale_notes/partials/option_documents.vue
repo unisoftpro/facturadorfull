@@ -1,12 +1,12 @@
 <template>
     <div>
-        <el-dialog :title="titleDialog" :visible="showDialog" @open="create" width="30%"  
+        <el-dialog :title="titleDialog" :visible="showDialog" @open="create" width="30%"
                 :close-on-click-modal="false"
                 :close-on-press-escape="false"
                 :show-close="false">  
             <div class="row">
                 <div class="col-lg-8">
-                    <div class="form-group" :class="{'has-danger': errors.document_type_id}"> 
+                    <div class="form-group" :class="{'has-danger': errors.document_type_id}">
                         <label class="control-label">Tipo comprobante</label>
                         <el-select v-model="document.document_type_id" @change="changeDocumentType" popper-class="el-select-document_type" dusk="document_type_id" class="border-left rounded-left border-info">
                             <el-option v-for="option in document_types" :key="option.id" :value="option.id" :label="option.description"></el-option>
@@ -22,6 +22,16 @@
                             <el-option v-for="option in series" :key="option.id" :value="option.id" :label="option.number"></el-option>
                         </el-select>
                         <small class="form-control-feedback" v-if="errors.series_id" v-text="errors.series_id[0]"></small>
+                    </div>
+                </div>
+                <div class="col-lg-12">
+                    <div class="form-group">
+                        <label class="control-label">Observaciones</label>
+                        <el-input
+                                type="textarea"
+                                autosize
+                                v-model="document.additional_information">
+                        </el-input>
                     </div>
                 </div>
                 <div class="col-lg-8 mt-3">
@@ -94,7 +104,7 @@
                 this.errors = {}
                 this.form = {
                     id: null,
-                    external_id: null, 
+                    external_id: null,
                     identifier: null,
                     date_of_issue:null,
                     sale_note:null,
@@ -105,7 +115,7 @@
                 this.document = {
                     document_type_id:null,
                     series_id:null,
-                    establishment_id: null, 
+                    establishment_id: null,
                     number: '#',
                     date_of_issue: null,
                     time_of_issue: null,
@@ -171,7 +181,7 @@
                                 this.$eventHub.$emit('reloadData');
                                 this.flag_generate = false
                             });
-                            this.resetDocument() 
+                            this.resetDocument()
 
                             // this.clickClose();
                         } else {
@@ -188,11 +198,11 @@
                         this.loading_submit = false;
                     });
             },
-            assignDocument(){ 
+            assignDocument(){
                 let q = this.form.sale_note;
                 // console.log(q);
 
-                this.document.establishment_id = q.establishment_id  
+                this.document.establishment_id = q.establishment_id
                 this.document.date_of_issue =  moment().format('YYYY-MM-DD')//q.date_of_issue
                 this.document.date_of_due = moment().format('YYYY-MM-DD') //q.date_of_issue
                 this.document.time_of_issue = q.time_of_issue
@@ -217,7 +227,7 @@
                 this.document.total_value = q.total_value
                 this.document.total = q.total
                 this.document.operation_type_id = '0101'
-              
+
                 this.document.items = q.items
                 this.document.charges = q.charges
                 this.document.discounts = q.discounts
@@ -274,7 +284,7 @@
 
                 this.document.document_type_id = (this.document_types.length > 0)?this.document_types[0].id:null
                 await this.changeDocumentType()
-                
+
             },
             filterSeries() {
                 this.document.series_id = null
@@ -295,7 +305,7 @@
             },
             clickToPrint(){
                 window.open(`/downloads/saleNote/sale_note/${this.form.external_id}`, '_blank');
-            } 
+            }
         }
     }
 </script>
