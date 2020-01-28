@@ -20,7 +20,7 @@ class AnulationServiceProvider extends ServiceProvider
     
     public function boot()
     {
-        $this->anulation();
+        // $this->anulation();
         //$this->anulation_purchase();
         
     }
