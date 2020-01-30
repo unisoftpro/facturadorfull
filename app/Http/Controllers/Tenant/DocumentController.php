@@ -320,21 +320,20 @@ class DocumentController extends Controller
 
     public function store(DocumentRequest $request)
     {
-        $fact = DB::connection('tenant')->transaction(function () use ($request) {
-            $facturalo = new Facturalo();
+        $facturalo = new Facturalo();
+        DB::connection('tenant')->transaction(function () use ($request, $facturalo) {
             $facturalo->save($request->all());
-            $facturalo->createXmlUnsigned();
-            $facturalo->signXmlUnsigned();
-            $facturalo->updateHash();
-            $facturalo->updateQr();
-            $facturalo->createPdf();
-            $facturalo->senderXmlSignedBill();
-
-            return $facturalo;
         });
 
-        $document = $fact->getDocument();
-        $response = $fact->getResponse();
+        $facturalo->createXmlUnsigned();
+        $facturalo->signXmlUnsigned();
+        $facturalo->updateHash();
+        $facturalo->updateQr();
+        $facturalo->createPdf();
+        $facturalo->senderXmlSignedBill();
+
+        $document = $facturalo->getDocument();
+        $response = $facturalo->getResponse();
 
         return [
             'success' => true,
