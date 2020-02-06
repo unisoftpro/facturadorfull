@@ -169,6 +169,9 @@ class SaleNote extends ModelTenant
 
     public function getIdentifierAttribute()
     {
+        if($this->series && $this->number)
+            return $this->series.'-'.$this->number;
+
         return $this->prefix.'-'.$this->id;
     }
 
