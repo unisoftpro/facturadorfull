@@ -186,19 +186,36 @@ function calculateRowItem(row_old, currency_type_id_new, exchange_rate_sale) {
     let charge_base = 0
     let charge_no_base = 0
     row.charges.forEach((charge, index) => {
+        // console.log(charge)
+        
+        total_value_partial = (charge.charge_type.base) ? total_value_partial : total_unit_price_value_partial
+
         charge.percentage = parseFloat(charge.percentage)
         charge.factor = charge.percentage / 100
         charge.base = _.round(total_value_partial, 2)
         charge.amount = _.round(charge.base * charge.factor, 2)
+        
+
         if (charge.charge_type.base) {
             charge_base += charge.amount
         } else {
             charge_no_base += charge.amount
         }
+
+        // console.log(total_value_partial, charge_no_base)
+        
+        let charge_total_v_partial = total_value_partial + charge_base + charge_no_base
+        
+        total_value_partial = (charge.charge_type.base) ? charge_total_v_partial : (charge_total_v_partial)/ (1 + percentage_igv / 100)
+
         row.charges.splice(index, charge)
+
     })
-    console.log('total base charge:'+charge_base)
-    console.log('total no base charge:'+charge_no_base)
+
+    // console.log('total base charge:'+charge_base)
+    // console.log('total no base charge:'+charge_no_base)
+
+
 
     let total_isc = 0
     let total_other_taxes = 0
@@ -207,8 +224,10 @@ function calculateRowItem(row_old, currency_type_id_new, exchange_rate_sale) {
     let total_charge = charge_base + charge_no_base
     // let total_value = total_value_partial - total_discount + total_charge
     // let total_base_igv = total_value_partial - discount_base + total_isc
-    let total_value = total_value_partial  + total_charge
+    let total_value = total_value_partial 
     let total_base_igv = total_value_partial  + total_isc
+    // let total_value = total_value_partial  + total_charge
+    // let total_base_igv = total_value_partial  + total_isc
 
     let total_igv = 0
 
@@ -246,7 +265,7 @@ function calculateRowItem(row_old, currency_type_id_new, exchange_rate_sale) {
         row.total_plastic_bag_taxes = _.round(row.quantity * row.item.amount_plastic_bag_taxes, 1)
     }
     
-    console.log(row)
+    // console.log(row)
     return row
 }
 

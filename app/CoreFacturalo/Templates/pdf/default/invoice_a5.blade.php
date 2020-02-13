@@ -297,6 +297,11 @@
                         <br/><span style="font-size: 9px">{{ $dtos->factor * 100 }}% {{$dtos->description }}</span>
                     @endforeach
                 @endif
+                @if($row->charges)
+                    @foreach($row->charges as $charge)
+                        <br/><span style="font-size: 9px">{{ $charge->factor * 100 }}% {{$charge->description }}</span>
+                    @endforeach
+                @endif
             </td>
             <td class="text-right align-top">{{ number_format($row->unit_price, 2) }}</td>
             <td class="text-right align-top">
