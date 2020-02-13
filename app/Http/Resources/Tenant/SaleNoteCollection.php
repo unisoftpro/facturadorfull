@@ -28,6 +28,7 @@ class SaleNoteCollection extends ResourceCollection
                 'external_id' => $row->external_id,
                 'date_of_issue' => $row->date_of_issue->format('Y-m-d'),
                 'identifier' => $row->identifier,
+                'full_number' => $row->series.'-'.$row->number,
                 'customer_name' => $row->customer->name,
                 'customer_number' => $row->customer->number,
                 'currency_type_id' => $row->currency_type_id,
@@ -42,6 +43,7 @@ class SaleNoteCollection extends ResourceCollection
                 'state_type_description' => $row->state_type->description,
                 'documents' => $row->documents->transform(function($row) {
                     return [
+                        'id' => $row->id,
                         'number_full' => $row->number_full,
                     ];
                 }),

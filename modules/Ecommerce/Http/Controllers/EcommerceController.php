@@ -14,10 +14,6 @@ use App\Models\Tenant\Order;
 use App\Models\Tenant\ItemsRating;
 use App\Models\Tenant\ConfigurationEcommerce;
 use Modules\Ecommerce\Http\Resources\ItemBarCollection;
-
-
-
-
 use stdClass;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\Tenant\CulqiEmail;
@@ -29,8 +25,13 @@ class EcommerceController extends Controller
      * Display a listing of the resource.
      * @return Response
      */
+    public function __construct(){
+        return view()->share('records', Item::where('apply_store', 1)->orderBy('id', 'DESC')->take(2)->get());
+    }
+
     public function index()
     {
+
         return view('ecommerce::index');
     }
 
@@ -38,6 +39,7 @@ class EcommerceController extends Controller
     {
         $row = Item::find($id);
         $exchange_rate_sale = $this->getExchangeRateSale();
+        $sale_unit_price = ($row->has_igv) ? $row->sale_unit_price : $row->sale_unit_price*1.18;
 
         $record = (object)[
             'id' => $row->id,
@@ -46,7 +48,7 @@ class EcommerceController extends Controller
             'description' => $row->description,
             'name' => $row->name,
             'second_name' => $row->second_name,
-            'sale_unit_price' => ($row->currency_type_id === 'PEN') ? $row->sale_unit_price : ($row->sale_unit_price*$exchange_rate_sale),
+            'sale_unit_price' => ($row->currency_type_id === 'PEN') ? $sale_unit_price : ($sale_unit_price * $exchange_rate_sale),
             'currency_type_id' => $row->currency_type_id,
             'has_igv' => (bool) $row->has_igv,
             // 'sale_unit_price' => $row->sale_unit_price,
@@ -264,16 +266,34 @@ class EcommerceController extends Controller
 
     }
 
-
-
-    
     private function getExchangeRateSale(){
 
         $exchange_rate = app(ServiceController::class)->exchangeRateTest(date('Y-m-d'));
 
         return (array_key_exists('sale', $exchange_rate)) ? $exchange_rate['sale'] : 1;
 
+
     }
+
+    public function saveDataUser(Request $request)
+    {
+        $user = auth()->user();
+        if($request->address)
+        {
+            $user->address = $request->address;
+        }
+        if($user->telephone = $request->telephone)
+        {
+            $user->telephone = $request->telephone;
+        }
+
+        $user->save();
+
+        return ['success' => true];
+
+    }
+
+
 
 
 

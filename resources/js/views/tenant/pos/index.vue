@@ -9,6 +9,7 @@
       <div class="row">
         <div class="col-md-8">
           <h2 class="text-sm">POS</h2>
+          <h2><el-switch v-model="search_item_by_barcode" active-text="Buscar por código de barras" @change="changeSearchItemBarcode"></el-switch></h2>
         </div>
         <div class="col-md-4">
           <div class="right-wrapper">
@@ -18,8 +19,13 @@
         </div>
       </div>
     </header>
+
+
     <div v-if="!is_payment" class="row col-lg-12 m-0 p-0" v-loading="loading">
       <div class="col-lg-8 col-md-6 px-4 pt-3 hyo">
+
+
+
         <el-input
             placeholder="Buscar productos"
             size="medium"
@@ -30,6 +36,13 @@
           >
           <el-button slot="append" icon="el-icon-plus" @click.prevent="showDialogNewItem = true"></el-button>
         </el-input>
+
+        <div class="container testimonial-group">
+            <div class="row text-center flex-nowrap">
+                <div  v-for="(item, index) in categories" @click="filterCategorie(item.id)"  :style="{ backgroundColor: item.color}" :key="index" class="col-sm-3 pointer">{{item.name}}</div>
+
+            </div>
+        </div> <br>
 
         <div class="row">
           <template v-for="(item,index) in items">
@@ -291,6 +304,7 @@
     </div>
     <template v-else>
       <payment-form
+        :is_payment.sync="is_payment"
         :form="form"
         :currency-type-id-active="form.currency_type_id"
         :currency-type-active="currency_type"
@@ -318,6 +332,41 @@
   </div>
 </template>
 <style>
+
+
+/* The heart of the matter */
+.testimonial-group > .row {
+  overflow-x: auto;
+  white-space: nowrap;
+  overflow-y: hidden;
+}
+.testimonial-group > .row > .col-sm-3 {
+  display: inline-block;
+  float: none;
+}
+
+/* Decorations */
+.col-sm-3 { height: 70px; margin-right: 0.5%; color: white; font-size: 18px; padding-bottom: 20px; padding-top: 18px; font-weight: bold }
+
+
+.card-block {
+    min-height: 220px;
+}
+
+.ex1 {
+  overflow-x: scroll;
+}
+.cat_c{
+    width: 100px;
+    margin: 1%;
+    padding: 3px;
+    font-weight: bold;
+    color: white;
+    min-height: 90px;
+}
+.cat_c p {
+    color: white;
+}
 .c-width {
   width: 80px !important;
   padding: 0 !important;
@@ -349,6 +398,7 @@
         data() {
           return {
             history_item_id:null,
+            search_item_by_barcode:false,
             warehousesDetail:[],
             input_person:{},
             showDialogHistoryPurchases: false,
@@ -373,19 +423,40 @@
             customer: {},
             row: {},
             user: {},
-            form: {}
+            form: {},
+            categories: [ ],
+            colors: ['#1cb973', '#bf7ae6', '#fc6304', '#9b4db4', '#77c1f3']
           };
         },
         async created() {
           await this.initForm();
           await this.getTables();
           this.events();
-          
+
           await this.getFormPosLocalStorage()
           await this.initCurrencyType()
           this.customer = await this.getLocalStorageIndex('customer')
+
+           if(document.querySelector('.sidebar-toggle')){
+               document.querySelector('.sidebar-toggle').click()
+           }
         },
+
         methods: {
+            filterCategorie(id)
+            {
+                if(id)
+                {
+                    this.items = this.all_items.filter(x => x.category_id == id)
+
+                }else{
+                    this.filterItems()
+                }
+            },
+          getColor(i)
+          {
+            return this.colors[(i % this.colors.length )]
+          },
           initCurrencyType(){
               this.currency_type = _.find(this.currency_types, {'id': this.form.currency_type_id})
           },
@@ -412,7 +483,7 @@
 
           },
           cancelFormPosLocalStorage(){
-            
+
             localStorage.setItem('form_pos', JSON.stringify(null));
             this.setLocalStorageIndex('customer', null)
 
@@ -539,12 +610,12 @@
             this.setLocalStorageIndex('customer', this.customer)
             this.setFormPosLocalStorage()
           },
-          
+
           getLocalStorageIndex(key, re_default = null){
-              
+
               let ls_obj = localStorage.getItem(key);
               ls_obj = JSON.parse(ls_obj)
-              
+
               if (ls_obj) {
                   return ls_obj
               }
@@ -660,7 +731,7 @@
               charges: [],
               discounts: [],
               attributes: [],
-              has_igv: null
+              has_igv: false
             };
           },
           async clickPayment() {
@@ -698,6 +769,7 @@
             let response = null;
 
             // console.log(item.calculate_quantity)
+            // console.log(exist_item)
 
             if (exist_item) {
               if (input) {
@@ -732,6 +804,11 @@
                 exist_item.item.unit_price = parseFloat(search_item_bd.sale_unit_price)
               }
 
+              let unit_price = exist_item.item.has_igv ? exist_item.item.sale_unit_price : exist_item.item.sale_unit_price * 1.18
+              // exist_item.unit_price = unit_price
+              exist_item.item.unit_price = unit_price
+
+
               this.row = calculateRowItem(
                 exist_item,
                 this.form.currency_type_id,
@@ -753,9 +830,7 @@
               this.form_item.quantity = 1;
               this.form_item.aux_quantity = 1;
 
-              let unit_price = this.form_item.has_igv
-                ? this.form_item.unit_price_value
-                : this.form_item.unit_price_value * 1.18;
+              let unit_price = this.form_item.has_igv ? this.form_item.unit_price_value : this.form_item.unit_price_value * 1.18;
 
               this.form_item.unit_price = unit_price;
               this.form_item.item.unit_price = unit_price;
@@ -894,6 +969,7 @@
               this.user = response.data.user;
               this.form.currency_type_id =
               this.currency_types.length > 0 ? this.currency_types[0].id : null;
+              this.renderCategories(response.data.categories)
               // this.currency_type = _.find(this.currency_types, {'id': this.form.currency_type_id})
               // this.changeCurrencyType();
               this.filterItems();
@@ -901,7 +977,25 @@
               this.changeExchangeRate()
             });
           },
+          renderCategories(source)
+          {
+            const contex = this
+            this.categories = source.map(( obj, index ) => {
+                return {
+                    id: obj.id,
+                    name: obj.name,
+                    color: contex.getColor(index)
+                }
+            })
+
+            this.categories.unshift({
+                    id: null,
+                    name: 'Todos',
+                    color: '#2C8DE3'
+                    })
+          },
           searchItems() {
+
             if (this.input_item.length > 0) {
               this.loading = true;
               let parameters = `input_item=${this.input_item}`;
@@ -911,6 +1005,9 @@
                 .then(response => {
                   // console.log(response)
                   this.items = response.data.items;
+
+                  this.enabledSearchItemsBarcode()
+
                   this.loading = false;
                   if (this.items.length == 0) {
                     this.filterItems();
@@ -920,6 +1017,30 @@
               // this.customers = []
               this.filterItems();
             }
+
+          },
+          enabledSearchItemsBarcode(){
+
+            if (this.search_item_by_barcode) {
+
+              if (this.items.length == 1) {
+
+                  // console.log(this.items)
+                  this.clickAddItem(this.items[0], 0);
+                  this.filterItems();
+
+              }
+
+              this.cleanInput();
+
+            }
+
+          },
+          changeSearchItemBarcode(){
+            this.cleanInput()
+          },
+          cleanInput() {
+            this.input_item = null;
           },
           filterItems() {
             this.items = this.all_items;
@@ -951,10 +1072,13 @@
               });
               this.form.items = items
               this.calculateTotal()
-              
+
               await this.setFormPosLocalStorage()
 
-          }
+          },
+          openFullWindow() {
+                location.href = `/${this.resource}/pos_full`
+            },
         }
       };
 </script>

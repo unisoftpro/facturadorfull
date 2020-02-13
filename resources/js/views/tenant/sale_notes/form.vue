@@ -309,6 +309,8 @@
         },
         async created() {
             await this.initForm()
+
+          //  console.log(this.form)
             await this.$http.get(`/${this.resource}/tables`)
                 .then(response => {
                     this.currency_types = response.data.currency_types
@@ -466,7 +468,8 @@
                     quantity_period:0,
                     automatic_date_of_issue:null,
                     enabled_concurrency:false,
-                    license_plate: null
+                    license_plate: null,
+                    paid: false
                 }
 
                 this.clickAddPayment()
@@ -583,6 +586,14 @@
 
                     this.form.enabled_concurrency = (this.form.quantity_period > 0) ? true:false
                 }
+
+
+                if(validate.acum_total == parseFloat(this.form.total) )
+                {
+                  this.form.paid = true
+                }
+
+
 
                 this.loading_submit = true
                 this.$http.post(`/${this.resource}`, this.form).then(response => {

@@ -40,10 +40,21 @@ if($hostname) {
                 Route::post('inventory/pdf', 'ReportInventoryController@pdf')->name('reports.inventory.pdf');
                 Route::post('inventory/excel', 'ReportInventoryController@excel')->name('reports.inventory.report_excel');
 
+                // Route::get('kardex', 'ReportKardexController@index')->name('reports.kardex.index');
+                // Route::get('kardex/search', 'ReportKardexController@search')->name('reports.kardex.search');
+                // Route::post('kardex/pdf', 'ReportKardexController@pdf')->name('reports.kardex.pdf');
+                // Route::post('kardex/excel', 'ReportKardexController@excel')->name('reports.kardex.report_excel');
+
+
+
                 Route::get('kardex', 'ReportKardexController@index')->name('reports.kardex.index');
-                Route::get('kardex/search', 'ReportKardexController@search')->name('reports.kardex.search');
-                Route::post('kardex/pdf', 'ReportKardexController@pdf')->name('reports.kardex.pdf');
-                Route::post('kardex/excel', 'ReportKardexController@excel')->name('reports.kardex.report_excel');
+                Route::get('kardex/pdf', 'ReportKardexController@pdf')->name('reports.kardex.pdf');
+                Route::get('kardex/excel', 'ReportKardexController@excel')->name('reports.kardex.excel');
+                Route::get('kardex/filter', 'ReportKardexController@filter')->name('reports.kardex.filter');
+                Route::get('kardex/records', 'ReportKardexController@records')->name('reports.kardex.records');
+                Route::get('kardex/lots/filter', 'ReportKardexController@records_lots');
+
+
             });
 
 
@@ -72,6 +83,13 @@ if($hostname) {
                 Route::post('/', 'TransferController@store');
 
                 Route::delete('{inventory}', 'TransferController@destroy');
+
+                Route::get('create', 'TransferController@create')->name('transfer.create');
+
+                Route::get('stock/{item_id}/{warehouse_id}', 'TransferController@stock');
+
+                Route::get('items/{warehouse_id}', 'TransferController@items');
+
 
             });
 

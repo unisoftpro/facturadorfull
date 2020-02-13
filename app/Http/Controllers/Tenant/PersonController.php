@@ -12,6 +12,7 @@ use App\Models\Tenant\Catalogs\IdentityDocumentType;
 use App\Models\Tenant\Catalogs\Province;
 use App\Http\Controllers\Controller;
 use App\Models\Tenant\Person;
+use App\Models\Tenant\PersonType;
 use Exception;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Excel;
@@ -54,10 +55,11 @@ class PersonController extends Controller
         $provinces = Province::whereActive()->orderByDescription()->get();
         $districts = District::whereActive()->orderByDescription()->get();
         $identity_document_types = IdentityDocumentType::whereActive()->get();
+        $person_types = PersonType::get();
         $locations = $this->getLocationCascade();
         $api_service_token = config('configuration.api_service_token');
 
-        return compact('countries', 'departments', 'provinces', 'districts', 'identity_document_types', 'locations','api_service_token');
+        return compact('countries', 'departments', 'provinces', 'districts', 'identity_document_types', 'locations','person_types','api_service_token');
     }
 
     public function record($id)
@@ -84,10 +86,12 @@ class PersonController extends Controller
         $person->fill($request->all());
         $person->save();
 
-        // foreach ($request->input('more_address') as $row)
-        // {
-        //     $person->more_address()->create($row);
-        // }
+        $person->addresses()->delete();
+        $addresses = $request->input('addresses');
+        foreach ($addresses as $row)
+        {
+            $person->addresses()->updateOrCreate( ['id' => $row['id']], $row);
+        }
 
         return [
             'success' => true,
@@ -98,11 +102,11 @@ class PersonController extends Controller
 
     public function destroy($id)
     {
-        try {            
-            
+        try {
+
             $person = Person::findOrFail($id);
             $person_type = ($person->type == 'customers') ? 'Cliente':'Proveedor';
-            $person->delete(); 
+            $person->delete();
 
             return [
                 'success' => true,
@@ -114,7 +118,7 @@ class PersonController extends Controller
             return ($e->getCode() == '23000') ? ['success' => false,'message' => "El {$person_type} esta siendo usado por otros registros, no puede eliminar"] : ['success' => false,'message' => "Error inesperado, no se pudo eliminar el {$person_type}"];
 
         }
-        
+
     }
 
     public function import(Request $request)

@@ -74,7 +74,11 @@ class DocumentCollection extends ResourceCollection
                 $btn_change_to_registered_status = config('tenant.change_to_registered_status');
             }
 
+            $total_payment = $row->payments->sum('payment');
+            $balance = number_format($row->total - $total_payment,2, ".", "");
+
             return [
+                
                 'id' => $row->id,
                 'group_id' => $row->group_id,
                 'soap_type_id' => $row->soap_type_id,
@@ -136,6 +140,7 @@ class DocumentCollection extends ResourceCollection
                         'description' => $row->document->number_full,
                     ];
                 }) : null,
+                'balance' => $balance
 
             ];
         });

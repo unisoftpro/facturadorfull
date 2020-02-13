@@ -23,6 +23,7 @@ use App\Models\Tenant\Catalogs\PriceType;
 use App\Models\Tenant\Catalogs\SystemIscType;
 use App\Models\Tenant\Catalogs\AttributeType;
 use App\Models\Tenant\Company;
+use App\Models\Tenant\Dispatch;
 use App\Http\Requests\Tenant\SaleNoteRequest;
 // use App\Models\Tenant\Warehouse;
 use Illuminate\Support\Str;
@@ -182,14 +183,10 @@ class SaleNoteController extends Controller
                 ['id' => $request->input('id')],
                 $data);
 
-//            $this->sale_note =  SaleNote::create($data);
-            // $this->sale_note->items()->delete();
+
             $this->sale_note->payments()->delete();
 
-            // foreach ($data['items'] as $row)
-            // {
-            //     $this->sale_note->items()->create($row);
-            // }
+
             foreach($data['items'] as $row) {
 
                 $item_id = isset($row['id']) ? $row['id'] : null;
@@ -210,14 +207,9 @@ class SaleNoteController extends Controller
                         $record_lot->has_sale = true;
                         $record_lot->update();
                     }
-
                 }
 
-                // dd($row);
-
             }
-
-
 
             //pagos
             foreach ($data['payments'] as $row) {
@@ -283,10 +275,22 @@ class SaleNoteController extends Controller
         $series = Series::find($inputs['series_id'])->number;
 
 
-        $document = SaleNote::select('number')->where('soap_type_id', $this->company->soap_type_id)
+        $number = null;
+
+        if($inputs['id'])
+        {
+            $number = $inputs['number'];
+        }
+        else{
+
+            $document = SaleNote::select('number')->where('soap_type_id', $this->company->soap_type_id)
                                 ->where('series', $series)
                                 ->orderBy('number', 'desc')
                                 ->first();
+
+            $number = ($document) ? $document->number + 1 : 1;
+
+        }
 
         $values = [
             'automatic_date_of_issue' => $automatic_date_of_issue,
@@ -297,7 +301,7 @@ class SaleNoteController extends Controller
             'soap_type_id' => $this->company->soap_type_id,
             'state_type_id' => '01',
             'series' => $series,
-            'number' => ($document) ? $document->number + 1 : 1
+            'number' => $number
         ];
 
         unset($inputs['series_id']);
@@ -315,7 +319,7 @@ class SaleNoteController extends Controller
 
     private function setFilename(){
 
-        $name = [$this->sale_note->prefix,$this->sale_note->id,date('Ymd')];
+        $name = [$this->sale_note->series,$this->sale_note->number,date('Ymd')];
         $this->sale_note->filename = join('-', $name);
         $this->sale_note->save();
 
@@ -548,22 +552,31 @@ class SaleNoteController extends Controller
                 $warehouse = Warehouse::where('establishment_id', $establishment_id)->first();
                 $warehouse_id = ($warehouse) ? $warehouse->id:null;
 
-                $items = Item::whereWarehouse()->whereNotIsSet()->orderBy('description')->get();
-                return collect($items)->transform(function($row) use($warehouse_id){
-                    $full_description = $this->getFullDescription($row);
+                $items_u = Item::whereWarehouse()->whereNotIsSet()->orderBy('description')->get();
+
+                $items_s = Item::where('unit_type_id','ZZ')->orderBy('description')->get();
+
+                $items = $items_u->merge($items_s);
+
+                return collect($items)->transform(function($row) use($warehouse_id, $warehouse){
+                    $detail = $this->getFullDescription($row, $warehouse);
                     return [
                         'id' => $row->id,
-                        'full_description' => $full_description,
+                        'full_description' => $detail['full_description'],
+                        'brand' => $detail['brand'],
+                        'category' => $detail['category'],
+                        'stock' => $detail['stock'],
                         'description' => $row->description,
                         'currency_type_id' => $row->currency_type_id,
                         'currency_type_symbol' => $row->currency_type->symbol,
-                        'sale_unit_price' => $row->sale_unit_price,
+                        'sale_unit_price' => round($row->sale_unit_price, 2),
                         'purchase_unit_price' => $row->purchase_unit_price,
                         'unit_type_id' => $row->unit_type_id,
                         'sale_affectation_igv_type_id' => $row->sale_affectation_igv_type_id,
                         'purchase_affectation_igv_type_id' => $row->purchase_affectation_igv_type_id,
                         'has_igv' => (bool) $row->has_igv,
                         'lots_enabled' => (bool) $row->lots_enabled,
+                        'series_enabled' => (bool) $row->series_enabled,
                         'is_set' => (bool) $row->is_set,
                         'warehouses' => collect($row->warehouses)->transform(function($row) {
                             return [
@@ -584,9 +597,11 @@ class SaleNoteController extends Controller
                                 'lot_code' => ($row->item_loteable_type) ? (isset($row->item_loteable->lot_code) ? $row->item_loteable->lot_code:null):null
                             ];
                         }),
+                        'lot_code' => $row->lot_code,
+                        'date_of_due' => $row->date_of_due
                     ];
                 });
-//                return $items;
+
 
                 break;
             default:
@@ -598,16 +613,30 @@ class SaleNoteController extends Controller
     }
 
 
-
-    public function getFullDescription($row){
+    public function getFullDescription($row, $warehouse){
 
         $desc = ($row->internal_id)?$row->internal_id.' - '.$row->description : $row->description;
-        $category = ($row->category) ? " - {$row->category->name}" : "";
-        $brand = ($row->brand) ? " - {$row->brand->name}" : "";
+        $category = ($row->category) ? "{$row->category->name}" : "";
+        $brand = ($row->brand) ? "{$row->brand->name}" : "";
 
-        $desc = "{$desc} {$category} {$brand}";
+        if($row->unit_type_id != 'ZZ')
+        {
+            $warehouse_stock = ($row->warehouses && $warehouse) ? number_format($row->warehouses->where('warehouse_id', $warehouse->id)->first()->stock,2) : 0;
+            $stock = ($row->warehouses && $warehouse) ? "{$warehouse_stock}" : "";
+        }
+        else{
+            $stock = '';
+        }
 
-        return $desc;
+
+        $desc = "{$desc} - {$brand}";
+
+        return [
+            'full_description' => $desc,
+            'brand' => $brand,
+            'category' => $category,
+            'stock' => $stock,
+        ];
     }
 
 
@@ -653,6 +682,20 @@ class SaleNoteController extends Controller
     }
 
 
+    public function dispatches()
+    {
+        $dispatches = Dispatch::latest()->get(['id','series','number'])->transform(function($row) {
+            return [
+                'id' => $row->id,
+                'series' => $row->series,
+                'number' => $row->number,
+                'number_full' => "{$row->series}-{$row->number}",
+            ];
+        }); ;
+
+        return $dispatches;
+    }
+
     public function enabledConcurrency(Request $request)
     {
 
@@ -690,6 +733,9 @@ class SaleNoteController extends Controller
                 $wr->save();
             }
 
+            //habilito las series
+            ItemLot::where('item_id', $item->item_id )->where('warehouse_id', $warehouse->id)->update(['has_sale' => false]);
+
         }
 
         return [
@@ -701,7 +747,7 @@ class SaleNoteController extends Controller
     }
 
 
-    
+
     public function totals()
     {
 
@@ -718,7 +764,7 @@ class SaleNoteController extends Controller
             $total_paid_pen += $sale_note->payments->sum('payment');
 
         }
-        
+
         $total_pending_paid_pen = $total_pen - $total_paid_pen;
 
         return [
@@ -726,6 +772,14 @@ class SaleNoteController extends Controller
             'total_paid_pen' => number_format($total_paid_pen, 2, ".", ""),
             'total_pending_paid_pen' => number_format($total_pending_paid_pen, 2, ".", "")
         ];
+
+    }
+
+    public function downloadExternal($external_id)
+    {
+        $document = SaleNote::where('external_id', $external_id)->first();
+        $this->reloadPDF($document, 'a4', null);
+        return $this->downloadStorage($document->filename, 'sale_note');
 
     }
 

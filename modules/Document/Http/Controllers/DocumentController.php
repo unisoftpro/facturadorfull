@@ -49,6 +49,7 @@ class DocumentController extends Controller
         $number = $request->number;
         $series = $request->series;
         $state_type_id = $request->state_type_id;
+        $pending_payment = ($request->pending_payment == "true") ? true:false;
         $customer_id = $request->customer_id;
  
 
@@ -75,6 +76,10 @@ class DocumentController extends Controller
                             ->latest();
         }        
 
+        if($pending_payment){ 
+            $records = $records->where('total_canceled', false);
+        }
+        
         if($customer_id){
             $records = $records->where('customer_id', $customer_id);
         }
@@ -210,5 +215,25 @@ class DocumentController extends Controller
             'success' => true,
             'message' =>  'Constancia de pago guardada',
         ];
+    }
+
+    
+    public function prepayments($type)
+    {
+
+        $prepayment_documents = Document::whereHasPrepayment()->whereAffectationTypePrepayment($type)->get()->transform(function($row) {
+            return [
+                'id' => $row->id,
+                'description' => $row->series.'-'.$row->number,
+                'series' => $row->series,
+                'number' => $row->number,
+                'document_type_id' => ($row->document_type_id == '01') ? '02':'03',
+                'amount' => $row->total_value,
+                'total' => $row->total,
+
+            ];
+        });
+        return $prepayment_documents;
+
     }
 }

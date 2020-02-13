@@ -19,6 +19,9 @@ use Exception;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Excel;
 use Barryvdh\DomPDF\Facade as PDF;
+use App\Models\Tenant\DocumentItem;
+
+
 
 class CashController extends Controller
 {
@@ -38,10 +41,10 @@ class CashController extends Controller
     public function records(Request $request)
     {
         $records = Cash::where($request->column, 'like', "%{$request->value}%")
-                        ->whereTypeUser()        
+                        ->whereTypeUser()
                         ->orderBy('date_opening');
 
-        
+
         return new CashCollection($records->paginate(config('tenant.items_per_page')));
     }
 
@@ -93,18 +96,18 @@ class CashController extends Controller
     }
 
     public function store(CashRequest $request) {
-       
-        $id = $request->input('id');        
+
+        $id = $request->input('id');
         $cash = Cash::firstOrNew(['id' => $id]);
         $cash->fill($request->all());
 
         if(!$id){
-            $cash->date_opening = date('Y-m-d'); 
-            $cash->time_opening = date('H:i:s'); 
+            $cash->date_opening = date('Y-m-d');
+            $cash->time_opening = date('H:i:s');
         }
 
-        $cash->save();         
-        
+        $cash->save();
+
         return [
             'success' => true,
             'message' => ($id)?'Caja actualizada con éxito':'Caja aperturada con éxito'
@@ -113,14 +116,14 @@ class CashController extends Controller
     }
 
     public function close($id) {
-       
+
         $cash = Cash::findOrFail($id);
 
-        // dd($cash->cash_documents); 
+        // dd($cash->cash_documents);
 
-        $cash->date_closed = date('Y-m-d'); 
-        $cash->time_closed = date('H:i:s'); 
-        
+        $cash->date_closed = date('Y-m-d');
+        $cash->time_closed = date('H:i:s');
+
         $final_balance = 0;
         $income = 0;
 
@@ -128,9 +131,9 @@ class CashController extends Controller
 
 
             if($cash_document->sale_note){
-                
+
                 $final_balance += ($cash_document->sale_note->currency_type_id == 'PEN') ? $cash_document->sale_note->total : ($cash_document->sale_note->total * $cash_document->sale_note->exchange_rate_sale);
-                
+
                 // $final_balance += $cash_document->sale_note->total;
 
             }
@@ -158,11 +161,11 @@ class CashController extends Controller
 
         }
 
-        $cash->final_balance = round($final_balance + $cash->beginning_balance, 2); 
-        $cash->income = round($final_balance, 2); 
-        $cash->state = false;          
-        $cash->save();         
-        
+        $cash->final_balance = round($final_balance + $cash->beginning_balance, 2);
+        $cash->income = round($final_balance, 2);
+        $cash->state = false;
+        $cash->save();
+
         return [
             'success' => true,
             'message' => 'Caja cerrada con éxito',
@@ -172,17 +175,17 @@ class CashController extends Controller
 
 
     public function cash_document(Request $request) {
-               
+
         $cash = Cash::where([['user_id',auth()->user()->id],['state',true]])->first();
         $cash->cash_documents()->create($request->all());
-          
+
         return [
             'success' => true,
             'message' => 'Venta con éxito',
         ];
     }
 
-    
+
     public function destroy($id)
     {
         $cash = Cash::findOrFail($id);
@@ -196,20 +199,61 @@ class CashController extends Controller
 
 
     public function report($cash) {
-       
+
         $cash = Cash::findOrFail($cash);
         $company = Company::first();
-        // dd($cash);
 
-        set_time_limit(0); 
-        
+        set_time_limit(0);
+
         $pdf = PDF::loadView('tenant.cash.report_pdf', compact("cash", "company"));
 
         $filename = "Reporte_POS - {$cash->user->name} - {$cash->date_opening} {$cash->time_opening}";
-        
-        return $pdf->download($filename.'.pdf');
+
+        return $pdf->stream($filename.'.pdf');
     }
 
-   
+    public function report_general()
+    {
+        $cashes = Cash::select('id')->whereDate('date_opening', date('Y-m-d'))->pluck('id');
+        $cash_documents =  CashDocument::whereIn('cash_id', $cashes)->get();
+
+        $company = Company::first();
+        set_time_limit(0);
+
+        $pdf = PDF::loadView('tenant.cash.report_general_pdf', compact("cash_documents", "company"));
+        $filename = "Reporte_POS";
+        return $pdf->download($filename.'.pdf');
+
+    }
+
+    public function report_products($id)
+    {
+        $cash = Cash::findOrFail($id);
+        $company = Company::first();
+        $cash_documents =  CashDocument::select('document_id')->where('cash_id', $cash->id)->get();
+
+        $source = DocumentItem::with('document')->whereIn('document_id', $cash_documents)->get();
+
+        $documents = collect($source)->transform(function($row){
+            return [
+                'id' => $row->id,
+                'number_full' => $row->document->number_full,
+                'description' => $row->item->description,
+                'quantity' => $row->quantity,
+            ];
+        });
+        
+
+        $pdf = PDF::loadView('tenant.cash.report_product_pdf', compact("cash", "company", "documents"));
+
+        $filename = "Reporte_POS_PRODUCTOS - {$cash->user->name} - {$cash->date_opening} {$cash->time_opening}";
+
+        return $pdf->stream($filename.'.pdf');
+
+
+
+    }
+
+
 
 }

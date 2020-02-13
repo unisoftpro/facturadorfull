@@ -26,7 +26,7 @@ class DocumentInput
 
         $company = Company::active();
         $soap_type_id = $company->soap_type_id;
-        
+
         $offline_configuration = OfflineConfiguration::firstOrFail();
         // $number = Functions::newNumber($soap_type_id, $document_type_id, $series, $number, Document::class);
 
@@ -36,7 +36,7 @@ class DocumentInput
 
         // $filename = Functions::filename($company, $document_type_id, $series, $number);
         $establishment = EstablishmentInput::set($inputs['establishment_id']);
-        $customer = PersonInput::set($inputs['customer_id']);
+        $customer = PersonInput::set($inputs['customer_id'], isset($inputs['customer_address_id']) ? $inputs['customer_address_id']: null  );
 
         if(in_array($document_type_id, ['01', '03'])) {
             $array_partial = self::invoice($inputs);
@@ -59,7 +59,7 @@ class DocumentInput
         }else{
             $data_json = Functions::valueKeyInArray($inputs, 'data_json');
         }
-        
+
         return [
             'type' => $inputs['type'],
             'group_id' => $inputs['group_id'],
@@ -101,6 +101,7 @@ class DocumentInput
             'total_value' => $inputs['total_value'],
             'total' => $inputs['total'],
             'has_prepayment' => Functions::valueKeyInArray($inputs, 'has_prepayment', 0),
+            'affectation_type_prepayment' => Functions::valueKeyInArray($inputs, 'affectation_type_prepayment'),
             'was_deducted_prepayment' => Functions::valueKeyInArray($inputs, 'was_deducted_prepayment', 0),
             'items' => self::items($inputs),
             'charges' => self::charges($inputs),
@@ -168,6 +169,7 @@ class DocumentInput
                     'attributes' => self::attributes($row),
                     'discounts' => self::discounts($row),
                     'charges' => self::charges($row),
+                    'warehouse_id' => Functions::valueKeyInArray($row, 'warehouse_id'),
                 ];
             }
             return $items;
@@ -347,7 +349,7 @@ class DocumentInput
     {
         if(array_key_exists('detraction', $inputs)) {
             if($inputs['detraction']) {
-                
+
                 // dd($inputs['detraction'],$inputs);
                 $detraction = $inputs['detraction'];
                 $detraction_type_id = $detraction['detraction_type_id'];

@@ -37,10 +37,13 @@
                         <th class="text-right" v-if="columns.total_taxed.visible">T.Gravado</th>
                         <th class="text-right" v-if="columns.total_igv.visible">T.Igv</th>
                         <th class="text-right">Total</th>
-                        <th class="text-center">Comprobantes</th>
-                        <th class="text-center">Estado pago</th>
+
                         <th class="text-center" v-if="columns.total_paid.visible">Pagado</th>
                         <th class="text-center" v-if="columns.total_pending_paid.visible">Por pagar</th>
+
+                        <th class="text-center">Comprobantes</th>
+                        <th class="text-center">Estado pago</th>
+
                         <th class="text-center">Pagos</th>
                         <th class="text-center">Descarga</th>
                         <th class="text-center">
@@ -64,7 +67,7 @@
                         <td>{{ index }}</td>
                         <td class="text-center">{{ row.date_of_issue }}</td>
                         <td>{{ row.customer_name }}<br/><small v-text="row.customer_number"></small></td>
-                        <td>{{ row.identifier }}
+                        <td>{{ row.full_number }}
                         </td>
                         <td>{{ row.state_type_description }}</td>
                         <td class="text-center">{{ row.currency_type_id }}</td>
@@ -76,6 +79,16 @@
                         <td class="text-right" v-if="columns.total_taxed.visible">{{ row.total_taxed }}</td>
                         <td class="text-right" v-if="columns.total_igv.visible">{{ row.total_igv }}</td>
                         <td class="text-right">{{ row.total }}</td>
+
+                        <td class="text-center" v-if="columns.total_paid.visible">
+                            {{row.total_paid}}
+                        </td>
+                        <td class="text-center" v-if="columns.total_pending_paid.visible">
+                            {{row.total_pending_paid}}
+                        </td>
+
+
+
                         <td>
                             <template v-for="(document,i) in row.documents">
                                 <label :key="i" v-text="document.number_full" class="d-block"></label>
@@ -84,18 +97,13 @@
                         <td class="text-center">
                             <span class="badge text-white" :class="{'bg-success': (row.paid), 'bg-warning': (!row.paid)}">{{row.paid ? 'Pagado':'Pendiente'}}</span>
                         </td>
-                        <td class="text-center" v-if="columns.total_paid.visible">
-                            {{row.total_paid}}
-                        </td>
-                        <td class="text-center" v-if="columns.total_pending_paid.visible">
-                            {{row.total_pending_paid}}
-                        </td>
+
                         <td class="text-center">
                             <!-- <button type="button" style="min-width: 41px" class="btn waves-effect waves-light btn-xs btn-info m-1__2"
                                     @click.prevent="clickPayment(row.id)"  v-if="row.btn_payments">Pagos</button> -->
 
                             <button type="button" style="min-width: 41px" class="btn waves-effect waves-light btn-xs btn-primary"
-                                    @click.prevent="clickPayment(row.id)"  v-if="row.btn_payments" :disabled="row.paid"><i class="fas fa-money-bill-alt"></i></button>
+                                    @click.prevent="clickPayment(row.id)" ><i class="fas fa-money-bill-alt"></i></button>
                         </td>
 
                         <td class="text-right">
@@ -124,30 +132,37 @@
                         <td class="text-right" v-if="columns.license_plate.visible" >
                             {{row.license_plate}}
                         </td>
-                        
+
                         <td class="text-right">
 
                             <!-- <button v-if="row.state_type_id != '11'" type="button" class="btn waves-effect waves-light btn-xs btn-danger"  @click.prevent="clickVoided(row.id)">Anular</button> -->
-                            <button v-if="row.state_type_id != '11'" type="button" class="btn waves-effect waves-light btn-xs btn-danger" 
+                            <button data-toggle="tooltip" data-placement="top" title="Anular" v-if="row.state_type_id != '11'" type="button" class="btn waves-effect waves-light btn-xs btn-danger"
                              @click.prevent="clickVoided(row.id)"><i class="fas fa-trash"></i></button>
 
                             <!-- <button type="button" class="btn waves-effect waves-light btn-xs btn-info"
                                     @click.prevent="clickCreate(row.id)" v-if="row.btn_generate && row.state_type_id != '11'">Editar</button> -->
 
-                            <button type="button" class="btn waves-effect waves-light btn-xs btn-primary"
+                            <button data-toggle="tooltip" data-placement="top" title="Editar" type="button" class="btn waves-effect waves-light btn-xs btn-primary"
                                     @click.prevent="clickCreate(row.id)" v-if="row.btn_generate && row.state_type_id != '11'"><i class="fas fa-file-signature"></i></button>
 
                             <!-- <button type="button" class="btn waves-effect waves-light btn-xs btn-info"
                                     @click.prevent="clickGenerate(row.id)" v-if="!row.changed && row.state_type_id != '11' ">Generar comprobante</button> -->
 
 
-                            <button type="button" class="btn waves-effect waves-light btn-xs btn-success"
+                            <button data-toggle="tooltip" data-placement="top" title="Generar comprobante" type="button" class="btn waves-effect waves-light btn-xs btn-success"
                                     @click.prevent="clickGenerate(row.id)" v-if="!row.changed && row.state_type_id != '11' "><i class="fas fa-file-excel"></i></button>
 
                             <!-- <button  v-if="row.state_type_id != '11'"  type="button" class="btn waves-effect waves-light btn-xs btn-info"
                                     @click.prevent="clickOptions(row.id)">Opciones</button> -->
-                                    
-                            <button  v-if="row.state_type_id != '11'"  type="button" class="btn waves-effect waves-light btn-xs btn-info"
+                            <template v-for="(document,i) in row.documents" >
+                                <a :href="`/dispatches/create/${document.id}`" class="btn waves-effect waves-light btn-xs btn-warning m-1__2"
+                                    v-if="row.changed" :key="i"><i class="fas fa-file-alt"></i></a>
+                            </template>
+
+                            <!-- <button type="button" class="btn waves-effect waves-light btn-xs btn-info"
+                                    @click.prevent="clickGenerate(row.id)" v-if="!row.changed && row.state_type_id != '11' ">Generar comprobante</button> -->
+
+                            <button  data-toggle="tooltip" data-placement="top" title="Imprimir" v-if="row.state_type_id != '11'"  type="button" class="btn waves-effect waves-light btn-xs btn-info"
                                     @click.prevent="clickOptions(row.id)"><i class="fas fa-print"></i></button>
                         </td>
 
@@ -219,15 +234,15 @@
                     },
                     type_period: {
                         title: 'Tipo Periodo',
-                        visible: false
+                        visible: true
                     },
                     quantity_period: {
                         title: 'Cantidad Periodo',
-                        visible: false
+                        visible: true
                     },
                     license_plate:{
                         title: 'Placa',
-                        visible: false
+                        visible: true
                     },
                     total_paid:{
                         title: 'Pagado',
@@ -265,7 +280,7 @@
         },
         methods: {
             clickDownload(external_id) {
-                window.open(`/downloads/saleNote/sale_note/${external_id}`, '_blank');
+                window.open(`/sale-notes/downloadExternal/${external_id}`, '_blank');
             },
             clickOptions(recordId) {
                 this.saleNotesNewId = recordId

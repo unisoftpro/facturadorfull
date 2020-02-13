@@ -32,6 +32,20 @@ class PersonResource extends JsonResource
             'percentage_perception' => $this->percentage_perception,
             'state' => $this->state,
             'condition' => $this->condition,
+            'person_type_id' => $this->person_type_id,
+            'comment' => $this->comment,
+            'addresses' => collect($this->addresses)->transform(function ($row) {
+                return [
+                    'id' => $row->id,
+                    'trade_name' => $row->trade_name,
+                    'country_id' => $row->country_id,
+                    'location_id' => !is_null($row->location_id)?$row->location_id:[],
+                    'address' => $row->address,
+                    'phone' => $row->phone,
+                    'email' => $row->email,
+                    'main' => (bool)$row->main,
+                ];
+            }),
 
             // 'more_address' =>  $this->more_address,
         ];

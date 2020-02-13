@@ -298,7 +298,7 @@
                       <div class="col-lg-6">
                         <div class="summary">
                           <h4 class="title text-danger">
-                            Total Pagos 
+                            Total Pagos
                             <el-popover placement="right" width="100%" trigger="hover">
                               <p><span class="custom-badge">T. Pagos Ventas - T. Pagos Compras/Gastos</span></p>
                               <p>Total pagos comprobantes:<span class="custom-badge pull-right">S/ {{ balance.totals.total_payment_document }}</span></p>
@@ -383,7 +383,7 @@
                           <h4 class="title">
                             <br>
                             <el-checkbox  v-model="form.enabled_expense" @change="loadDataUtilities">Considerar gastos</el-checkbox><br>
-                          </h4> 
+                          </h4>
                         </div>
                       </div>
                     </div>
@@ -473,6 +473,9 @@
             <section class="card">
               <div class="card-body">
                 <h2 class="card-title">Ventas por producto</h2>
+                <div class="mt-3">
+                  <el-checkbox  v-model="form.enabled_move_item" @change="loadDataAditional">Ordenar por movimientos</el-checkbox><br>
+                </div>
                 <div class="table-responsive">
                   <table class="table">
                     <thead>
@@ -480,6 +483,17 @@
                         <th>#</th>
                         <th>Código</th>
                         <th>Nombre</th>
+                        <th class="text-right">
+                          Mov.
+                            <el-tooltip
+                              class="item"
+                              effect="dark"
+                              content="Movimientos (Cantidad de veces vendido)"
+                              placement="top-start"
+                            >
+                              <i class="fa fa-info-circle"></i>
+                            </el-tooltip>
+                        </th>
                         <th class="text-right">Total</th>
                       </tr>
                     </thead>
@@ -489,6 +503,7 @@
                           <td>{{ index + 1 }}</td>
                           <td>{{ row.internal_id }}</td>
                           <td>{{ row.description }}</td>
+                          <td class="text-right">{{ row.move_quantity }}</td>
                           <td class="text-right">{{ row.total }}</td>
                         </tr>
                       </template>
@@ -502,12 +517,26 @@
             <section class="card">
               <div class="card-body">
                 <h2 class="card-title">Top clientes</h2>
+                <div class="mt-3">
+                  <el-checkbox  v-model="form.enabled_transaction_customer" @change="loadDataAditional">Ordenar por transacciones</el-checkbox><br>
+                </div>
                 <div class="table-responsive">
                   <table class="table">
                     <thead>
                       <tr>
                         <th>#</th>
                         <th>Cliente</th>
+                        <th class="text-right">
+                          Trans.
+                            <el-tooltip
+                              class="item"
+                              effect="dark"
+                              content="Transacciones (Cantidad de ventas realizadas)"
+                              placement="top-start"
+                            >
+                              <i class="fa fa-info-circle"></i>
+                            </el-tooltip>
+                        </th>
                         <th class="text-right">Total</th>
                       </tr>
                     </thead>
@@ -520,6 +549,7 @@
                             <br />
                             <small v-text="row.number"></small>
                           </td>
+                          <td class="text-right">{{ row.transaction_quantity }}</td>
                           <td class="text-right">{{ row.total }}</td>
                         </tr>
                       </template>
@@ -558,8 +588,8 @@
                       @change="changeCustomerUnpaid"
                       filterable
                       clearable
-                      v-model="selected_customer"
-                      placeholder="Todos"
+                      v-model="form.customer_id"
+                      placeholder="Seleccionar cliente"
                     >
                       <el-option
                         v-for="item in customers"
@@ -571,17 +601,27 @@
                   </div>
                   <div class="col-md-1">
                     <el-badge :value="getTotalRowsUnpaid" class="item">
-                      <span size="small">Total facturas</span>
+                      <span size="small">Total comprobantes</span>
                     </el-badge>
                   </div>
                   <div class="col-md-1">
                     <el-badge :value="getTotalAmountUnpaid" class="item">
-                      <span size="small">Monto total</span>
+                      <span size="small">Monto general (PEN)</span>
                     </el-badge>
                   </div>
                   <div class="col-md-1">
                     <el-badge :value="getCurrentBalance" class="item">
-                      <span size="small">Saldo corriente</span>
+                      <span size="small">Saldo corriente (PEN)</span>
+                    </el-badge>
+                  </div>
+                  <div class="col-md-1">
+                    <el-badge :value="getTotalAmountUnpaidUsd" class="item">
+                      <span size="small">Monto general (USD)</span>
+                    </el-badge>
+                  </div>
+                  <div class="col-md-1">
+                    <el-badge :value="getCurrentBalanceUsd" class="item">
+                      <span size="small">Saldo corriente (USD)</span>
                     </el-badge>
                   </div>
                 </div>
@@ -592,13 +632,15 @@
                       <tr>
                         <th>#</th>
                         <th>F.Emisión</th>
+                        <th>F.Vencimiento</th>
                         <th>Número</th>
                         <th>Cliente</th>
+                        <th>Días de retraso</th>
 
                         <th>Guías</th>
 
                         <th>Ver Cartera</th>
-
+                        <th>Moneda</th>
                         <th class="text-right">Por cobrar</th>
                         <th class="text-right">Total</th>
                         <th></th>
@@ -609,8 +651,10 @@
                         <tr v-if="row.total_to_pay > 0">
                           <td>{{ index + 1 }}</td>
                           <td>{{ row.date_of_issue }}</td>
+                          <td>{{ row.date_of_due ? row.date_of_due : 'No tiene fecha de vencimiento.'}}</td>
                           <td>{{ row.number_full }}</td>
                           <td>{{ row.customer_name }}</td>
+                          <td>{{ row.delay_payment ? row.delay_payment : 'No tiene días atrasados.' }}</td>
 
                           <td>
                             <template>
@@ -665,23 +709,23 @@
                                 >{{ row.date_payment_last ? row.date_payment_last : 'No registra pagos.' }}</span>
                               </p>
 
-                              <p>
+                              <!-- <p>
                                 Dia de retraso en el pago:
                                 <span
                                   class="custom-badge"
                                 >{{ row.delay_payment ? row.delay_payment : 'No tiene días atrasados.'}}</span>
-                              </p>
+                              </p> -->
 
-                              <p>
+                              <!-- <p>
                                 Fecha de vencimiento:
                                 <span
                                   class="custom-badge"
                                 >{{ row.date_of_due ? row.date_of_due : 'No tiene fecha de vencimiento.'}}</span>
-                              </p>
+                              </p> -->
                               <el-button icon="el-icon-view" slot="reference"></el-button>
                             </el-popover>
                           </td>
-
+                            <td>{{row.currency_type_id}}</td>
                           <td class="text-right text-danger">{{ row.total_to_pay }}</td>
                           <td class="text-right">{{ row.total }}</td>
                           <td class="text-right">
@@ -824,15 +868,15 @@ export default {
 
       const self = this;
       let source = [];
-      if (self.selected_customer) {
+      if (self.form.customer_id) {
         source = _.filter(self.records, function(item) {
           return (
-            item.total_to_pay > 0 && item.customer_id == self.selected_customer
+            item.total_to_pay > 0 && item.customer_id == self.form.customer_id && item.currency_type_id == 'PEN'
           );
         });
       } else {
         source = _.filter(this.records, function(item) {
-          return item.total_to_pay > 0;
+          return item.total_to_pay > 0 && item.currency_type_id == 'PEN';
         });
       }
 
@@ -840,13 +884,33 @@ export default {
         return parseFloat(item.total_to_pay);
       }).toFixed(2);
     },
+    getCurrentBalanceUsd() {
+
+      const self = this;
+      let source = [];
+      if (self.form.customer_id) {
+        source = _.filter(self.records, function(item) {
+          return (
+            item.total_to_pay > 0 && item.customer_id == self.form.customer_id && item.currency_type_id == 'USD'
+          );
+        });
+      } else {
+        source = _.filter(this.records, function(item) {
+          return item.total_to_pay > 0 && item.currency_type_id == 'USD';
+        });
+      }
+
+      return _.sumBy(source, function(item) {
+        return  parseFloat(item.total_to_pay);
+      }).toFixed(2);
+    },
     getTotalRowsUnpaid() {
       const self = this;
 
-      if (self.selected_customer) {
+      if (self.form.customer_id) {
         return _.filter(self.records, function(item) {
           return (
-            item.total_to_pay > 0 && item.customer_id == self.selected_customer
+            item.total_to_pay > 0 && item.customer_id == self.form.customer_id
           );
         }).length;
       } else {
@@ -858,34 +922,66 @@ export default {
     getTotalAmountUnpaid() {
       const self = this;
       let source = [];
-      if (self.selected_customer) {
+      if (self.form.customer_id) {
         source = _.filter(self.records, function(item) {
           return (
-            item.total_to_pay > 0 && item.customer_id == self.selected_customer
+            item.total_to_pay > 0 && item.customer_id == self.form.customer_id && item.currency_type_id == 'PEN'
           );
         });
       } else {
         source = _.filter(this.records, function(item) {
-          return item.total_to_pay > 0;
+          return item.total_to_pay > 0 &&  item.currency_type_id == 'PEN';
         });
       }
 
       return _.sumBy(source, function(item) {
-        return parseFloat(item.total);
-      }).toFixed(2);
+        return  parseFloat(item.total)
+      }).toFixed(2)
+    },
+    getTotalAmountUnpaidUsd() {
+      const self = this;
+      let source = [];
+      if (self.form.customer_id) {
+        source = _.filter(self.records, function(item) {
+          return (
+            item.total_to_pay > 0 && item.customer_id == self.form.customer_id && item.currency_type_id == 'USD'
+          );
+        });
+      } else {
+        source = _.filter(this.records, function(item) {
+          return item.total_to_pay > 0 && item.currency_type_id == 'USD';
+        });
+      }
+
+      return _.sumBy(source, function(item) {
+        return  parseFloat(item.total);
+      }).toFixed(2)
     }
   },
+
   methods: {
+    calculateTotalCurrency(currency_type_id, exchange_rate_sale,  total )
+    {
+        if(currency_type_id == 'USD')
+        {
+            return parseFloat(total) * exchange_rate_sale;
+        }
+        else{
+            return parseFloat(total);
+        }
+    },
     clickDownloadDispatch(download) {
       window.open(download, "_blank");
     },
     changeCustomerUnpaid() {
-      if (this.selected_customer) {
-        this.records = _.filter(this.records_base, {
+      if (this.form.customer_id) {
+
+        this.loadUnpaid()
+        /*this.records = _.filter(this.records_base, {
           customer_id: this.selected_customer
-        });
+        });*/
       } else {
-        this.records = this.records_base;
+        this.records = []
       }
     },
     clickDownload(type) {
@@ -898,11 +994,14 @@ export default {
       this.form = {
         establishment_id: null,
         enabled_expense: null,
+        enabled_move_item:false,
+        enabled_transaction_customer:false,
         period: "all",
         date_start: moment().format("YYYY-MM-DD"),
         date_end: moment().format("YYYY-MM-DD"),
         month_start: moment().format("YYYY-MM"),
-        month_end: moment().format("YYYY-MM")
+        month_end: moment().format("YYYY-MM"),
+        customer_id: null
       };
     },
     changeDisabledDates() {
@@ -946,7 +1045,7 @@ export default {
     },
     loadAll() {
       this.loadData();
-      this.loadUnpaid();
+     // this.loadUnpaid();
       this.loadDataAditional();
       this.loadDataUtilities();
       //this.loadCustomer();
@@ -973,13 +1072,13 @@ export default {
       this.$http
         .post(`/${this.resource}/utilities`, this.form)
         .then(response => {
-          this.utilities = response.data.data.utilities; 
+          this.utilities = response.data.data.utilities;
         });
     },
     loadUnpaid() {
       this.$http.post(`/${this.resource}/unpaid`, this.form).then(response => {
         this.records = response.data.records;
-        this.records_base = response.data.records;
+        //this.records_base = response.data.records;
       });
     },
     clickDocumentPayment(recordId) {

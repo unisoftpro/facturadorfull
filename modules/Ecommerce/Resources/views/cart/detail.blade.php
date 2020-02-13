@@ -127,7 +127,27 @@
 
             </div><!-- End .checkout-methods -->
         </div><!-- End .cart-summary -->
+
+
+        <div class="cart-summary">
+            <h3>Datos de contacto y  envío</h3>
+
+            <form autocomplete="off" action="#">
+                <div class="form-group">
+                    <label for="email">Telefono:</label>
+                    <input v-model="form_contact.telephone" type="text" required autocomplete="off" class="form-control"
+                        placeholder="Ingrese número de teléfono" name="name">
+                </div>
+                <div class="form-group">
+                    <label for="email">Dirección:</label>
+                        <textarea v-model="form_contact.address" class="form-control" placeholder="Ingrese dirección de  envío" rows="2" cols="10">
+                        </textarea>
+                </div>
+            </form>
+        </div>
     </div><!-- End .col-lg-4 -->
+
+
 
 
     <div class="modal fade" id="modal_ask_document" tabindex="-1" role="dialog" data-backdrop="static"
@@ -173,21 +193,21 @@
 
                         </div>
                         <div class="form-group">
-                            <label class="control-label">Número <span class="text-danger">*</span></label>
+                            <label class="control-label">Ingrese Número <span> (Se debe validar el numero ingresado)</span> <span class="text-danger">*</span></label>
                             <div class="input-group mb-3">
                                 <input type="text" class="form-control" v-model="formIdentity.number"
                                     :maxlength="maxLength" aria-label="Recipient's username"
                                     aria-describedby="button-addon2">
                                 <div class="input-group-append">
 
-                                    <button :disabled="!formIdentity.number" @click.prevent="searchCustomer"
+                                    <button  :disabled="!formIdentity.number" @click.prevent="searchCustomer"
                                         class="btn btn-outline-secondary" type="button" id="button-addon2">
 
                                         <template v-if="formIdentity.identity_document_type_id === '6'">
-                                            <i class="icon-search"></i> <span>SUNAT</span>
+                                            <i class="icon-search"></i> <span>SUNAT @{{ text_search }}</span>
                                         </template>
                                         <template v-if="formIdentity.identity_document_type_id === '1'">
-                                            <i class="icon-search"></i> <span>RENIEC</span>
+                                            <i class="icon-search"></i> <span>RENIEC @{{ text_search }}</span>
                                         </template>
                                     </button>
                                 </div>
@@ -226,11 +246,16 @@
     var app_cart = new Vue({
         el: '#app',
         data: {
+            form_contact: {
+                address:   '',
+                telephone:   '',
+            },
             payment_cash: {
                 amount: '',
                 clicked: false
             },
             response_search: {},
+            text_search: '',
             loading_search: false,
             identity_document_types: [{
                 id: '1',
@@ -318,10 +343,9 @@
                 });
 
                 let url_finally = '{{ route("tenant_ecommerce_payment_cash")}}';
-                let response = await axios.post(url_finally, this.getFormPaymentCash(), this
-                    .getHeaderConfig())
+                let response = await axios.post(url_finally, this.getFormPaymentCash(), this.getHeaderConfig())
                 if (response.data.success) {
-                    // console.log(response)
+                    this.saveContactDataUser()
                     this.clearShoppingCart()
                     this.response_order_total = response.data.order.total
                     swal({
@@ -340,6 +364,7 @@
                 window.location = "{{ route('tenant.ecommerce.index') }}";
             },
             async searchCustomer() {
+                this.text_search = 'Buscando...'
                 this.response_search = {
                     succes: false,
                     message: ''
@@ -357,7 +382,7 @@
 
                 if (response.data.success) {
                     this.response_search.success = response.data.success
-                    this.response_search.message = 'Datos Encontrados'
+                    this.response_search.message = 'Datos Encontrados (Ahora puede enviar su comprobante.)'
                     // let data = response.data.data
                     this.formIdentity.validate = true
                     this.form_document.datos_del_cliente_o_receptor.codigo_tipo_documento_identidad = this
@@ -379,6 +404,8 @@
                     this.form_document.datos_del_cliente_o_receptor.numero_documento = "0"
                 }
 
+                this.text_search = ''
+
             },
             getHeaderConfig() {
                 let token = this.user.api_token
@@ -391,12 +418,17 @@
                 return axiosConfig;
             },
             checkDocument(typeDocument) {
+
+                $('#modal_ask_document').modal('hide');
+
                 this.formIdentity.identity_document_type_id = typeDocument
+
+                $('#modal_identity_document').modal('show');
                 //this.typeDocumentSelected = typeDocument
-                let total = parseFloat(this.response_order_total)
+                //let total = parseFloat(this.response_order_total)
                 // console.log(total, this.response_order_total)
 
-                if (typeDocument == '6') {
+                /*if (typeDocument == '6') {
                     let tipoDocumento = this.user.identity_document_type_id
                     let number = this.user.number
                     // console.log(this.user)
@@ -420,8 +452,8 @@
 
                         this.sendDocument()
                     }
-                    
-                }
+
+                }*/
 
             },
             finallyProcess(form) {
@@ -458,17 +490,17 @@
                     }
                 });
                 let doc = await this.getDocument()
-                console.log(doc)
+               // console.log(doc)
                 // return
                 await axios.post('/api/documents', doc, this.getHeaderConfig())
                     .then(response => {
-                        console.log('documento generado correctamente')
+                       // console.log('documento generado correctamente')
                         this.finallyProcess(this.getDataFinally(response.data))
                         this.initForm()
                     })
                     .catch(error => {
-                        console.log(error)
-                        console.log('error al generar documento')
+                      // console.log(error)
+                        //console.log('error al generar documento')
                         swal({
                             type: 'error',
                             title: 'Oops...',
@@ -626,10 +658,14 @@
                     "items": [],
                 }
 
-                
+
                 this.formIdentity = {
                     identity_document_type_id: '6'
                 }
+
+                this.form_contact.address =  this.user.address
+                this.form_contact.telephone =  this.user.telephone
+
 
             },
             deleteItem(id, index) {
@@ -725,6 +761,17 @@
                 // $("#total_amount").data('total', this.summary.total);
 
                 // this.payment_cash.amount = this.summary.total
+            },
+            saveContactDataUser()
+            {
+                let url_finally = '{{ route("tenant_ecommerce_user_data")}}';
+                axios.post(url_finally, this.form_contact, this.getHeaderConfig())
+                    .then(response => {
+                       conssole.log(ressponse.data)
+                    })
+                    .catch(error => {
+
+                    });
             }
         }
     })
@@ -733,6 +780,17 @@
 
 <script>
     Culqi.publicKey = {!! json_encode($configuration->token_public_culqui ) !!};
+    if(!Culqi.publicKey)
+    {
+        swal({
+
+            title: "Culqi configuración",
+            text: "El pago con visa aun no esta disponible. Intente con efectivo.",
+            type: "error",
+            position: 'top-end',
+            icon: 'warning',
+        })
+    }
     Culqi.options({
         installments: true
     });
@@ -805,6 +863,7 @@
                         }).then((x) => {
 
                             askedDocument(data.order);
+                            app_cart.saveContactDataUser();
                             //window.location = "{{ route('tenant.ecommerce.index') }}";
                         })
                     } else {
