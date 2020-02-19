@@ -9,6 +9,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\Tenant\FormatTemplate;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Storage;
 
 class ConfigurationController extends Controller
 {
@@ -17,51 +19,51 @@ class ConfigurationController extends Controller
     }
 
     public function addSeeder(){
-       $reiniciar =  DB::connection('tenant')
-                        ->table('format_templates')
-                        ->truncate();
-       $archivos = Storage::disk('core')->allDirectories('Templates/pdf');
-       $colection = array();
-       $valor = array();
-     foreach($archivos as $valor){
-        $lina = explode( '/', $valor);
-        if(count($lina) <= 3){
-        array_push($colection, $lina);
-        }
-       }
+       $reiniciar =  DB::connection('tenant')
+                        ->table('format_templates')
+                        ->truncate();
+       $archivos = Storage::disk('core')->allDirectories('Templates/pdf');
+       $colection = array();
+       $valor = array();
+     foreach($archivos as $valor){
+        $lina = explode( '/', $valor);
+        if(count($lina) <= 3){
+        array_push($colection, $lina);
+        }
+       }
 
-       foreach ($colection as $insertar) {
-           $insertar =  DB::connection('tenant')
-            ->table('format_templates')
-            ->insert(['formats' => $insertar[2] ]);
-       }
-      
-        return redirect()->route('tenant.advanced.index');
-    }
+       foreach ($colection as $insertar) {
+           $insertar =  DB::connection('tenant')
+            ->table('format_templates')
+            ->insert(['formats' => $insertar[2] ]);
+       }
+      
+        return redirect()->route('tenant.advanced.index');
+    }
 
-    public function changeFormat(Request $request){
-        $format = Configuration::first();
-        $format->fill($request->all());
-        $format->save();
-    
-        $config_format = config(['tenant.pdf_template' => $format->formats]);
-        return [
-            'success' => true,
-            'message' => 'Configuración actualizada'
-        ];
+    public function changeFormat(Request $request){
+        $format = Configuration::first();
+        $format->fill($request->all());
+        $format->save();
+    
+        $config_format = config(['tenant.pdf_template' => $format->formats]);
+      
+        return [
+            'success' => true,
+            'message' => 'Configuración actualizada'
+        ];
 
-    }
+    }
 
-    public function getFormats(){
-         $formats = DB::connection('tenant')->table('format_templates')->get();
-         return $formats;
-    }
+    public function getFormats(){
+         $formats = DB::connection('tenant')->table('format_templates')->get();
+         return $formats;
+    }
     
     public function record() {
         $configuration = Configuration::first();
         $record = new ConfigurationResource($configuration);
-        $formats = FormatTemplate::all();
-        return  $formats;
+        return  $record;
     }
     
     public function store(ConfigurationRequest $request) {

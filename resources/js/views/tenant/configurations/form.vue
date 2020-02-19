@@ -53,13 +53,28 @@
                                 <small class="form-control-feedback" v-if="errors.amount_plastic_bag_taxes" v-text="errors.amount_plastic_bag_taxes[0]"></small>
                             </div>
                         </div>
-                        <!-- <div class="col-md-6 mt-4" v-if="typeUser != 'integrator'">
-                            <label class="control-label">Cuenta contable venta subtotal</label>
-                            <div class="form-group" :class="{'has-danger': errors.subtotal_account}">
-                                <el-input v-model="form.subtotal_account" width="50%"></el-input>
-                                <small class="form-control-feedback" v-if="errors.subtotal_account" v-text="errors.subtotal_account[0]"></small>
+                    
+             <div class="row">
+                        <div class="col-md-6">
+                            <label>Plantillas PDF</label>
+                            <el-select v-model="formato.formats" @change="changeFormat(formato.formats)">
+                                <el-option disabled value="">Seleccione Plantilla</el-option>
+                                <el-option v-for="(option, index) in formatos" :key="index" v-bind:value="option.formats"> {{option.formats}}</el-option>
+                            </el-select>
+                            <small class="form-control-feedback" v-model="form.formats"> Plantilla actual: {{form.formats}}</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label>Actualizar lista de plantillas</label><br>
+                            <el-button type="success" @click="addSeeder" icon="el-icon-refresh"></el-button>
+                        </div>
+                        <div class="col-md-6 mt-4" v-if="typeUser != 'integrator'">
+                            <label class="control-label">Menú lateral contraído</label>
+                            <div class="form-group" :class="{'has-danger': errors.compact_sidebar}">
+                                <el-switch v-model="form.compact_sidebar" active-text="Si" inactive-text="No" @change="compactSidebar"></el-switch>
+                                <small class="form-control-feedback" v-if="errors.compact_sidebar" v-text="errors.compact_sidebar[0]"></small>
                             </div>
-                        </div> -->
+                        </div>
+                    </div>
                     </div>
                 </div>
             </form>
@@ -76,18 +91,44 @@
                 loading_submit: false,
                 resource: 'configurations',
                 errors: {},
-                form: {}
+                form: {},
+                formatos: [],
+                formato: {
+                    formats: ''
+                },
+                placeholder:'',
             }
         },
         async created() {
             await this.initForm();
 
-            await this.$http.get(`/${this.resource}/record`) .then(response => {
+            await this.$http.get(`/${this.resource}/record`).then(response => {
                 if (response.data !== '') this.form = response.data.data;
                 console.log(response)
             });
+
+           this.$http.get(`/${this.resource}/getFormats`).then(response => {
+                if (response.data !== '') this.formatos = response.data
+                console.log(this.formatos)
+            });
         },
         methods: {
+            addSeeder(){
+            var ruta = location.host 
+            location.href="/configurations/addSeeder"
+            },
+
+            changeFormat(value){
+               this.formato = {
+                    formats: value,
+               }
+
+               this.$http.post(`/${this.resource}/changeFormat`, this.formato).then(response =>{
+                   this.$message.success(response.data.message);
+                    location.reload()
+               })
+
+            },
             initForm() {
                 this.errors = {};
 
