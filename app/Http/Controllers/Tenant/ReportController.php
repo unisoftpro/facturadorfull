@@ -32,6 +32,7 @@ class ReportController extends Controller
     }
     
     public function search(Request $request) {
+        //mr2 fork
         $documentTypes = DocumentType::all();
         $td = $this->getTypeDoc($request->document_type);
         $establishments = Establishment::all();
