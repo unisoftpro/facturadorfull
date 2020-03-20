@@ -135,14 +135,18 @@ trait InventoryTrait
     }
 
     public function optionsWarehouse() {
+      if(auth()->user()->type==="admin") {
         $records = Warehouse::all();
+      } else {
+        $records = Warehouse::where('establishment_id', auth()->user()->establishment_id)->get();
+      }
 
-        return collect($records)->transform(function($row) {
-            return  [
-                'id' => $row->id,
-                'description' => $row->description
-            ];
-        });
+      return collect($records)->transform(function($row) {
+        return  [
+          'id' => $row->id,
+          'description' => $row->description
+        ];
+      });
     }
 
     public function findItem($item_id) {

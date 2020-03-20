@@ -86,18 +86,22 @@ class ReportKardexController extends Controller
         $item_id = $request['item_id'];
         $date_start = $request['date_start'];
         $date_end = $request['date_end'];
+        $warehouse_id = $request["warehouse_id"];
 
-        $records = $this->data($item_id, $date_start, $date_end);
+        $records = $this->data($item_id, $date_start, $date_end, $warehouse_id);
 
         return $records;
 
     }
 
 
-    private function data($item_id, $date_start, $date_end)
+    private function data($item_id, $date_start, $date_end, $warehouse_id)
     {
-
+      if(auth()->user()->type==="admin" && $warehouse_id>0) {
+        $warehouse = Warehouse::where('establishment_id', $warehouse_id)->first();
+      } else {
         $warehouse = Warehouse::where('establishment_id', auth()->user()->establishment_id)->first();
+      }
 
         if($date_start && $date_end){
 
@@ -167,7 +171,11 @@ class ReportKardexController extends Controller
         $a = $request->date_end;
         $item_id = $request->item_id;
 
-        $warehouse = Warehouse::where('establishment_id', auth()->user()->establishment_id)->first();
+        if(auth()->user()->type==="admin" && $request->warehouse_id>0) {
+          $warehouse = Warehouse::where('establishment_id', $request->warehouse_id)->first();
+        } else {
+          $warehouse = Warehouse::where('establishment_id', auth()->user()->establishment_id)->first();
+        }
 
         if($d && $a){
 
@@ -211,7 +219,11 @@ class ReportKardexController extends Controller
         $a = $request->date_end;
         $item_id = $request->item_id;
 
-        $warehouse = Warehouse::where('establishment_id', auth()->user()->establishment_id)->first();
+        if(auth()->user()->type==="admin" && $request->warehouse_id>0) {
+          $warehouse = Warehouse::where('establishment_id', $request->warehouse_id)->first();
+        } else {
+          $warehouse = Warehouse::where('establishment_id', auth()->user()->establishment_id)->first();
+        }
 
         if($d && $a){
 

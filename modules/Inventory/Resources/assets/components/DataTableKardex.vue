@@ -3,9 +3,9 @@
         <div class="row">
 
             <div class="col-md-12 col-lg-12 col-xl-12 ">
-                  
-                <div class="row mt-2">  
-                         
+
+                <div class="row mt-2">
+
                         <div class="col-md-6">
                             <label class="control-label">Producto</label>
                             <el-select  v-model="form.item_id"
@@ -25,22 +25,31 @@
                                             :picker-options="pickerOptionsDates"
                                             value-format="yyyy-MM-dd" format="dd/MM/yyyy" :clearable="true"></el-date-picker>
                         </div>
+                        <div class="col-md-6">
+                          <div class="form-group">
+                              <label class="control-label">Almacén</label>
+                              <el-select v-model="form.warehouse_id" filterable>
+                                  <el-option v-for="option in warehouses" :key="option.id" :value="option.id" :label="option.description"></el-option>
+                                  <el-option value="0" label="Todos"></el-option>
+                              </el-select>
+                          </div>
+                        </div>
 
-                        <div class="col-md-6" style="margin-top:29px"> 
+                        <div class="col-md-6" style="margin-top:29px">
                             <el-button class="submit" type="primary" @click.prevent="getRecordsByFilter" :loading="loading_submit" icon="el-icon-search" >Buscar</el-button>
-                            <template v-if="records.length>0"> 
+                            <template v-if="records.length>0">
 
                                 <el-button class="submit" type="danger"  icon="el-icon-tickets" @click.prevent="clickDownload('pdf')" >Exportar PDF</el-button>
 
                                 <el-button class="submit" type="success" @click.prevent="clickDownload('excel')"><i class="fa fa-file-excel" ></i>  Exportal Excel</el-button>
 
                             </template>
-                        </div> 
-                    
+                        </div>
+
                 </div>
                 <div class="row mt-1 mb-4">
-                    
-                </div> 
+
+                </div>
             </div>
 
 
@@ -102,12 +111,15 @@
                         return this.form.date_start > time
                     }
                 },
+                warehouse_id: '',
+                warehouses: []
             }
         },
         computed: {
         },
         created() {
             this.initForm()
+            this.getWarehouses()
             this.$eventHub.$on('reloadData', () => {
                 this.getRecords()
             })
@@ -137,11 +149,12 @@
                 window.open(`/${this.resource}/${type}/?${query}`, '_blank');
             },
             initForm(){
- 
+
                 this.form = {
                     item_id:null,
                     date_start:null,
                     date_end:null,
+                    warehouse_id:null
                 }
 
             },  
@@ -168,8 +181,11 @@
                     this.pagination.per_page = parseInt(response.data.meta.per_page)
                     this.loading_submit = false
                 });
-
-
+            },
+            async getWarehouses () {
+              await this.$http.get(`/inventory/tables/transaction/input`).then(response => {
+                this.warehouses = response.data.warehouses
+              })
             },
             getQueryParameters() {
                 return queryString.stringify({
