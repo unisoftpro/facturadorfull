@@ -141,6 +141,7 @@
                                                 <td class="text-right">{{currency_type.symbol}} {{row.total}}</td>
                                                 <td class="text-right">
                                                     <button type="button" class="btn waves-effect waves-light btn-xs btn-danger" @click.prevent="clickRemoveItem(index)">x</button>
+                                                    <button type="button" class="btn waves-effect waves-light btn-xs btn-info" @click="ediItem(row, index)" ><span style='font-size:10px;'>&#9998;</span> </button>
                                                 </td>
                                             </tr>
                                             <tr><td colspan="8"></td></tr>
@@ -150,10 +151,10 @@
                             </div>
                             <div class="col-lg-12 col-md-6 d-flex align-items-end">
                                 <div class="form-group">
-                                    <button type="button" class="btn waves-effect waves-light btn-primary" @click.prevent="showDialogAddItem = true">+ Agregar Producto</button>
+                                    <button type="button" class="btn waves-effect waves-light btn-primary" @click.prevent="clickShowDialogAddItem">+ Agregar Producto</button>
                                 </div>
                             </div>
- 
+
                             <div class="col-md-8 mt-3">
 
                             </div>
@@ -181,7 +182,8 @@
             </div>
         </div>
 
-        <quotation-form-item :showDialog.sync="showDialogAddItem" 
+        <quotation-form-item :showDialog.sync="showDialogAddItem"
+        :recordItem="recordItem"
                            :currency-type-id-active="form.currency_type_id"
                            :exchange-rate-sale="form.exchange_rate_sale"
                            @add="addRow"></quotation-form-item>
@@ -231,7 +233,8 @@
                 currency_type: {},
                 quotationNewId: null,
                 activePanel: 0,
-                loading_search:false
+                loading_search:false,
+                recordItem: null
             }
         },
         async created() {
@@ -367,13 +370,26 @@
                 this.customers = this.all_customers
             }, 
             addRow(row) {
+              if(this.recordItem) {
+                this.form.items[this.recordItem.indexi] = row
+                this.recordItem = null
+              } else {
                 this.form.items.push(JSON.parse(JSON.stringify(row)));
-                
-                this.calculateTotal();
+              }
+              this.calculateTotal();
             },
             clickRemoveItem(index) {
                 this.form.items.splice(index, 1)
                 this.calculateTotal()
+            },
+            ediItem (row, index) {
+              row.indexi = index
+              this.recordItem = row
+              this.showDialogAddItem = true
+            },
+            clickShowDialogAddItem () {
+              this.recordItem = null
+              this.showDialogAddItem = true
             },
             changeCurrencyType() {
                 this.currency_type = _.find(this.currency_types, {'id': this.form.currency_type_id})

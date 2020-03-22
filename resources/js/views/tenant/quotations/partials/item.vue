@@ -9,7 +9,7 @@
                                 Producto/Servicio
                                 <a href="#" @click.prevent="showDialogNewItem = true">[+ Nuevo]</a>
                             </label>
-                            <el-select v-model="form.item_id" @change="changeItem" filterable ref="select_item" @focus="focusSelectItem">
+                            <el-select :disabled="recordItem != null" v-model="form.item_id" @change="changeItem" filterable ref="select_item" @focus="focusSelectItem">
                                 <el-option v-for="option in items" :key="option.id" :value="option.id" :label="option.full_description"></el-option>
                             </el-select>
                             <small class="form-control-feedback" v-if="errors.item_id" v-text="errors.item_id[0]"></small>
@@ -215,7 +215,7 @@
             </div>
             <div class="form-actions text-right pt-2">
                 <el-button @click.prevent="close()">Cerrar</el-button>
-                <el-button type="primary" native-type="submit" v-if="form.item_id">Agregar</el-button>
+                <el-button class="add" type="primary" native-type="submit" v-if="form.item_id">{{titleAction}}</el-button>
             </div>
         </form>
         <item-form :showDialog.sync="showDialogNewItem"
@@ -234,11 +234,12 @@
     import {calculateRowItem} from '../../../../helpers/functions'
 
     export default {
-        props: ['showDialog', 'currencyTypeIdActive', 'exchangeRateSale'],
+        props: ['recordItem','showDialog', 'currencyTypeIdActive', 'exchangeRateSale'],
         components: {itemForm},
         data() {
             return {
-                titleDialog: 'Agregar Producto o Servicio',
+                titleDialog: '',
+                titleAction: '',
                 resource: 'quotations',
                 showDialogNewItem: false,
                 errors: {},
@@ -310,8 +311,18 @@
             // initializeFields() {
             //     this.form.affectation_igv_type_id = this.affectation_igv_types[0].id
             // },
-            create() {
-            //     this.initializeFields()
+            async create() {
+              this.titleDialog = (this.recordItem) ? ' Editar Producto o Servicio' : ' Agregar Producto o Servicio'
+              this.titleAction = (this.recordItem) ? ' Editar' : ' Agregar'
+
+              if (this.recordItem) {
+                  this.form.item_id = await this.recordItem.item_id
+                  await this.changeItem()
+                  this.form.quantity = this.recordItem.quantity
+                  this.form.unit_price_value = this.recordItem.input_unit_price_value
+
+                  this.calculateQuantity()
+              }
             },
             clickAddDiscount() {
                 this.form.discounts.push({
@@ -428,23 +439,27 @@
             },
             clickAddItem() {
                 if (this.validateTotalItem().total_item) return;
-                
+
                 // this.form.item.unit_price = this.form.unit_price;
                 let unit_price = (this.form.has_igv)?this.form.unit_price:this.form.unit_price*1.18;
 
                 // this.form.item.unit_price = this.form.unit_price
                 this.form.unit_price = unit_price;
                 this.form.item.unit_price = unit_price;
-                
+
                 this.form.item.presentation = this.item_unit_type;
                 this.form.affectation_igv_type = _.find(this.affectation_igv_types, {'id': this.form.affectation_igv_type_id});
                 this.row = calculateRowItem(this.form, this.currencyTypeIdActive, this.exchangeRateSale);
-                
+
                 this.initForm();
-                
+
                 // this.initializeFields()
                 this.$emit('add', this.row);
                 this.setFocusSelectItem()
+
+                if (this.recordItem) {
+                  this.close()
+                }
             },
             focusSelectItem(){
                 console.log("foc")
