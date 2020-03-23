@@ -54,6 +54,7 @@ use Carbon\Carbon;
 use App\Traits\OfflineTrait;
 use Modules\Inventory\Models\Warehouse as ModuleWarehouse;
 use Modules\Finance\Traits\FinanceTrait; 
+use App\Jobs\DocumentJob;
 
 class DocumentController extends Controller
 {
@@ -373,30 +374,33 @@ class DocumentController extends Controller
 
     public function store(DocumentRequest $request)
     {
-        $fact = DB::connection('tenant')->transaction(function () use ($request) {
-            $facturalo = new Facturalo();
-            $facturalo->save($request->all());
-            $facturalo->createXmlUnsigned();
-            $facturalo->signXmlUnsigned();
-            $facturalo->updateHash();
-            $facturalo->updateQr();
-            $facturalo->createPdf();
-            $facturalo->senderXmlSignedBill();
 
-            return $facturalo;
-        });
+        dispatch((new DocumentJob($request->all())));
 
-        $document = $fact->getDocument();
-        $response = $fact->getResponse();
+        // $fact = DB::connection('tenant')->transaction(function () use ($request) {
+        //     $facturalo = new Facturalo();
+        //     $facturalo->save($request->all());
+        //     $facturalo->createXmlUnsigned();
+        //     $facturalo->signXmlUnsigned();
+        //     $facturalo->updateHash();
+        //     $facturalo->updateQr();
+        //     $facturalo->createPdf();
+        //     $facturalo->senderXmlSignedBill();
 
-        return [
-            'success' => true,
-            'data' => [
-                'id' => $document->id,
-                'response' =>$response
+        //     return $facturalo;
+        // });
 
-            ],
-        ];
+        // $document = $fact->getDocument();
+        // $response = $fact->getResponse();
+
+        // return [
+        //     'success' => true,
+        //     'data' => [
+        //         'id' => $document->id,
+        //         'response' =>$response
+
+        //     ],
+        // ];
     }
 
     public function reStore($document_id)

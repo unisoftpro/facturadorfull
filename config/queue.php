@@ -35,6 +35,7 @@ return [
         ],
 
         'database' => [
+            'connection' => 'tenant',
             'driver' => 'database',
             'table' => 'jobs',
             'queue' => 'default',

@@ -25,13 +25,13 @@ class InventoryKardexServiceProvider extends ServiceProvider
     }
 
     public function boot() {
-        $this->purchase();
-        $this->sale();
-        $this->sale_note();
-        $this->sale_note_item_delete();
-        $this->sale_document_type_03_delete();
-        $this->order_note();
-        $this->order_note_item_delete();
+        // $this->purchase();
+        // $this->sale();
+        // $this->sale_note();
+        // $this->sale_note_item_delete();
+        // $this->sale_document_type_03_delete();
+        // $this->order_note();
+        // $this->order_note_item_delete();
     }
 
     private function purchase() {
