@@ -28,7 +28,7 @@ class DocumentInput
         $soap_type_id = $company->soap_type_id;
 
         $offline_configuration = OfflineConfiguration::firstOrFail();
-        // $number = Functions::newNumber($soap_type_id, $document_type_id, $series, $number, Document::class);
+        $number = Functions::newNumber($soap_type_id, $document_type_id, $series, $number, Document::class);
 
         if($number !== '#') {
             Functions::validateUniqueDocument($soap_type_id, $document_type_id, $series, $number, Document::class);

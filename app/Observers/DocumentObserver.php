@@ -27,6 +27,27 @@ class DocumentObserver
 
     }
 
+    public function created(Document $document)
+    {
+        // dd($doc);
+        // for ($i=0; $i < 120; $i++) { 
+        //     $doc = Document::select('id')->where([['series', $document->series],['number', $document->number], ['id', '!=', $document->id]])->first();
+        //     if($doc){
+                
+        //         $company = Company::active();
+        //         $number = Functions::newNumber($document->soap_type_id,
+        //                                     $document->document_type_id,
+        //                                     $document->series,
+        //                                     $document->number, Document::class);
+        //         $document->number = $number;
+        
+        //         $document->filename = Functions::filename($company, $document->document_type_id, $document->series, $number);
+
+        //         $document->save();
+        //     }
+        // }
+
+    }
     /**
      * Handle the document "updated" event.
      *

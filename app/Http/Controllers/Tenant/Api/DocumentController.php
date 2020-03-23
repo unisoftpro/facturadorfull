@@ -24,42 +24,53 @@ class DocumentController extends Controller
 
     public function store(Request $request)
     {
-        $fact = DB::connection('tenant')->transaction(function () use($request) {
-            $facturalo = new Facturalo();
-            $facturalo->save($request->all());
-            $facturalo->createXmlUnsigned();
-            $facturalo->signXmlUnsigned();
-            $facturalo->updateHash();
-            $facturalo->updateQr();
-            $facturalo->createPdf();
-            $facturalo->sendEmail();
-            $facturalo->senderXmlSignedBill();
+        $aux_request = $request;
 
-            return $facturalo;
-        });
+        try {
+            
+            $fact = DB::connection('tenant')->transaction(function () use($request) {
+                $facturalo = new Facturalo();
+                $facturalo->save($request->all());
+                $facturalo->createXmlUnsigned();
+                $facturalo->signXmlUnsigned();
+                $facturalo->updateHash();
+                $facturalo->updateQr();
+                $facturalo->createPdf();
+                $facturalo->sendEmail();
+                $facturalo->senderXmlSignedBill();
 
-        $document = $fact->getDocument();
-        $response = $fact->getResponse();
+                return $facturalo;
+            });
 
-        return [
-            'success' => true,
-            'data' => [
-                'number' => $document->number_full,
-                'filename' => $document->filename,
-                'external_id' => $document->external_id,
-                'state_type_id' => $document->state_type_id,
-                'state_type_description' => $this->getStateTypeDescription($document->state_type_id),
-                'number_to_letter' => $document->number_to_letter,
-                'hash' => $document->hash,
-                'qr' => $document->qr,
-            ],
-            'links' => [
-                'xml' => $document->download_external_xml,
-                'pdf' => $document->download_external_pdf,
-                'cdr' => ($response['sent'])?$document->download_external_cdr:'',
-            ],
-            'response' => ($response['sent'])?array_except($response, 'sent'):[]
-        ];
+            $document = $fact->getDocument();
+            $response = $fact->getResponse();
+
+            return [
+                'success' => true,
+                'data' => [
+                    'number' => $document->number_full,
+                    'filename' => $document->filename,
+                    'external_id' => $document->external_id,
+                    'state_type_id' => $document->state_type_id,
+                    'state_type_description' => $this->getStateTypeDescription($document->state_type_id),
+                    'number_to_letter' => $document->number_to_letter,
+                    'hash' => $document->hash,
+                    'qr' => $document->qr,
+                ],
+                'links' => [
+                    'xml' => $document->download_external_xml,
+                    'pdf' => $document->download_external_pdf,
+                    'cdr' => ($response['sent'])?$document->download_external_cdr:'',
+                ],
+                'response' => ($response['sent'])?array_except($response, 'sent'):[]
+            ];
+
+        } catch (Exception $e) {
+
+            // if($e->getCode() == '1062'){
+                // $this->store($aux_request);
+            // }
+        }
     }
 
     public function send(Request $request)
