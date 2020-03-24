@@ -15,17 +15,24 @@ class Functions
 
         if ($number === '#') {
 
+            // $document = $model::select('number')
+            //                         ->where('soap_type_id', $soap_type_id)
+            //                         ->where('document_type_id', $document_type_id)
+            //                         ->where('series', $series)
+            //                         ->orderBy('number', 'desc')
+            //                         ->sharedLock()
+            //                         ->first();
+
             $document = $model::select('number')
+                                    ->sharedLock()
                                     ->where('soap_type_id', $soap_type_id)
                                     ->where('document_type_id', $document_type_id)
                                     ->where('series', $series)
-                                    ->orderBy('number', 'desc')
-                                    ->sharedLock()
-                                    ->first();
-
+                                    ->max('number');
+            // dd($document);
             if($document){
 
-                return (int)$document->number+1;
+                return (int)$document+1;
 
             }else{
 
@@ -57,7 +64,7 @@ class Functions
 
     public static function validateUniqueDocument($soap_type_id, $document_type_id, $series, $number, $model)
     {
-        $document = $model::where('soap_type_id', $soap_type_id)
+        $document = $model::select('id')->where('soap_type_id', $soap_type_id)
                         ->where('document_type_id', $document_type_id)
                         ->where('series', $series)
                         ->where('number', $number)
