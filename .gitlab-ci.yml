@@ -5,10 +5,6 @@ deploy:
   stage: deploy
   script:
     - echo "actualizando proyecto"
-    - echo $HOME
-    - cd $HOME
-    - sudo su
-    - cd $HOME/facturadorpro31/
-    - docker-compose exec -T fpm1 composer install
+    - docker ps
   only:
     - ci
