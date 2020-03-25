@@ -7,7 +7,7 @@ deploy:
     - echo "actualizando proyecto"
     - echo $HOME
     - cd $HOME
-    - ls
+    - sudo su
     - cd $HOME/facturadorpro31/
     - docker-compose exec -T fpm1 composer install
   only:
