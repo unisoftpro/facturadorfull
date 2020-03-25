@@ -4,6 +4,8 @@ stages:
 deploy:
   stage: deploy
   script:
+    - echo "actualizando sistema operativo"
+    - apt-get update
     - echo "actualizando proyecto"
     - docker ps
   only:
