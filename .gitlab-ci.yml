@@ -1,0 +1,9 @@
+stages:
+  - deploy
+
+deploy:
+  stage:deploy
+  script:
+    - echo "actualizando proyecto"
+  only:
+    - ci
