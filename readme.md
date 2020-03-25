@@ -105,6 +105,7 @@ Manual de cambios privados: [Guía](https://drive.google.com/open?id=1ePniWwGvyl
 Validador documentos: [Guía](https://docs.google.com/document/d/1v6XpJrEwCx3suRzRsa4-3-kcAghRvS9DHS5esb89SuI/edit "Clic")<br>
 Proyecto Espejo (Mirror/Fork): [Guía](https://docs.google.com/document/d/1ePniWwGvylJDzHTcPOj6E_nQtD_eO6PCReB_xwzOn98/edit "Clic")<br>
 Migracion Jira-Issues(Gitlab): [Guía](https://docs.google.com/document/d/156wEGBlBiM35aFWbbnEi6HTWhag2TWtUMHkz_aoP7Lg/edit?usp=sharing "Clic")<br>
+Manual de CI (deploy/despliegue)...(proximamente)
 
 ## Soporte
 
