@@ -11,5 +11,6 @@ deploy:
     - echo "actualizando proyecto"
     - echo $HOME
     - echo "$(ls)"
+    - git pull origin ci
   only:
     - ci
