@@ -13,5 +13,6 @@ deploy:
     - echo "$(ls)"
     - git pull origin ci
     - echo "archivo" > archivo.txt
+    - docker ps
   only:
     - ci
