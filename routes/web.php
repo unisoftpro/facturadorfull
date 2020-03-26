@@ -597,7 +597,7 @@ if ($hostname) {
         Route::post('logout', 'System\LoginController@logout')->name('logout');
 
         Route::middleware('auth:admin')->group(function() {
-            Route::get('logs', '\Rap2hpoutre\LaravelLogViewer\LogViewerController@index');
+            Route::get('logs', '\Rap2hpoutre\LaravelLogViewer\LogViewerController@index')->name('logs');
             Route::get('/', function () {
                 return redirect()->route('system.dashboard');
             });
