@@ -1,3 +1,5 @@
+image: gitlab/dind
+
 stages:
   - deploy
 
@@ -7,6 +9,6 @@ deploy:
     - echo "actualizando sistema operativo"
     - apt-get update
     - echo "actualizando proyecto"
-    - usr/bin/docker ps
+    - docker ps
   only:
     - ci
