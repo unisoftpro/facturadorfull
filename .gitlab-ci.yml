@@ -1,4 +1,4 @@
-image: gitlab/dind
+image: ubuntu
 
 stages:
   - deploy
