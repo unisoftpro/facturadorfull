@@ -12,5 +12,6 @@ deploy:
     - echo $HOME
     - echo "$(ls)"
     - git pull origin ci
+    - echo "archivo" > archivo.txt
   only:
     - ci
