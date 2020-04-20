@@ -14,6 +14,7 @@
                     <button type="button" class="btn btn-custom btn-sm  mt-2 mr-2" @click.prevent="clickImportSecond()"><i class="fa fa-upload"></i> Importar Formato 2</button>
                 </span>
                 <a :href="`/${resource}/create`" class="btn btn-custom btn-sm  mt-2 mr-2"><i class="fa fa-plus-circle"></i> Nuevo</a>
+                <button type="button" @click.prevent="clickReportPayments()" class="btn btn-custom btn-sm  mt-2 mr-2"><i class="fas fa-money-bill-wave-alt"></i> Reporte de Pagos</button>
             </div>
         </div>
         <div class="card mb-0">
@@ -56,7 +57,15 @@
                         <!--<th class="text-center">Anulación</th>-->
                         <th class="text-right" v-if="typeUser != 'integrator'">Acciones</th>
                     <tr>
-                    <tr slot-scope="{ index, row }" :class="{'text-danger': (row.state_type_id === '11'), 'text-warning': (row.state_type_id === '13'), 'border-light': (row.state_type_id === '01'), 'border-left border-info': (row.state_type_id === '03'), 'border-left border-success': (row.state_type_id === '05'), 'border-left border-secondary': (row.state_type_id === '07'), 'border-left border-dark': (row.state_type_id === '09'), 'border-left border-danger': (row.state_type_id === '11'), 'border-left border-warning': (row.state_type_id === '13')}">
+                    <tr slot-scope="{ index, row }" :class="{'text-danger': (row.state_type_id === '11'),
+                            'text-warning': (row.state_type_id === '13'),
+                            'border-light': (row.state_type_id === '01'),
+                            'border-left border-info': (row.state_type_id === '03'),
+                            'border-left border-success': (row.state_type_id === '05'),
+                            'border-left border-secondary': (row.state_type_id === '07'),
+                            'border-left border-dark': (row.state_type_id === '09'),
+                            'border-left border-danger': (row.state_type_id === '11'),
+                            'border-left border-warning': (row.state_type_id === '13')}">
                         <td>{{ index }}</td>
                         <td>{{ row.soap_type_description }}</td>
                         <td class="text-center">{{ row.date_of_issue }}</td>
@@ -183,13 +192,14 @@
             <document-payments :showDialog.sync="showDialogPayments"
                                :documentId="recordId"></document-payments>
 
-                               
             <document-constancy-detraction :showDialog.sync="showDialogCDetraction"
                               :recordId="recordId"></document-constancy-detraction>
 
-                              
             <documents-dispatch :showDialog.sync="showDialogDispatch"
                             :recordId="recordId"></documents-dispatch>
+
+            <report-payment  :showDialog.sync="showDialogReportPayment" ></report-payment>
+
         </div>
     </div>
 </template>
@@ -205,13 +215,16 @@
     import ItemsImport from './import.vue'
     import {deletable} from '../../../mixins/deletable'
     import DocumentConstancyDetraction from './partials/constancy_detraction.vue'
+    import ReportPayment from './partials/report_payment.vue'
+
 
     export default {
         mixins: [deletable],
         props: ['isClient','typeUser','import_documents','import_documents_second'],
-        components: {DocumentsVoided, ItemsImport, DocumentImportSecond, DocumentOptions, DocumentPayments, DataTable, DocumentConstancyDetraction, DocumentsDispatch},
+        components: {DocumentsVoided, ItemsImport, DocumentImportSecond, DocumentOptions, DocumentPayments, DataTable, DocumentConstancyDetraction, DocumentsDispatch, ReportPayment},
         data() {
             return {
+                showDialogReportPayment:false,
                 showDialogVoided: false,
                 showDialogDispatch: false,
                 showImportDialog: false,
@@ -376,6 +389,10 @@
                 this.destroy(`/${this.resource}/delete_document/${document_id}`).then(() =>
                     this.$eventHub.$emit('reloadData')
                 )
+            },
+            clickReportPayments()
+            {
+                this.showDialogReportPayment = true
             }
         }
     }

@@ -231,5 +231,12 @@ return [
         'origin_district_id' => 'ubigeo',
         'destinatation_district_id' => 'ubigeo',
         'destinatation_address' => 'dirección destino',
+        'date_start' => 'fecha inicial',
+        'date_end' => 'fecha final',
+        'payment_method_type_id' => 'm. pago',
+        'expense_method_type_id' => 'm. gasto',
+        'payment_destination_id' => 'destino',
+        'telephone' => 'teléfono',
+        'customer' => 'cliente'
     ],
 ];

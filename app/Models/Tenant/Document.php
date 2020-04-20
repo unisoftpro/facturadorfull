@@ -63,6 +63,7 @@ class Document extends ModelTenant
         'has_pdf',
         'has_cdr',
         'has_prepayment',
+        'affectation_type_prepayment',
         'data_json',
         'send_server',
         'shipping_status',
@@ -75,6 +76,8 @@ class Document extends ModelTenant
         'success_query_status',
         'plate_number',
         'total_canceled',
+        'order_note_id',
+        'soap_shipping_response',
 
     ];
 
@@ -191,6 +194,18 @@ class Document extends ModelTenant
     {
         $this->attributes['data_json'] = (is_null($value))?null:json_encode($value);
     }
+
+
+    public function getSoapShippingResponseAttribute($value)
+    {
+        return (is_null($value))?null:(object) json_decode($value);
+    }
+
+    public function setSoapShippingResponseAttribute($value)
+    {
+        $this->attributes['soap_shipping_response'] = (is_null($value))?null:json_encode($value);
+    }
+
 
     public function getAdditionalInformationAttribute($value)
     {
@@ -347,4 +362,13 @@ class Document extends ModelTenant
         return $this->hasOne(SummaryDocument::class);
     }
 
+    public function scopeWhereAffectationTypePrepayment($query, $type)
+    {
+        return $query->where('affectation_type_prepayment', $type);
+    }
+    
+    public function scopeWhereStateTypeAccepted($query)
+    {
+        return $query->whereIn('state_type_id', ['01','03','05','07','13']);
+    }
 }

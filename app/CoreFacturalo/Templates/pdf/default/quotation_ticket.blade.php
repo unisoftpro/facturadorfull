@@ -3,6 +3,7 @@
     $customer = $document->customer;
     $invoice = $document->invoice;
     //$path_style = app_path('CoreFacturalo'.DIRECTORY_SEPARATOR.'Templates'.DIRECTORY_SEPARATOR.'pdf'.DIRECTORY_SEPARATOR.'style.css');
+    $accounts = \App\Models\Tenant\BankAccount::all();
     $tittle = $document->prefix.'-'.str_pad($document->id, 8, '0', STR_PAD_LEFT);
 
 
@@ -79,6 +80,13 @@
     </tr>
     @endif
 
+    @if($document->delivery_date) 
+    <tr>
+        <td width="" class=""><p class="desc">F. Entrega:</p></td>
+        <td width="" class=""><p class="desc">{{ $document->delivery_date->format('Y-m-d') }}</p></td>
+    </tr>
+    @endif
+
     <tr>
         <td class="align-top"><p class="desc">Cliente:</p></td>
         <td><p class="desc">{{ $customer->name }}</p></td>
@@ -127,6 +135,27 @@
         <td >
             <p class="desc">            
                 {{ $document->payment_method_type->description }} 
+            </p>
+        </td>
+    </tr>
+    @endif
+    
+    @if ($document->account_number)
+    <tr>
+        <td class="align-top"><p class="desc">N° Cuenta:</p></td>
+        <td colspan="">
+            <p class="desc">            
+                {{ $document->account_number }} 
+            </p>
+        </td> 
+    </tr>
+    @endif
+    @if ($document->sale_opportunity)
+    <tr>
+        <td class="align-top"><p class="desc">O. Venta:</p></td>
+        <td >
+            <p class="desc">            
+                {{ $document->sale_opportunity->number_full }} 
             </p>
         </td>
     </tr>
@@ -233,7 +262,7 @@
         @endif
         @if($document->total_discount > 0)
             <tr>
-                <td colspan="5" class="text-right font-bold">DESCUENTO TOTAL: {{ $document->currency_type->symbol }}</td>
+                <td colspan="5" class="text-right font-bold">{{(($document->total_prepayment > 0) ? 'ANTICIPO':'DESCUENTO TOTAL')}}: {{ $document->currency_type->symbol }}</td>
                 <td class="text-right font-bold">{{ number_format($document->total_discount, 2) }}</td>
             </tr>
         @endif
@@ -264,7 +293,45 @@
         @endforeach
     </tr>
 
+    <tr>
+        <td class="desc pt-3"> 
+            <br>
+            @foreach($accounts as $account)
+                <span class="font-bold">{{$account->bank->description}}</span> {{$account->currency_type->description}} 
+                <br>
+                <span class="font-bold">N°:</span> {{$account->number}} 
+                @if($account->cci)
+                - <span class="font-bold">CCI:</span> {{$account->cci}}
+                @endif
+                <br>
+            @endforeach
+
+        </td>
+    </tr>
  
+</table>
+<br>
+<table class="full-width">
+<tr>
+    <td class="desc pt-3">
+    <strong>PAGOS:</strong> </td></tr>
+        @php
+            $payment = 0;
+        @endphp
+        @foreach($document->payments as $row)
+            <tr><td class="desc ">- {{ $row->payment_method_type->description }} - {{ $row->reference ? $row->reference.' - ':'' }} {{ $document->currency_type->symbol }} {{ $row->payment }}</td></tr>
+            @php
+                $payment += (float) $row->payment;
+            @endphp
+        @endforeach
+        <tr><td class="desc pt-3"><strong>SALDO:</strong> {{ $document->currency_type->symbol }} {{ number_format($document->total - $payment, 2) }}</td>
+    </tr>
+
+    @if($document->terms_condition)
+    <tr>
+        <td class="text-center desc pt-5 font-bold">{{$document->terms_condition}}</td>
+    </tr>
+    @endif
 </table>
 </body>
 </html>

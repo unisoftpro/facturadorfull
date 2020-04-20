@@ -19,16 +19,37 @@ use App\Models\Tenant\Configuration;
 use Modules\Inventory\Models\InventoryConfiguration;
 use Modules\Inventory\Models\ItemWarehouse;
 use Exception;
+use Modules\Item\Models\Category;
+use Modules\Finance\Traits\FinanceTrait;
+use App\Models\Tenant\Company;
+
 
 class PosController extends Controller
 {
+
+    use FinanceTrait;
+
     public function index()
     {
         $cash = Cash::where([['user_id', auth()->user()->id],['state', true]])->first();
 
         if(!$cash) return redirect()->route('tenant.cash.index');
 
-        return view('tenant.pos.index');
+        $configuration = Configuration::first();
+
+        $company = Company::select('soap_type_id')->first();
+        $soap_company  = $company->soap_type_id;
+
+        return view('tenant.pos.index', compact('configuration', 'soap_company'));
+    }
+
+    public function index_full()
+    {
+        $cash = Cash::where([['user_id', auth()->user()->id],['state', true]])->first();
+
+        if(!$cash) return redirect()->route('tenant.cash.index');
+
+        return view('tenant.pos.index_full');
     }
 
     public function search_items(Request $request)
@@ -44,6 +65,7 @@ class PosController extends Controller
                                 $query->where('name', 'like', '%' . $request->input_item . '%');
                             })
                             ->whereWarehouse()
+                            ->whereIsActive()
                             ->get()->transform(function($row) use($configuration){
                                 $full_description = ($row->internal_id)?$row->internal_id.' - '.$row->description:$row->description;
                                 return [
@@ -67,7 +89,18 @@ class PosController extends Controller
                                     'aux_sale_unit_price' => number_format($row->sale_unit_price, $configuration->decimal_quantity, ".",""),
                                     'edit_sale_unit_price' => number_format($row->sale_unit_price, $configuration->decimal_quantity, ".",""),
                                     'image_url' => ($row->image !== 'imagen-no-disponible.jpg') ? asset('storage'.DIRECTORY_SEPARATOR.'uploads'.DIRECTORY_SEPARATOR.'items'.DIRECTORY_SEPARATOR.$row->image) : asset("/logo/{$row->image}"),
-
+                                    'sets' => collect($row->sets)->transform(function($r){
+                                        return [
+                                            $r->individual_item->description
+                                        ];
+                                    }),
+                                    'warehouses' => collect($row->warehouses)->transform(function ($row) {
+                                        return [
+                                            'warehouse_description' => $row->warehouse->description,
+                                            'stock' => $row->stock,
+                                        ];
+                                    }),
+                                    'unit_type' => $row->item_unit_types
                                 ];
                             });
 
@@ -86,7 +119,9 @@ class PosController extends Controller
 
         $items = $this->table('items');
 
-        return compact('items', 'customers','affectation_igv_types','establishment','user','currency_types');
+        $categories = Category::all();
+
+        return compact('items', 'customers','affectation_igv_types','establishment','user','currency_types', 'categories');
 
     }
 
@@ -98,16 +133,17 @@ class PosController extends Controller
 
         $payment_method_types = PaymentMethodType::all();
         $cards_brand = CardBrand::all();
+        $payment_destinations = $this->getPaymentDestinations();
 
 
-        return compact('series','payment_method_types','cards_brand');
+        return compact('series','payment_method_types','cards_brand', 'payment_destinations');
 
     }
 
     public function table($table)
     {
         if ($table === 'customers') {
-            $customers = Person::whereType('customers')->orderBy('name')->get()->transform(function($row) {
+            $customers = Person::whereType('customers')->whereIsEnabled()->orderBy('name')->get()->transform(function($row) {
                 return [
                     'id' => $row->id,
                     'description' => $row->number.' - '.$row->name,
@@ -124,7 +160,7 @@ class PosController extends Controller
 
             $configuration =  Configuration::first();
 
-            $items = Item::whereWarehouse()->where('unit_type_id', '!=', 'ZZ')->orderBy('description')->take(20)
+            $items = Item::whereWarehouse()->whereIsActive()->where('unit_type_id', '!=', 'ZZ')->orderBy('description')->take(100)
                             ->get()->transform(function($row) use ($configuration) {
                                 $full_description = ($row->internal_id)?$row->internal_id.' - '.$row->description:$row->description;
                                 return [
@@ -153,7 +189,14 @@ class PosController extends Controller
                                             'warehouse_description' => $row->warehouse->description,
                                             'stock' => $row->stock,
                                         ];
-                                    })
+                                    }),
+                                    'category_id' => ($row->category) ? $row->category->id : null,
+                                    'sets' => collect($row->sets)->transform(function($r){
+                                        return [
+                                            $r->individual_item->description
+                                        ];
+                                    }),
+                                    'unit_type' => $row->item_unit_types
                                 ];
                             });
             return $items;

@@ -97,12 +97,41 @@
                             </div>
                         </div>
 
-                        <div class="col-md-8 col-lg-8">
+                        <div class="col-md-8 mt-4">
+                            <div class="form-group" > 
+                                <el-checkbox v-model="form.has_client" @change="changeHasClient">¿Desea agregar el cliente para esta compra?</el-checkbox>
+                            </div>
+                        </div>
+
+                        <div class="col-md-8 mt-2 mb-2">
+                            <div class="form-group" > 
+                                <el-checkbox v-model="form.has_payment" @change="changeHasPayment">¿Desea agregar pagos a esta compra?</el-checkbox>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6 col-md-6" v-if="form.has_client">
+                            <div class="form-group">
+                                <label class="control-label">
+                                    Clientes
+                                </label>
+
+                                <el-select v-model="form.customer_id" filterable remote  popper-class="el-select-customers"  clearable
+                                    placeholder="Nombre o número de documento"
+                                    :remote-method="searchRemotePersons"
+                                    :loading="loading_search">
+                                    <el-option v-for="option in customers" :key="option.id" :value="option.id" :label="option.description"></el-option>
+                                </el-select>
+
+                            </div>
+                        </div>
+
+                        <div class="col-md-8 col-lg-8 mt-2" v-if="form.has_payment">
 
                             <table>
                                 <thead>
                                     <tr width="100%">
                                         <th v-if="form.payments.length>0" class="pb-2">Forma de pago</th>
+                                        <th v-if="form.payments.length>0" class="pb-2">Destino</th>
                                         <th v-if="form.payments.length>0" class="pb-2">Referencia</th>
                                         <th v-if="form.payments.length>0" class="pb-2">Monto</th>
                                         <th width="15%"><a href="#" @click.prevent="clickAddPayment" class="text-center font-weight-bold text-info">[+ Agregar]</a></th>
@@ -118,6 +147,13 @@
                                             </div>
                                         </td>
                                         <td>
+                                            <div class="form-group mb-2 mr-2">
+                                                <el-select v-model="row.payment_destination_id" filterable >
+                                                    <el-option v-for="option in payment_destinations" :key="option.id" :value="option.id" :label="option.description"></el-option>
+                                                </el-select>
+                                            </div>
+                                        </td>
+                                        <td>
                                             <div class="form-group mb-2 mr-2"  >
                                                 <el-input v-model="row.reference"></el-input>
                                             </div>
@@ -128,7 +164,7 @@
                                             </div>
                                         </td>
                                         <td class="series-table-actions text-center"> 
-                                            <button  type="button" class="btn waves-effect waves-light btn-xs btn-danger" :disabled="index==0" @click.prevent="clickCancel(index)">
+                                            <button  type="button" class="btn waves-effect waves-light btn-xs btn-danger" @click.prevent="clickCancel(index)">
                                                 <i class="fa fa-trash"></i>
                                             </button>
                                         </td> 
@@ -164,10 +200,10 @@
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    <tr v-for="(row, index) in form.items">
+                                    <tr v-for="(row, index) in form.items" :key="index">
                                         <td>{{ index + 1 }}</td>
                                         <td>{{ row.item.description }}<br/><small>{{ row.affectation_igv_type.description }}</small></td>
-                                        <td class="text-left">{{ row.warehouse_description }}</td>
+                                        <td class="text-left">{{ (row.warehouse_description) ? row.warehouse_description : row.warehouse.description  }}</td>
                                         <td class="text-center">{{ row.item.unit_type_id }}</td>
                                         <td class="text-right">{{ row.quantity }}</td>
                                         <!-- <td class="text-right">{{ currency_type.symbol }} {{ row.unit_price }}</td> -->
@@ -300,18 +336,22 @@
                 payment_method_types: [],
                 all_suppliers: [],
                 suppliers: [],
+                all_customers: [],
+                customers: [],
                 company: null,
                 operation_types: [],
                 establishment: {},
                 all_series: [],
+                payment_destinations:  [],
                 series: [],
+                loading_search: false,
                 currency_type: {},
                 purchaseNewId: null
             }
         },
-        created() {
-            this.initForm()
-            this.$http.get(`/${this.resource}/tables`)
+        async created() {
+            await this.initForm()
+            await this.$http.get(`/${this.resource}/tables`)
                 .then(response => {
 
                     this.document_types = response.data.document_types_invoice
@@ -320,6 +360,8 @@
                     this.all_suppliers = response.data.suppliers
                     this.discount_types = response.data.discount_types
                     this.payment_method_types = response.data.payment_method_types
+                    this.payment_destinations = response.data.payment_destinations
+                    this.all_customers = response.data.customers
 
                     this.charges_types = response.data.charges_types
                     this.form.currency_type_id = (this.currency_types.length > 0)?this.currency_types[0].id:null
@@ -340,28 +382,99 @@
            this.$eventHub.$on('initInputPerson', () => {
                 this.initInputPerson()
             })
+
+            await this.filterCustomers()
+            await this.changeHasPayment()
+            await this.changeHasClient()
         },
         methods: {
             
+            changeHasPayment(){
+
+                if(!this.form.has_payment){
+                    this.form.payments = []
+                }
+                
+            },
+            changeHasClient(){
+
+                if(!this.form.has_client){
+                    this.form.customer_id = null
+                }
+            },
+            searchRemotePersons(input) {
+
+                if (input.length > 1) {
+
+                    this.loading_search = true
+                    let parameters = `input=${input}`
+
+                    this.$http.get(`/reports/data-table/persons/customers?${parameters}`)
+                            .then(response => {
+                                this.customers = response.data.persons
+                                this.loading_search = false
+
+                                if(this.customers.length == 0){
+                                    this.filterCustomers()
+                                }
+                            })
+                } else {
+                    this.filterCustomers()
+                }
+
+            },
+            filterCustomers() {
+                this.customers = this.all_customers
+            },
             getFormatUnitPriceRow(unit_price){
                 return _.round(unit_price, 6)
                 // return unit_price.toFixed(6)
             },
-            validate_payments(){
+            async validate_payments(){
  
                 let error_by_item = 0
                 let acum_total = 0
+                let q_affectation_free = 0
 
-                this.form.payments.forEach((item)=>{
+                await this.form.payments.forEach((item)=>{
                     acum_total += parseFloat(item.payment)
                     if(item.payment <= 0 || item.payment == null) error_by_item++;
                 })
 
-                return  {
-                    error_by_item : error_by_item,
-                    acum_total : acum_total
+                //determinate affectation igv
+                await this.form.items.forEach((item)=>{
+                    if(item.affectation_igv_type.free){
+                        q_affectation_free++
+                    }
+                })
+
+                let all_free = (q_affectation_free == this.form.items.length) ? true : false
+
+                if(!all_free && (acum_total > parseFloat(this.form.total) || error_by_item > 0)) {
+                    return  {
+                        success : false,
+                        message : 'Los montos ingresados superan al monto a pagar o son incorrectos'
+                    }
                 }
 
+                if(this.form.has_client && !this.form.customer_id){
+                    return  {
+                        success : false,
+                        message : 'Debe seleccionar un cliente'
+                    }
+                }
+
+                if(this.form.has_payment && this.form.payments.length == 0){
+                    return  {
+                        success : false,
+                        message : 'Debe registrar al menos un pago'
+                    }
+                }
+
+                return  {
+                    success : true,
+                    message : null
+                }
             },
             clickCancel(index) {
                 this.form.payments.splice(index, 1);
@@ -373,6 +486,7 @@
                     date_of_payment:  moment().format('YYYY-MM-DD'),
                     payment_method_type_id: '01',
                     reference: null,
+                    payment_destination_id:'cash',
                     payment: 0,
                 });
             },   
@@ -450,6 +564,14 @@
                     this.form.payments = dato.purchase_payments
                     this.form.purchase_payments_id = dato.purchase_payments.id
                     this.form.purchase_order_id = dato.purchase_order_id
+                    this.form.customer_id = dato.customer_id
+
+                    if(this.form.customer_id){
+                        this.searchRemotePersons(dato.customer_number)
+                    }
+
+                    this.form.has_payment = (this.form.payments.length>0) ? true:false
+                    this.form.has_client = (this.form.customer_id) ? true:false
 
                     this.changeDocumentType()
                     // this.changePaymentMethodType()
@@ -457,7 +579,16 @@
                     
                    // this.calculateTotal()
                 })
-            }, 
+            },
+            getPayments(payments){
+
+                payments.forEach(it => {
+                    console.log(it.global_payment.destination_type )
+                    it.payment_destination_id = it.global_payment.destination_type ==  "App\Models\Tenant\Cash" ? 'cash':it.global_payment.destination_id
+                });
+
+                return payments
+            },
             changePaymentMethodType(flag_submit = true, index = null){
                 let payment_method_type = _.find(this.payment_method_types, {'id':this.form.payments[index].payment_method_type_id})
                 if(payment_method_type.number_days){
@@ -542,6 +673,9 @@
                     attributes: [],
                     payments: [],
                     guides: [],
+                    customer_id: null,
+                    has_client: false,
+                    has_payment: false,
                 }
 
                 // this.clickAddPayment()
@@ -674,8 +808,8 @@
 
                 
                 let validate = await this.validate_payments()
-                if(validate.acum_total > parseFloat(this.form.total) || validate.error_by_item > 0) {
-                    return this.$message.error('Los montos ingresados superan al monto a pagar o son incorrectos');
+                if(!validate.success) {
+                    return this.$message.error(validate.message);
                 }
 
                 this.loading_submit = true

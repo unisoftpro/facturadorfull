@@ -3,10 +3,13 @@
 namespace App\Models\Tenant;
 
 use App\Models\Tenant\Catalogs\CurrencyType;
+use Modules\Sale\Models\SaleOpportunity;
+use Modules\Sale\Models\QuotationPayment;
+use Modules\Sale\Models\Contract;
 
 class Quotation extends ModelTenant
 {
-    protected $with = ['user', 'soap_type', 'state_type', 'currency_type', 'items'];
+    protected $with = ['user', 'soap_type', 'state_type', 'currency_type', 'items', 'payments'];
 
     protected $fillable = [
         'id',
@@ -23,6 +26,7 @@ class Quotation extends ModelTenant
         'date_of_issue',
         'time_of_issue',
         'date_of_due',
+        'delivery_date',
         'customer_id',
         'customer',
         'currency_type_id',
@@ -53,13 +57,18 @@ class Quotation extends ModelTenant
         'legends',
         'filename',
         'shipping_address',
-        'description'
+        'description',
+        'sale_opportunity_id',
+        'changed',
+        'account_number',
+        'terms_condition',
 
     ];
 
     protected $casts = [
         'date_of_issue' => 'date',
         'date_of_due' => 'date',
+        'delivery_date' => 'date',
     ];
 
     public function getEstablishmentAttribute($value)
@@ -226,4 +235,33 @@ class Quotation extends ModelTenant
         return ($user->type == 'seller') ? $query->where('user_id', $user->id) : null;
     }
 
+    public function sale_opportunity()
+    {
+        return $this->belongsTo(SaleOpportunity::class);
+    }
+
+    public function getNumberFullAttribute()
+    {
+        return $this->prefix.'-'.$this->id;
+    }
+
+    public function scopeWhereStateTypeAccepted($query)
+    {
+        return $query->whereIn('state_type_id', ['01']);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(QuotationPayment::class);
+    }
+
+    public function scopeWhereNotChanged($query)
+    {
+        return $query->where('changed', false);
+    }
+
+    public function contract()
+    {
+        return $this->hasOne(Contract::class);
+    }
 }

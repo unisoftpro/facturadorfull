@@ -23,13 +23,16 @@
     <!-- Main CSS File -->
     <link rel="stylesheet" href="{{ asset('porto-ecommerce/assets/css/style.min.css') }}">
     <link rel="stylesheet" href="{{ asset('porto-ecommerce/assets/css/custom.css') }}">
-    
+
     <link rel="stylesheet" href="{{ asset('porto-ecommerce/assets/css/rating.css') }}">
 
     <!-- Fontawesome -->
     <link rel="stylesheet" href="{{ asset('porto-ecommerce/assets/font-awesome/css/fontawesome-all.min.css') }}">
 </head>
+<style>
 
+
+</style>
 <body>
     <div class="page-wrapper">
 
@@ -43,6 +46,7 @@
 
                     @php
                         $tagid = request()->query('tagid');
+
                     @endphp
 
                         @if(!$tagid)
@@ -106,25 +110,40 @@
                         <div class="side-menu-container">
                             <h2>CATEGORIAS</h2>
                             @include('ecommerce::layouts.partials_ecommerce.sidemenu')
-
                         </div><!-- End .side-menu-container -->
-                        <div class="widget widget-banners">
-                            <div class="widget-banners-slider owl-carousel owl-theme">
+
+                        <!-- SlidShow Side Bar, Carousel a Editar -->
+
+                <div class="box-carousel">
+                   <div class="widget-banners-slider owl-carousel owl-theme">
+                     @forelse($records as $data)
+                            @if($data->apply_store === 1)
+
+                    <figure class="product-image-container boxing">
+                        <a href="/ecommerce/item/{{ $data->id }}" class="product-image">
+                            <img src="{{ asset('storage/uploads/items/'.$data->image) }}" alt="product" class="image">
+                        </a>
+                        <a href="{{route('item_partial', ['id' => $data->id])}}" class="btn-quickview">Vista Rápida</a>
+                     <span class="product-label label-hot">New Sales Recent</span>
+                                <span class="product-label">{{$data->description}}</span>
+                    </figure>
+                            @endif
+                        @empty
+                            <div class="widget widget-banner">
                                 <div class="banner banner-image">
                                     <a href="#">
                                         <img src="{{ asset('porto-ecommerce/assets/images/banners/banner-sidebar.jpg') }}"
-                                            alt="banner">
+                                            alt="Banner Desc">
                                     </a>
-                                </div><!-- End .banner -->
+                            </div><!-- End .banner -->
+                        </div>
+                    @endforelse
+                            <!-- End .banner -->
+                 </div><!-- End .banner-slider -->
+                       <!-- End .widget or  SlideShow-->
+                </div>
 
-                                <div class="banner banner-image">
-                                    <a href="#">
-                                        <img src="{{ asset('porto-ecommerce/assets/images/banners/banner-sidebar-2.jpg') }}"
-                                            alt="banner">
-                                    </a>
-                                </div><!-- End .banner -->
-                            </div><!-- End .banner-slider -->
-                        </div><!-- End .widget -->
+
 
                         <!-- <div class="widget widget-newsletters">
                            <h3 class="widget-title">Newsletter</h3>
@@ -139,7 +158,7 @@
                         </div>-->
 
                         {{-- <div class="widget widget-testimonials">
-                            @include('ecommerce::layouts.partials_ecommerce.testimonials') 
+                            @include('ecommerce::layouts.partials_ecommerce.testimonials')
                         </div> --}}
                         <!-- End .widget -->
 
@@ -202,7 +221,7 @@
     <script src="{{ asset('porto-ecommerce/assets/js/main.min.js') }}"></script>
 
     <script src="{{ asset('porto-ecommerce/assets/js/vue.min.js') }}"></script>
-    
+
 
 
     @stack('scripts')

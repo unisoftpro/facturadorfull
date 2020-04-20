@@ -8,6 +8,8 @@ use App\Models\Tenant\Catalogs\CurrencyType;
 use App\Models\Tenant\Catalogs\SystemIscType;
 use App\Models\Tenant\Catalogs\UnitType;
 use App\Models\Tenant\Item;
+use App\Models\Tenant\ItemImage;
+
 use Modules\Item\Models\ItemLot;
 
 use App\Http\Controllers\Controller;
@@ -30,12 +32,14 @@ use Modules\Item\Models\Category;
 use Modules\Item\Models\Brand;
 use Modules\Inventory\Models\Warehouse as WarehouseModule;
 use App\Models\Tenant\Establishment;
+use Modules\Item\Models\ItemLotsGroup;
 
 
 class ItemController extends Controller
 {
     public function index()
     {
+
         return view('tenant.items.index');
     }
 
@@ -52,6 +56,8 @@ class ItemController extends Controller
             'brand' => 'Marca',
             'date_of_due' => 'Fecha vencimiento',
             'lot_code' => 'Código lote',
+            'active' => 'Habilitados',
+            'inactive' => 'Inhabilitados',
             // 'description' => 'Descripción'
         ];
     }
@@ -73,19 +79,30 @@ class ItemController extends Controller
                                     $q->where('name', 'like', "%{$request->value}%");
                                 })
                                 ->whereTypeUser()
+                                ->whereNotIsSet();
+                break;
+
+            case 'active':
+                $records = Item::whereTypeUser()
                                 ->whereNotIsSet()
-                                ->orderBy('description');
+                                ->whereIsActive();
+                break;
+
+            case 'inactive':
+                $records = Item::whereTypeUser()
+                                ->whereNotIsSet()
+                                ->whereIsNotActive();
                 break;
 
             default:
                 $records = Item::whereTypeUser()
                                 ->whereNotIsSet()
-                                ->where($request->column, 'like', "%{$request->value}%")
-                                ->orderBy('description');
+                                ->where($request->column, 'like', "%{$request->value}%");
                 break;
+
         }
 
-        return $records;
+        return $records->orderBy('description');
 
     }
 
@@ -107,9 +124,10 @@ class ItemController extends Controller
         $tags = Tag::all();
         $categories = Category::all();
         $brands = Brand::all();
+        $configuration = Configuration::select('affectation_igv_type_id')->firstOrFail();
 
         return compact('unit_types', 'currency_types', 'attribute_types', 'system_isc_types',
-                        'affectation_igv_types','warehouses', 'accounts', 'tags', 'categories', 'brands');
+                        'affectation_igv_types','warehouses', 'accounts', 'tags', 'categories', 'brands', 'configuration');
     }
 
     public function record($id)
@@ -214,6 +232,21 @@ class ItemController extends Controller
                     'state' => $lot['state'],
                 ]);
             }
+
+
+            $lots_enabled = isset($request->lots_enabled) ? $request->lots_enabled:false;
+
+            if($lots_enabled)
+            {
+                ItemLotsGroup::create([
+                    'code'  => $request->lot_code,
+                    'quantity'  => $request->stock,
+                    'date_of_due'  => $request->date_of_due,
+                    'item_id' => $item->id
+                ]);
+            }
+
+
         }
         else{
 
@@ -259,6 +292,19 @@ class ItemController extends Controller
 
 
         }
+
+            $directory = 'public'.DIRECTORY_SEPARATOR.'uploads'.DIRECTORY_SEPARATOR.'items'.DIRECTORY_SEPARATOR;
+
+            $multi_images = isset($request->multi_images) ? $request->multi_images:[];
+
+            foreach ($multi_images as $im) {
+
+                $file_name = $im['filename'];
+                $file_content = file_get_contents($im['temp_path']);
+                Storage::put($directory.$file_name, $file_content);
+
+                ItemImage::create(['item_id'=> $item->id, 'image' => $file_name]);
+            }
 
         $item->update();
 
@@ -413,8 +459,75 @@ class ItemController extends Controller
 
     }
 
+    public function disable($id)
+    {
+        try {
+
+            $item = Item::findOrFail($id);
+            $item->active = 0;
+            $item->save();
+
+            return [
+                'success' => true,
+                'message' => 'Producto inhabilitado con éxito'
+            ];
+
+        } catch (Exception $e) {
+
+            return  ['success' => false, 'message' => 'Error inesperado, no se pudo inhabilitar el producto'];
+
+        }
+    }
+
+    public function images($item)
+    {
+        $records = ItemImage::where('item_id', $item)->get()->transform(function($row){
+            return [
+                'id' => $row->id,
+                'item_id' => $row->item_id,
+                'image' => $row->image,
+                'id' => $row->id,
+                'name' => $row->image,
+                'url'=> asset('storage'.DIRECTORY_SEPARATOR.'uploads'.DIRECTORY_SEPARATOR.'items'.DIRECTORY_SEPARATOR.$row->image)
+            ];
+        });
+        return [
+            'success' => true,
+            'data' => $records
+        ];
+    }
+
+    public function delete_images($id)
+    {
+        $record = ItemImage::findOrFail($id);
+        $record->delete();
+
+        return [
+            'success' => true,
+            'message' => 'Imagen eliminada con éxito'
+        ];
+    }
 
 
+    public function enable($id)
+    {
+        try {
+
+            $item = Item::findOrFail($id);
+            $item->active = 1;
+            $item->save();
+
+            return [
+                'success' => true,
+                'message' => 'Producto habilitado con éxito'
+            ];
+
+        } catch (Exception $e) {
+
+            return  ['success' => false, 'message' => 'Error inesperado, no se pudo habilitar el producto'];
+
+        }
+    }
 
 
 }

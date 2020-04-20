@@ -11,6 +11,14 @@
                         <img class="product-single-image" src="{{ asset('storage/uploads/items/'.$record->image) }}"
                             data-zoom-image="{{ asset('storage/uploads/items/'.$record->image) }}" />
                     </div>
+                    @foreach($record->images as $row)
+
+                        <div class="product-item">
+                            <img class="product-single-image" src="{{ asset('storage/uploads/items/'.$row->image) }}"
+                                data-zoom-image="{{ asset('storage/uploads/items/'.$row->image) }}" />
+                        </div>
+
+                    @endforeach
                     <!--<div class="product-item">
                         <img class="product-single-image" src="assets/images/products/zoom/product-2.jpg"
                             data-zoom-image="assets/images/products/zoom/product-2-big.jpg" />
@@ -33,6 +41,11 @@
                 <div class="col-3 owl-dot">
                     <img src="{{ asset('storage/uploads/items/'.$record->image) }}" />
                 </div>
+                @foreach($record->images as $row)
+                    <div class="col-3 owl-dot">
+                        <img src="{{ asset('storage/uploads/items/'.$row->image) }}" />
+                    </div>
+                @endforeach
                 <!--<div class="col-3 owl-dot">
                     <img src="assets/images/products/zoom/product-2.jpg" />
                 </div>
@@ -47,7 +60,9 @@
 
         <div class="col-lg-5 col-md-6">
             <div class="product-single-details">
-                <h1 class="product-title">{{$record->name}}</h1>
+                <h1 class="product-title">{{$record->description}}</h1>
+
+
 
                 <div class="ratings-container">
                     <div class="product-ratings">
@@ -63,9 +78,12 @@
                 </div><!-- End .price-box -->
 
                 <div class="product-desc">
-                    <p>{{$record->description}}
-                    </p>
+                    <p>{{$record->name}}</p>
                 </div><!-- End .product-desc -->
+
+                @foreach($record->attributes as $at)
+                   <small> {{$at->description}} : {{$at->value}} </small> <br>
+                @endforeach
 
                 <div class="product-filters-container">
 
@@ -118,8 +136,8 @@
         <div class="tab-pane fade show active" id="product-desc-content" role="tabpanel"
             aria-labelledby="product-tab-desc">
             <div class="product-desc-content">
-                <p> {{ $record->name}} </p>
                 <p> {{ $record->description}} </p>
+                <p> {{ $record->name}} </p>
                 {{-- <ul>
                     <li><i class="icon-ok"></i>Any Product types that You want - Simple,
                         Configurable</li>

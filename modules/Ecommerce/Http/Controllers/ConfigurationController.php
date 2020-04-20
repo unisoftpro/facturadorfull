@@ -5,6 +5,7 @@ namespace Modules\Ecommerce\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Tenant\ConfigurationEcommerce;
+use App\Models\Tenant\Company;
 use App\Http\Requests\Tenant\ConfigurationEcommerceRequest;
 use App\Http\Resources\Tenant\ConfigurationEcommerceResource;
 
@@ -66,6 +67,19 @@ class ConfigurationController extends Controller
         ];
     }
 
+    public function store_configuration_tag(Request $request)
+    {
+        $id = $request->input('id');
+        $configuration = ConfigurationEcommerce::find($id);
+        $configuration->fill($request->all());
+        $configuration->save();
+
+        return [
+            'success' => true,
+            'message' => 'Configuración Tags actualizada'
+        ];
+    }
+
     public function store_configuration_social(Request $request)
     {
         $id = $request->input('id');
@@ -83,21 +97,22 @@ class ConfigurationController extends Controller
     {
         if ($request->hasFile('file')) {
 
-            $company = ConfigurationEcommerce::first();
+            $config = ConfigurationEcommerce::first();
+            $company = Company::first();
 
             $type = $request->input('type'); //logo_store
 
             $file = $request->file('file');
             $ext = $file->getClientOriginalExtension();
-            $name = $type.'_'.$company->id.'.'.$ext;
+            $name = $type.'_'.$company->number.'.'.$ext;
 
             request()->validate(['file' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048']);
 
             $file->storeAs('public/uploads/logos', $name);
 
-            $company->logo = $name;
+            $config->logo = $name;
 
-            $company->save();
+            $config->save();
 
             return [
                 'success' => true,

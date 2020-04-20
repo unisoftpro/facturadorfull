@@ -16,6 +16,9 @@
     }
     $document->load('reference_guides');
 
+    $total_payment = $document->payments->sum('payment');
+    $balance = ($document->total - $total_payment) - $document->payments->sum('change');
+
 @endphp
 <html>
 <head>
@@ -33,9 +36,18 @@
         {{--<img src="{{ asset('logo/logo.jpg') }}" class="company_logo_ticket contain">--}}
     {{--</div>--}}
 @endif
+
+@if($document->state_type->id == '11')
+    <div class="company_logo_box" style="position: absolute; text-align: center; top:500px">
+        <img src="data:{{mime_content_type(public_path("status_images".DIRECTORY_SEPARATOR."anulado.png"))}};base64, {{base64_encode(file_get_contents(public_path("status_images".DIRECTORY_SEPARATOR."anulado.png")))}}" alt="anulado" class="" style="opacity: 0.6;">
+    </div>
+@endif
 <table class="full-width">
     <tr>
         <td class="text-center"><h4>{{ $company->name }}</h4></td>
+    </tr>
+    <tr>
+        <td class="text-center"><h5>{{ $company->trade_name }}</h5></td>
     </tr>
     <tr>
         <td class="text-center"><h5>{{ 'RUC '.$company->number }}</h5></td>
@@ -168,6 +180,18 @@
             <td><p class="desc">{{ $document->quotation->identifier }}</p></td>
         </tr>
     @endif
+    @isset($document->quotation->delivery_date)
+        <tr>
+            <td><p class="desc">F. Entrega</p></td>
+            <td><p class="desc">{{ $document->quotation->delivery_date->format('Y-m-d')}}</p></td>
+        </tr>
+    @endisset
+    @isset($document->quotation->sale_opportunity)
+        <tr>
+            <td><p class="desc">O. Venta</p></td>
+            <td><p class="desc">{{ $document->quotation->sale_opportunity->number_full}}</p></td>
+        </tr>
+    @endisset
 </table>
 
 @if ($document->guides)
@@ -187,7 +211,7 @@
 </table>
 @endif
 
-@if ($document->reference_guides)
+@if (count($document->reference_guides) > 0)
 <br/>
 <strong>Guias de remisión</strong>
 <table>
@@ -240,7 +264,20 @@
             </td>
             <td class="text-center desc-9 align-top">{{ $row->item->unit_type_id }}</td>
             <td class="text-left desc-9 align-top">
-                {!!$row->item->description!!} @if (!empty($row->item->presentation)) {!!$row->item->presentation->description!!} @endif
+                @if($row->name_product_pdf)
+                    {!!$row->name_product_pdf!!}
+                @else
+                    {!!$row->item->description!!} 
+                @endif
+                
+                @if (!empty($row->item->presentation)) {!!$row->item->presentation->description!!} @endif
+
+                @foreach($row->additional_information as $information)
+                    @if ($information)
+                        <br/>{{ $information }}
+                    @endif
+                @endforeach
+
                 @if($row->attributes)
                     @foreach($row->attributes as $attr)
                         <br/>{!! $attr->description !!} : {{ $attr->value }}
@@ -251,6 +288,16 @@
                         <br/><small>{{ $dtos->factor * 100 }}% {{$dtos->description }}</small>
                     @endforeach
                 @endif
+
+                @if($row->item->is_set == 1)
+
+                 <br>
+                 @inject('itemSet', 'App\Services\ItemSetService')
+
+                    {{join( "-", $itemSet->getItemsSet($row->item_id) )}}
+
+                @endif
+
             </td>
             <td class="text-right desc-9 align-top">{{ number_format($row->unit_price, 2) }}</td>
             <td class="text-right desc-9 align-top">{{ number_format($row->total, 2) }}</td>
@@ -329,6 +376,12 @@
             <td colspan="4" class="text-right font-bold desc">TOTAL A PAGAR: {{ $document->currency_type->symbol }}</td>
             <td class="text-right font-bold desc">{{ number_format($document->total, 2) }}</td>
         </tr>
+        @if($balance < 0)
+           <tr>
+               <td colspan="4" class="text-right font-bold desc">VUELTO: {{ $document->currency_type->symbol }}</td>
+               <td class="text-right font-bold desc">{{ number_format(abs($balance),2, ".", "") }}</td>
+           </tr>
+        @endif
     </tbody>
 </table>
 <table class="full-width">
@@ -403,7 +456,7 @@
         </tr>
         @foreach($payments as $row)
             <tr>
-                <td class="desc">- {{ $row->reference }} {{ $document->currency_type->symbol }} {{ $row->payment }}</td>
+                <td class="desc">&#8226; {{ $row->payment_method_type->description }} - {{ $row->reference ? $row->reference.' - ':'' }} {{ $document->currency_type->symbol }} {{ $row->payment + $row->change }}</td>
             </tr>
         @endforeach
     @endif

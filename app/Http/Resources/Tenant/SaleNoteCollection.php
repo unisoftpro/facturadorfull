@@ -33,7 +33,7 @@ class SaleNoteCollection extends ResourceCollection
                 'customer_number' => $row->customer->number,
                 'currency_type_id' => $row->currency_type_id,
                 'total_exportation' => number_format($row->total_exportation,2),
-                // 'total_free' => number_format($row->total_free,2),
+                'total_free' => number_format($row->total_free,2),
                 'total_unaffected' => number_format($row->total_unaffected,2),
                 'total_exonerated' => number_format($row->total_exonerated,2),
                 'total_taxed' => number_format($row->total_taxed,2),
@@ -60,6 +60,10 @@ class SaleNoteCollection extends ResourceCollection
                 'license_plate' => $row->license_plate,
                 'total_paid' => $total_paid,
                 'total_pending_paid' => $total_pending_paid,
+                'user_name' => ($row->user) ? $row->user->name : '',
+                'quotation_number_full' => ($row->quotation) ? $row->quotation->number_full : '',
+                'sale_opportunity_number_full' => isset($row->quotation->sale_opportunity) ? $row->quotation->sale_opportunity->number_full : '',
+
             ];
         });
     }

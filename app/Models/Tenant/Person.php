@@ -33,6 +33,7 @@ class Person extends ModelTenant
         'percentage_perception',
         'person_type_id',
         'comment',
+        'enabled',
 
     ];
 
@@ -44,7 +45,11 @@ class Person extends ModelTenant
     //         $builder->where('status', 1);
     //     });
     // }
-
+    
+    public function addresses()
+    {
+        return $this->hasMany(PersonAddress::class);
+    }
     public function identity_document_type()
     {
         return $this->belongsTo(IdentityDocumentType::class, 'identity_document_type_id');
@@ -99,4 +104,10 @@ class Person extends ModelTenant
     {
         return $this->belongsTo(PersonType::class);
     }
+    
+    public function scopeWhereIsEnabled($query)
+    {
+        return $query->where('enabled', true);
+    }
+
 }

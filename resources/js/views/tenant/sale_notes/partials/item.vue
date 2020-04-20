@@ -11,15 +11,14 @@
                                 <a href="#" v-if="typeUser != 'seller'" @click.prevent="showDialogNewItem = true">[+ Nuevo]</a>
                             </label>
 
-
                             <!-- <el-select v-model="form.item_id" @change="changeItem" filterable>
                                 <el-option v-for="option in items" :key="option.id" :value="option.id" :label="option.full_description"></el-option>
                             </el-select> -->
 
 
-                            <template id="select-append">
+                            <!-- <template id="select-append">
                                 <el-input id="custom-input">
-                                    <el-select 
+                                    <el-select
                                             v-model="form.item_id" @change="changeItem"
                                             filterable
                                             placeholder="Buscar"
@@ -32,7 +31,21 @@
                                         <el-button  @click.prevent="clickWarehouseDetail()"><i class="fa fa-search"></i></el-button>
                                     </el-tooltip>
                                 </el-input>
-                            </template>
+                            </template> -->
+
+                            <el-select v-model="form.item_id" @change="changeItem" filterable>
+                                <el-tooltip v-for="option in items"  :key="option.id" placement="top">
+                                    <div slot="content">
+                                        Marca: {{option.brand}} <br>
+                                        Categoria: {{option.category}} <br>
+                                        Stock: {{option.stock}} <br>
+                                        Precio: {{option.currency_type_symbol}} {{option.sale_unit_price}} <br>
+                                        Cod. Lote: {{option.lot_code}} <br>
+                                        Fec. Venc: {{option.date_of_due}} <br>
+                                    </div>
+                                    <el-option :value="option.id" :label="option.full_description"></el-option>
+                                </el-tooltip>
+                            </el-select>
 
                             <small class="form-control-feedback" v-if="errors.item_id" v-text="errors.item_id[0]"></small>
                         </div>
@@ -64,10 +77,19 @@
                             <small class="form-control-feedback" v-if="errors.unit_price" v-text="errors.unit_price[0]"></small>
                         </div>
                     </div>
-                    <div class="col-md-6 mt-4" v-if="form.item_id && form.item.lots_enabled">
+                    <div style="padding-top: 1%;" class="col-md-2 col-sm-2" v-if="form.item_id && form.item.lots_enabled && form.lots_group.length > 0">
+                        <a href="#"  class="text-center font-weight-bold text-info" @click.prevent="clickLotGroup">[&#10004; Seleccionar lote]</a>
+                    </div>
+
+                    <div style="padding-top: 1%;" class="col-md-3 col-sm-3" v-if="form.item_id && form.item.series_enabled">
                         <!-- <el-button type="primary" native-type="submit" icon="el-icon-check">Elegir serie</el-button> -->
                         <a href="#"  class="text-center font-weight-bold text-info" @click.prevent="clickSelectLots">[&#10004; Seleccionar series]</a>
                     </div>
+
+                    <!--<div class="col-md-6 mt-4" v-if="form.item_id && form.item.series_enabled">
+                        <a href="#"  class="text-center font-weight-bold text-info" @click.prevent="clickSelectLots">[&#10004; Seleccionar series]</a>
+                    </div> -->
+
                     <div class="col-md-12"  v-if="form.item_unit_types.length > 0">
                         <div style="margin:3px" class="table-responsive">
                             <h3>Lista de Precios</h3>
@@ -238,10 +260,17 @@
         </select-lots-form>
 
         <warehouses-detail
-                :showDialog.sync="showWarehousesDetail"
-                :isUpdateWarehouseId="isUpdateWarehouseId"
-                :warehouses="warehousesDetail">
-            </warehouses-detail>
+            :showDialog.sync="showWarehousesDetail"
+            :isUpdateWarehouseId="isUpdateWarehouseId"
+            :warehouses="warehousesDetail">
+        </warehouses-detail>
+
+         <lots-group
+            :showDialog.sync="showDialogLots"
+            :lots_group="form.lots_group"
+            @addRowLotGroup="addRowLotGroup">
+        </lots-group>
+
     </el-dialog>
 </template>
 <style>
@@ -256,10 +285,11 @@
     import {calculateRowItem} from '../../../../helpers/functions'
     import SelectLotsForm from './lots.vue'
     import WarehousesDetail from './select_warehouses.vue'
+    import LotsGroup from './lots_group.vue'
 
     export default {
         props: ['showDialog', 'currencyTypeIdActive', 'exchangeRateSale', 'typeUser'],
-        components: {itemForm, SelectLotsForm, WarehousesDetail},
+        components: {itemForm, SelectLotsForm, WarehousesDetail, LotsGroup},
         data() {
             return {
                 titleDialog: 'Agregar Producto o Servicio',
@@ -279,7 +309,8 @@
                 attribute_types: [],
                 use_price: 1,
                 change_affectation_igv_type_id: false,
-                lots:[]
+                lots:[],
+                showDialogLots: false
             }
         },
         created() {
@@ -288,7 +319,7 @@
             this.$eventHub.$on('reloadDataItems', (item_id) => {
                 this.reloadDataItems(item_id)
             })
-            
+
             this.$eventHub.$on('selectWarehouseId', (warehouse_id) => {
                 // console.log(warehouse_id)
                 this.form.warehouse_id = warehouse_id
@@ -296,7 +327,7 @@
         },
         methods: {
             clickWarehouseDetail(){
-                
+
                 if(!this.form.item_id){
                     return this.$message.error('Seleccione un item');
                 }
@@ -373,8 +404,12 @@
                     is_set: false,
                     item_unit_types: [],
                     warehouse_id:null,
+                    series_enabled: false,
+                    IdLoteSelected: null,
+                    lots_group: []
                 }
-                 this.item_unit_type = {};
+                this.item_unit_type = {};
+                this.lots = []
             },
             // initializeFields() {
             //     this.form.affectation_igv_type_id = this.affectation_igv_types[0].id
@@ -452,8 +487,16 @@
                 this.form.has_igv = this.form.item.has_igv;
                 this.form.affectation_igv_type_id = this.form.item.sale_affectation_igv_type_id
                 this.form.quantity = 1;
+                this.form.lots_group = this.form.item.lots_group
+
             },
             async clickAddItem() {
+
+
+                if(this.form.item.lots_enabled){
+                    if(!this.form.IdLoteSelected)
+                        return this.$message.error('Debe seleccionar un lote.');
+                }
 
                 let unit_price = (this.form.has_igv)?this.form.unit_price:this.form.unit_price*1.18;
 
@@ -463,18 +506,24 @@
 
                 this.form.affectation_igv_type = _.find(this.affectation_igv_types, {'id': this.form.affectation_igv_type_id})
                 this.form.item.presentation = this.item_unit_type;
+
+                let IdLoteSelected = this.form.IdLoteSelected
+
+
                 this.row = await calculateRowItem(this.form, this.currencyTypeIdActive, this.exchangeRateSale)
 
                 let select_lots = await _.filter(this.row.item.lots, {'has_sale':true})
                 let un_select_lots = await _.filter(this.row.item.lots, {'has_sale':false})
 
-                if(this.form.item.lots_enabled){
+                if(this.form.item.series_enabled){
                     if(select_lots.length != this.form.quantity)
                         return this.$message.error('La cantidad de series seleccionadas son diferentes a la cantidad a vender');
                 }
 
                 this.row.item.lots = un_select_lots
                 this.row.lots = select_lots
+
+                this.row.IdLoteSelected = IdLoteSelected
 
                 // console.log(un_select_lots)
                 // console.log(this.row.lots)
@@ -493,6 +542,14 @@
                     // this.filterItems()
 
                 })
+            },
+            addRowLotGroup(id)
+            {
+                this.form.IdLoteSelected =  id
+            },
+             clickLotGroup()
+            {
+                this.showDialogLots = true
             },
         }
     }

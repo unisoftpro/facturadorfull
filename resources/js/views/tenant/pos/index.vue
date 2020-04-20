@@ -7,8 +7,14 @@
         <h2 class="text-sm">{{user.name}}</h2>
       </div> -->
       <div class="row">
-        <div class="col-md-8">
+        <div class="col-md-4">
           <h2 class="text-sm">POS</h2>
+          <h2><el-switch v-model="search_item_by_barcode" active-text="Buscar por código de barras" @change="changeSearchItemBarcode"></el-switch></h2>
+        </div>
+        <div class="col-md-4">
+            <h2>  <button type="button"  @click="place = 'cat'" class="btn btn-custom btn-sm  mt-2 mr-2"><i class="fa fa-border-all"></i></button> </h2>
+            <h2>  <button type="button" :disabled="place == 'cat2'" @click="setView"  class="btn btn-custom btn-sm  mt-2 mr-2"><i class="fa fa-bars"></i></button> </h2>
+            <h2>  <button type="button" :disabled="place== 'cat'" @click="back()" class="btn btn-custom btn-sm  mt-2 mr-2"><i class="fa fa-undo"></i></button> </h2>
         </div>
         <div class="col-md-4">
           <div class="right-wrapper">
@@ -18,22 +24,66 @@
         </div>
       </div>
     </header>
-    <div v-if="!is_payment" class="row col-lg-12 m-0 p-0" v-loading="loading">
-      <div class="col-lg-8 col-md-6 px-4 pt-3 hyo">
-        <el-input
-            placeholder="Buscar productos"
-            size="medium"
-            v-model="input_item"
-            @input="searchItems"
-            autofocus
-            class="m-bottom"
-          >
-          <el-button slot="append" icon="el-icon-plus" @click.prevent="showDialogNewItem = true"></el-button>
-        </el-input>
 
-        <div class="row">
+
+    <div v-if="!is_payment" class="row col-lg-12 m-0 p-0" v-loading="loading">
+      <div  class="col-lg-8 col-md-6 px-4 pt-3 hyo">
+
+        <template v-if="!search_item_by_barcode">
+          <el-input
+              v-show="place  == 'prod' || place == 'cat2'"
+              placeholder="Buscar productos"
+              size="medium"
+              v-model="input_item"
+              @input="searchItems"
+              autofocus
+              class="m-bottom"
+            >
+            <el-button slot="append" icon="el-icon-plus" @click.prevent="showDialogNewItem = true"></el-button>
+          </el-input>
+        </template>
+
+        <template v-else>
+            <el-input
+                v-show="place  == 'prod' || place == 'cat2'"
+                placeholder="Buscar productos"
+                size="medium"
+                v-model="input_item"
+                @change="searchItemsBarcode"
+                autofocus
+                class="m-bottom"
+              >
+              <el-button slot="append" icon="el-icon-plus" @click.prevent="showDialogNewItem = true"></el-button>
+            </el-input>
+        </template>
+
+        <div v-if="place == 'cat2'"  class="container testimonial-group">
+            <div class="row text-center flex-nowrap">
+                <div  v-for="(item, index) in categories" @click="filterCategorie(item.id, true)"  :style="{ backgroundColor: item.color}" :key="index" class="col-sm-3 pointer">{{item.name}}</div>
+            </div>
+        </div> <br>
+
+
+        <div  v-if="place == 'cat'" class="row">
+
+            <template  v-for="(item, index) in categories" >
+                <div class="col-md-2" :key="index">
+                    <div @click="filterCategorie(item.id)"  class="card">
+                        <div :style="{ backgroundColor: item.color}" class="card-body pointer" style="font-weight: bold;color: white;font-size: 18px;">
+                            {{item.name}}
+                        </div>
+                    </div>
+
+                </div>
+
+            </template>
+
+        </div>
+
+
+        <div v-if="place == 'prod' || place == 'cat2'" class="row">
           <template v-for="(item,index) in items">
-            <div class="col-lg-3 col-md-4 col-sm-6" :key="index" >
+            <div v-bind:class="classObjectCol"  :key="index" >
               <section class="card ">
                 <div class="card-body pointer px-2 pt-2" @click="clickAddItem(item,index)">
                   <p class="font-weight-semibold mb-0" v-if="item.description.length > 50" data-toggle="tooltip" data-placement="top" :title="item.description">
@@ -43,6 +93,11 @@
                   <img :src="item.image_url" class="img-thumbail img-custom" />
                   <p class="text-muted font-weight-lighter mb-0">
                     <small>{{item.internal_id}}</small>
+                    <template v-if="item.sets.length  > 0">
+                        <br>
+                        <small > {{ item.sets.join('-') }} </small>
+                    </template>
+
                     <!-- <el-popover v-if="item.warehouses" placement="right" width="280"  trigger="hover">
                       <el-table  :data="item.warehouses">
                         <el-table-column width="150" property="warehouse_description" label="Ubicación"></el-table-column>
@@ -57,7 +112,7 @@
                   <button type="button" class="btn waves-effect waves-light btn-xs btn-success m-1__2" @click="clickHistoryPurchases(item.item_id)"><i class="fas fa-cart-plus"></i></button> -->
                   <template v-if="!item.edit_unit_price">
                     <h5   class="font-weight-semibold text-right text-white" >
-                      <button type="button" class="btn btn-xs btn-primary-pos" @click="clickOpenInputEditUP(index)"><span style='font-size:16px;'>&#9998;</span> </button>
+                      <button v-if="configuration.options_pos" type="button" class="btn btn-xs btn-primary-pos" @click="clickOpenInputEditUP(index)"><span style='font-size:16px;'>&#9998;</span> </button>
                       {{item.currency_type_symbol}} {{item.sale_unit_price}}
                     </h5>
                   </template>
@@ -69,7 +124,7 @@
                   </template>
 
                 </div>
-                <div class=" card-footer  bg-primary btn-group flex-wrap" style="width:100% !important; padding:0 !important; ">
+                <div v-if="configuration.options_pos" class=" card-footer  bg-primary btn-group flex-wrap" style="width:100% !important; padding:0 !important; ">
                   <!-- <el-popover v-if="item.warehouses" placement="right" width="280"  trigger="hover">
                     <el-table  :data="item.warehouses">
                       <el-table-column width="150" property="warehouse_description" label="Ubicación"></el-table-column>
@@ -95,6 +150,8 @@
             </div>
           </template>
         </div>
+
+
       </div>
       <div class="col-lg-4 col-md-6 bg-white m-0 p-0" style="height: calc(100vh - 110px)">
         <div class="h-75 bg-light" style="overflow-y: auto">
@@ -153,6 +210,7 @@
                     </td>
                     <td width="20%">
                       <p class="m-0">{{item.item.description}}</p>
+                      <small> {{nameSets(item.item_id)}} </small>
                       <!-- <p class="text-muted m-b-0"><small>Descuento 2%</small></p> -->
                     </td>
                     <!-- <td>
@@ -297,6 +355,7 @@
         :currency-type-active="currency_type"
         :exchange-rate-sale="form.exchange_rate_sale"
         :customer="customer"
+        :soapCompany="soapCompany"
       ></payment-form>
     </template>
 
@@ -314,11 +373,47 @@
 
       <warehouses-detail
               :showDialog.sync="showWarehousesDetail"
-              :warehouses="warehousesDetail">
+              :warehouses="warehousesDetail"
+              :unit_type="unittypeDetail">
           </warehouses-detail>
   </div>
 </template>
 <style>
+
+
+/* The heart of the matter */
+.testimonial-group > .row {
+  overflow-x: auto;
+  white-space: nowrap;
+  overflow-y: hidden;
+}
+.testimonial-group > .row > .col-sm-3 {
+  display: inline-block;
+  float: none;
+}
+
+/* Decorations */
+.col-sm-3 { height: 70px; margin-right: 0.5%; color: white; font-size: 18px; padding-bottom: 20px; padding-top: 18px; font-weight: bold }
+
+
+.card-block {
+    min-height: 220px;
+}
+
+.ex1 {
+  overflow-x: scroll;
+}
+.cat_c{
+    width: 100px;
+    margin: 1%;
+    padding: 3px;
+    font-weight: bold;
+    color: white;
+    min-height: 90px;
+}
+.cat_c p {
+    color: white;
+}
 .c-width {
   width: 80px !important;
   padding: 0 !important;
@@ -336,21 +431,25 @@
 <script>
       import { calculateRowItem } from "../../../helpers/functions";
       import PaymentForm from "./partials/payment.vue";
-      import PersonForm from "../persons/form.vue";
       import ItemForm from "./partials/form.vue";
       import { functions, exchangeRate } from "../../../mixins/functions";
       import HistorySalesForm from "../../../../../modules/Pos/Resources/assets/js/views/history/sales.vue";
       import HistoryPurchasesForm from "../../../../../modules/Pos/Resources/assets/js/views/history/purchases.vue";
+      import PersonForm from "../persons/form.vue";
       import WarehousesDetail from '../items/partials/warehouses.vue'
 
       export default {
-        components: { PaymentForm, PersonForm, ItemForm, HistorySalesForm, HistoryPurchasesForm, WarehousesDetail},
+        props: ['configuration', 'soapCompany'],
+        components: { PaymentForm, ItemForm, HistorySalesForm, HistoryPurchasesForm, PersonForm, WarehousesDetail},
         mixins: [functions, exchangeRate],
 
         data() {
           return {
+            place : 'cat',
             history_item_id:null,
+            search_item_by_barcode:false,
             warehousesDetail:[],
+            unittypeDetail:[],
             input_person:{},
             showDialogHistoryPurchases: false,
             showDialogHistorySales: false,
@@ -374,7 +473,9 @@
             customer: {},
             row: {},
             user: {},
-            form: {}
+            form: {},
+            categories: [ ],
+            colors: ['#1cb973', '#bf7ae6', '#fc6304', '#9b4db4', '#77c1f3']
           };
         },
         async created() {
@@ -385,8 +486,74 @@
           await this.getFormPosLocalStorage()
           await this.initCurrencyType()
           this.customer = await this.getLocalStorageIndex('customer')
+
+           if(document.querySelector('.sidebar-toggle')){
+               document.querySelector('.sidebar-toggle').click()
+           }
         },
+
+        computed:{
+
+            classObjectCol() {
+
+                let cols = this.configuration.colums_grid_item
+
+                let clase = 'c3'
+                switch(cols)
+                {
+                    case 2:
+                         clase = '6'
+
+                        break;
+                    case 3:
+                         clase = '4'
+
+                        break;
+                    case 4:
+                         clase = '3'
+
+                        break;
+                    case 5:
+                         clase = '2'
+
+                        break;
+                    case 6:
+                         clase = '2'
+                        break;
+                    default:
+
+                }
+                return {
+                    [`col-md-${clase}`] : true
+                }
+            }
+        },
+
         methods: {
+            filterCategorie(id,  mod = false)
+            {
+
+                if(id)
+                {
+                    this.items = this.all_items.filter(x => x.category_id == id)
+
+                }else{
+                    this.filterItems()
+                }
+
+                if(mod)
+                {
+                        this.place= 'cat2'
+                }
+                else{
+                    this.place= 'prod'
+                }
+
+            },
+          getColor(i)
+          {
+            return this.colors[(i % this.colors.length )]
+          },
           initCurrencyType(){
               this.currency_type = _.find(this.currency_types, {'id': this.form.currency_type_id})
           },
@@ -436,7 +603,7 @@
 
           },
           clickWarehouseDetail(item){
-
+            this.unittypeDetail = item.unit_type
               this.warehousesDetail = item.warehouses
               this.showWarehousesDetail = true
           },
@@ -899,12 +1066,30 @@
               this.user = response.data.user;
               this.form.currency_type_id =
               this.currency_types.length > 0 ? this.currency_types[0].id : null;
+              this.renderCategories(response.data.categories)
               // this.currency_type = _.find(this.currency_types, {'id': this.form.currency_type_id})
               // this.changeCurrencyType();
               this.filterItems();
               this.changeDateOfIssue();
               this.changeExchangeRate()
             });
+          },
+          renderCategories(source)
+          {
+            const contex = this
+            this.categories = source.map(( obj, index ) => {
+                return {
+                    id: obj.id,
+                    name: obj.name,
+                    color: contex.getColor(index)
+                }
+            })
+
+            this.categories.unshift({
+                    id: null,
+                    name: 'Todos',
+                    color: '#2C8DE3'
+                    })
           },
           searchItems() {
             if (this.input_item.length > 0) {
@@ -916,6 +1101,7 @@
                 .then(response => {
                   // console.log(response)
                   this.items = response.data.items;
+
                   this.loading = false;
                   if (this.items.length == 0) {
                     this.filterItems();
@@ -925,6 +1111,59 @@
               // this.customers = []
               this.filterItems();
             }
+
+          },
+          async searchItemsBarcode() {
+
+            // console.log(query)
+            // console.log("in:" + this.input_item)
+
+            if (this.input_item.length > 1) {
+
+              this.loading = true;
+              let parameters = `input_item=${this.input_item}`;
+
+              await this.$http.get(`/${this.resource}/search_items?${parameters}`)
+                        .then(response => {
+
+                          this.items = response.data.items;
+                          this.enabledSearchItemsBarcode()
+                          this.loading = false;
+                          if (this.items.length == 0) {
+                            this.filterItems();
+                        }
+
+                  });
+
+            } else {
+
+              await this.filterItems();
+
+            }
+
+          },
+          enabledSearchItemsBarcode(){
+
+            if (this.search_item_by_barcode) {
+
+              if (this.items.length == 1) {
+
+                  // console.log(this.items)
+                  this.clickAddItem(this.items[0], 0);
+                  this.filterItems();
+
+              }
+
+              this.cleanInput();
+
+            }
+
+          },
+          changeSearchItemBarcode(){
+            this.cleanInput()
+          },
+          cleanInput() {
+            this.input_item = null;
           },
           filterItems() {
             this.items = this.all_items;
@@ -959,7 +1198,33 @@
 
               await this.setFormPosLocalStorage()
 
-          }
+          },
+            openFullWindow() {
+                location.href = `/${this.resource}/pos_full`
+            },
+            back()
+            {
+                this.place = 'cat'
+            },
+            setView()
+            {
+                  this.place = 'cat2'
+            },
+            nameSets(id)
+            {
+                let row  =  this.items.find( x=> x.item_id  == id)
+                if(row){
+
+                  if(row.sets.length > 0)
+                  {
+                      return row.sets.join('-')
+                  }
+                  else{
+                      return ''
+                  }
+
+                }
+            }
         }
       };
 </script>

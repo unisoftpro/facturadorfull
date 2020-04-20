@@ -16,6 +16,9 @@
     }
 
     $document->load('reference_guides');
+    $total_payment = $document->payments->sum('payment');
+    $balance = ($document->total - $total_payment) - $document->payments->sum('change');
+
 @endphp
 <html>
 <head>
@@ -126,6 +129,18 @@
             <td><p class="desc">{{ $document->quotation->identifier }}</p></td>
         </tr>
     @endif
+    @isset($document->quotation->delivery_date)
+        <tr>
+            <td><p class="desc">F. Entrega</p></td>
+            <td><p class="desc">{{ $document->quotation->delivery_date->format('Y-m-d')}}</p></td>
+        </tr>
+    @endisset
+    @isset($document->quotation->sale_opportunity)
+        <tr>
+            <td><p class="desc">O. Venta</p></td>
+            <td><p class="desc">{{ $document->quotation->sale_opportunity->number_full}}</p></td>
+        </tr>
+    @endisset
 </table>
 
 @if ($document->guides)
@@ -145,7 +160,7 @@
 </table>
 @endif
 
-@if ($document->reference_guides)
+@if (count($document->reference_guides) > 0)
 <br/>
 <strong>Guias de remisión</strong>
 <table>
@@ -198,7 +213,20 @@
             </td>
             <td class="text-center desc-9 align-top">{{ $row->item->unit_type_id }}</td>
             <td class="text-left desc-9 align-top">
-                {!!$row->item->description!!} @if (!empty($row->item->presentation)) {!!$row->item->presentation->description!!} @endif
+                @if($row->name_product_pdf)
+                    {!!$row->name_product_pdf!!}
+                @else
+                    {!!$row->item->description!!} 
+                @endif
+                
+                @if (!empty($row->item->presentation)) {!!$row->item->presentation->description!!} @endif
+                
+                @foreach($row->additional_information as $information)
+                    @if ($information) 
+                        <br/>{{ $information }}
+                    @endif
+                @endforeach
+                
                 @if($row->attributes)
                     @foreach($row->attributes as $attr)
                         <br/>{!! $attr->description !!} : {{ $attr->value }}
@@ -247,9 +275,9 @@
                 <td class="text-right font-bold desc">{{ number_format($document->total_taxed, 2) }}</td>
             </tr>
         @endif
-        @if($document->total_discount > 0)
+         @if($document->total_discount > 0)
             <tr>
-                <td colspan="4" class="text-right font-bold">DESCUENTO TOTAL: {{ $document->currency_type->symbol }}</td>
+                <td colspan="5" class="text-right font-bold">{{(($document->total_prepayment > 0) ? 'ANTICIPO':'DESCUENTO TOTAL')}}: {{ $document->currency_type->symbol }}</td>
                 <td class="text-right font-bold">{{ number_format($document->total_discount, 2) }}</td>
             </tr>
         @endif
@@ -267,6 +295,13 @@
             <td colspan="4" class="text-right font-bold desc">TOTAL A PAGAR: {{ $document->currency_type->symbol }}</td>
             <td class="text-right font-bold desc">{{ number_format($document->total, 2) }}</td>
         </tr>
+
+        @if($balance < 0)
+           <tr>
+               <td colspan="5" class="text-right font-bold">VUELTO: {{ $document->currency_type->symbol }}</td>
+               <td class="text-right font-bold">{{ number_format(abs($balance),2, ".", "") }}</td>
+           </tr>
+        @endif
     </tbody>
 </table>
 <table class="full-width">
@@ -321,7 +356,7 @@
         </tr>
         @foreach($payments as $row)
             <tr>
-                <td class="desc">- {{ $row->reference }} {{ $document->currency_type->symbol }} {{ $row->payment }}</td>
+                <td class="desc">&#8226; {{ $row->payment_method_type->description }} - {{ $row->reference ? $row->reference.' - ':'' }} {{ $document->currency_type->symbol }} {{ $row->payment + $row->change }}</td>
             </tr>
         @endforeach
     @endif

@@ -26,6 +26,7 @@ use App\Models\Tenant\{
 use App\Models\Tenant\Document;
 use App\Http\Requests\Tenant\DispatchRequest;
 use Exception, Illuminate\Support\Facades\DB;
+use Modules\Order\Models\OrderNote;
 use App\Models\Tenant\Quotation;
 
 
@@ -61,6 +62,8 @@ class DispatchController extends Controller
         if($type == 'q')
         {
             $document = Quotation::find($document_id);
+        }else if($type == 'on'){
+            $document = OrderNote::find($document_id);
         }
         else{
             $type = 'i';
@@ -126,16 +129,18 @@ class DispatchController extends Controller
                 ];
             });
 
-        $identities = ['6'];
-        $dni_filter = config('tenant.document_type_03_filter');
-        if($dni_filter){
-            array_push($identities, '1');
-        }
+        $identities = ['6', '1'];
+
+        // $dni_filter = config('tenant.document_type_03_filter');
+        // if($dni_filter){
+        //     array_push($identities, '1');
+        // }
 
         $customers = Person::query()
             ->whereIn('identity_document_type_id', $identities)
             ->whereType('customers')
             ->orderBy('name')
+            ->whereIsEnabled()
             ->get()
             ->transform(function($row) {
                 return [

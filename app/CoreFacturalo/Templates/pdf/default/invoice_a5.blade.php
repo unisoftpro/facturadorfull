@@ -18,6 +18,9 @@
     $payments = $document->payments;
     $document->load('reference_guides');
 
+    $total_payment = $document->payments->sum('payment');
+    $balance = ($document->total - $total_payment) - $document->payments->sum('change');
+
 @endphp
 <html>
 <head>
@@ -25,6 +28,11 @@
     {{--<link href="{{ $path_style }}" rel="stylesheet" />--}}
 </head>
 <body>
+@if($document->state_type->id == '11')
+    <div class="company_logo_box" style="position: absolute; text-align: center; top:50%;">
+        <img src="data:{{mime_content_type(public_path("status_images".DIRECTORY_SEPARATOR."anulado.png"))}};base64, {{base64_encode(file_get_contents(public_path("status_images".DIRECTORY_SEPARATOR."anulado.png")))}}" alt="anulado" class="" style="opacity: 0.6;">
+    </div>
+@endif
 <table class="full-width">
     <tr>
         @if($company->logo)
@@ -227,8 +235,20 @@
             <td width="120px">COTIZACIÓN</td>
             <td width="8px">:</td>
             <td>{{ $document->quotation->identifier }}</td>
+            @isset($document->quotation->delivery_date)
+                    <td width="120px">F. ENTREGA</td>
+                    <td width="8px">:</td>
+                    <td>{{ $document->quotation->delivery_date->format('Y-m-d')}}</td>
+            @endisset
         </tr>
     @endif
+    @isset($document->quotation->sale_opportunity)
+        <tr>
+            <td width="120px">O. VENTA</td>
+            <td width="8px">:</td>
+            <td>{{ $document->quotation->sale_opportunity->number_full}}</td>
+        </tr>
+    @endisset
     @if(!is_null($document_base))
     <tr>
         <td width="120px">DOC. AFECTADO</td>
@@ -283,7 +303,21 @@
             </td>
             <td class="text-center align-top">{{ $row->item->unit_type_id }}</td>
             <td class="text-left align-top">
-                {!!$row->item->description!!} @if (!empty($row->item->presentation)) {!!$row->item->presentation->description!!} @endif
+
+                @if($row->name_product_pdf)
+                    {!!$row->name_product_pdf!!}
+                @else
+                    {!!$row->item->description!!} 
+                @endif
+                
+                @if (!empty($row->item->presentation)) {!!$row->item->presentation->description!!} @endif
+
+                @foreach($row->additional_information as $information)
+                    @if ($information)
+                        <br/><span style="font-size: 9px">{{ $information }}</span>
+                    @endif
+                @endforeach
+
                 @if($row->attributes)
                     @foreach($row->attributes as $attr)
                         <br/><span style="font-size: 9px">{!! $attr->description !!} : {{ $attr->value }}</span>
@@ -293,6 +327,11 @@
                     @foreach($row->discounts as $dtos)
                         <br/><span style="font-size: 9px">{{ $dtos->factor * 100 }}% {{$dtos->description }}</span>
                     @endforeach
+                @endif
+                @if($row->item->is_set == 1)
+                 <br>
+                 @inject('itemSet', 'App\Services\ItemSetService')
+                    {{join( "-", $itemSet->getItemsSet($row->item_id) )}}
                 @endif
             </td>
             <td class="text-right align-top">{{ number_format($row->unit_price, 2) }}</td>
@@ -370,9 +409,9 @@
                 <td class="text-right font-bold">{{ number_format($document->total_taxed, 2) }}</td>
             </tr>
         @endif
-        @if($document->total_discount > 0)
+         @if($document->total_discount > 0)
             <tr>
-                <td colspan="5" class="text-right font-bold">DESCUENTO TOTAL: {{ $document->currency_type->symbol }}</td>
+                <td colspan="5" class="text-right font-bold">{{(($document->total_prepayment > 0) ? 'ANTICIPO':'DESCUENTO TOTAL')}}: {{ $document->currency_type->symbol }}</td>
                 <td class="text-right font-bold">{{ number_format($document->total_discount, 2) }}</td>
             </tr>
         @endif
@@ -390,6 +429,12 @@
             <td colspan="5" class="text-right font-bold">TOTAL A PAGAR: {{ $document->currency_type->symbol }}</td>
             <td class="text-right font-bold">{{ number_format($document->total, 2) }}</td>
         </tr>
+        @if($balance < 0)
+           <tr>
+               <td colspan="5" class="text-right font-bold">VUELTO: {{ $document->currency_type->symbol }}</td>
+               <td class="text-right font-bold">{{ number_format(abs($balance),2, ".", "") }}</td>
+           </tr>
+        @endif
     </tbody>
 </table>
 <table class="full-width">
@@ -462,7 +507,7 @@
             @endphp
             @foreach($payments as $row)
                 <tr>
-                    <td>- {{ $row->reference }} {{ $document->currency_type->symbol }} {{ $row->payment }}</td>
+                    <td>&#8226; {{ $row->payment_method_type->description }} - {{ $row->reference ? $row->reference.' - ':'' }} {{ $document->currency_type->symbol }} {{ $row->payment + $row->change }}</td>
                 </tr>
             @endforeach
         </tr>

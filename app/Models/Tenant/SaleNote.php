@@ -51,6 +51,7 @@ class SaleNote extends ModelTenant
         'filename',
         'total_canceled',
         'quotation_id',
+        'order_note_id',
         'apply_concurrency',
         'type_period',
         'quantity_period',
@@ -240,7 +241,9 @@ class SaleNote extends ModelTenant
 
     public function getNumberFullAttribute()
     {
-        return $this->prefix.'-'.$this->id;
+        $number_full = ($this->series && $this->number) ? $this->series.'-'.$this->number : $this->prefix.'-'.$this->id;
+
+        return $number_full;
     }
 
 
@@ -250,4 +253,20 @@ class SaleNote extends ModelTenant
         return ($user->type == 'seller') ? $query->where('user_id', $user->id) : null;
     }
 
+    
+    public function scopeWhereStateTypeAccepted($query)
+    {
+        return $query->whereIn('state_type_id', ['01','03','05','07','13']);
+    }
+
+    public function scopeWhereNotChanged($query)
+    {
+        return $query->where('changed', false);
+    }
+    
+
+    public function quotation()
+    {
+        return $this->belongsTo(Quotation::class);
+    }
 }

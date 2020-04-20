@@ -7,6 +7,7 @@
             </ol>
             <div class="right-wrapper pull-right">
                 <template v-if="typeUser === 'admin'">
+                    <button type="button" class="btn btn-custom btn-sm  mt-2 mr-2" @click.prevent="clickImportListPrice()"><i class="fa fa-upload"></i> Importar L. Precios</button>
                     <button type="button" class="btn btn-custom btn-sm  mt-2 mr-2" @click.prevent="clickImport()"><i class="fa fa-upload"></i> Importar</button>
                     <button type="button" class="btn btn-custom btn-sm  mt-2 mr-2" @click.prevent="clickCreate()"><i class="fa fa-plus-circle"></i> Nuevo</button>
                 </template>
@@ -31,7 +32,7 @@
                         <th class="text-center">Tiene Igv</th>
                         <th class="text-right">Acciones</th>
                     <tr>
-                    <tr slot-scope="{ index, row }">
+                    <tr slot-scope="{ index, row }" :class="{ disable_color : !row.active}">
                         <td>{{ index }}</td>
                         <td>{{ row.internal_id }}</td>
                         <td>{{ row.unit_type_id }}</td>
@@ -58,7 +59,12 @@
                             <template v-if="typeUser === 'admin'">
                                 <button type="button" class="btn waves-effect waves-light btn-xs btn-info" @click.prevent="clickCreate(row.id)">Editar</button>
                                 <button type="button" class="btn waves-effect waves-light btn-xs btn-danger" @click.prevent="clickDelete(row.id)">Eliminar</button>
-                                <button type="button" class="btn waves-effect waves-light btn-xs btn-warning" @click.prevent="duplicate(row.id)">Clonar</button>
+                                <button type="button" class="btn waves-effect waves-light btn-xs btn-warning" @click.prevent="duplicate(row.id)">Duplicar</button>
+
+                                <button type="button" class="btn waves-effect waves-light btn-xs btn-danger" @click.prevent="clickDisable(row.id)" v-if="row.active">Inhabilitar</button>
+                                <button type="button" class="btn waves-effect waves-light btn-xs btn-primary" @click.prevent="clickEnable(row.id)" v-else>Habilitar</button>
+
+                                <button type="button" class="btn waves-effect waves-light btn-xs btn-primary" @click.prevent="clickBarcode(row)">Cod. Barras</button>
 
                             </template>
                         </td>
@@ -76,6 +82,8 @@
                 :warehouses="warehousesDetail">
             </warehouses-detail>
 
+            <items-import-list-price :showDialog.sync="showImportListPriceDialog"></items-import-list-price>
+
         </div>
     </div>
 </template>
@@ -84,17 +92,19 @@
     import ItemsForm from './form.vue'
     import WarehousesDetail from './partials/warehouses.vue'
     import ItemsImport from './import.vue'
+    import ItemsImportListPrice from './partials/import_list_price.vue'
     import DataTable from '../../../components/DataTable.vue'
     import {deletable} from '../../../mixins/deletable'
 
     export default {
         props:['typeUser'],
         mixins: [deletable],
-        components: {ItemsForm, ItemsImport, DataTable, WarehousesDetail},
+        components: {ItemsForm, ItemsImport, DataTable, WarehousesDetail, ItemsImportListPrice},
         data() {
             return {
                 showDialog: false,
                 showImportDialog: false,
+                showImportListPriceDialog: false,
                 showWarehousesDetail: false,
                 resource: 'items',
                 recordId: null,
@@ -131,10 +141,32 @@
             clickImport() {
                 this.showImportDialog = true
             },
+            clickImportListPrice() {
+                this.showImportListPriceDialog = true
+            },
             clickDelete(id) {
                 this.destroy(`/${this.resource}/${id}`).then(() =>
                     this.$eventHub.$emit('reloadData')
                 )
+            },
+            clickDisable(id)
+            {
+                this.disable(`/${this.resource}/disable/${id}`).then(() =>
+                    this.$eventHub.$emit('reloadData')
+                )
+            },
+            clickEnable(id){
+                this.enable(`/${this.resource}/enable/${id}`).then(() =>
+                    this.$eventHub.$emit('reloadData')
+                )
+            },
+            clickBarcode(row) {
+
+                if(!row.internal_id){
+                    return this.$message.error('Para generar el código de barras debe registrar el código interno.')
+                }
+
+                window.open(`/${this.resource}/barcode/${row.id}`)
             }
         }
     }

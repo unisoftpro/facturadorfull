@@ -32,7 +32,7 @@ if ($hostname) {
         Route::get('downloads/{model}/{type}/{external_id}/{format?}', 'Tenant\DownloadController@downloadExternal')->name('tenant.download.external_id');
         Route::get('print/{model}/{external_id}/{format?}', 'Tenant\DownloadController@toPrint');
 
-       Route::middleware(['auth', 'redirect.module', 'locked.tenant'])->group(function() {
+        Route::middleware(['auth', 'redirect.module', 'locked.tenant'])->group(function() {
         // Route::middleware(['auth'])->group(function() {
             // Route::get('/', function () {
             //     return redirect()->route('tenant.documents.create');
@@ -76,10 +76,18 @@ if ($hostname) {
             Route::delete('card_brands/{card_brand}', 'Tenant\CardBrandController@destroy');
 
             //Configurations
+            Route::get('configurations/addSeeder', 'Tenant\ConfigurationController@addSeeder');
+            Route::get('configurations/getFormats', 'Tenant\ConfigurationController@getFormats');
             Route::get('configurations/create', 'Tenant\ConfigurationController@create')->name('tenant.configurations.create');
             Route::get('configurations/record', 'Tenant\ConfigurationController@record');
             Route::post('configurations', 'Tenant\ConfigurationController@store');
             Route::post('configurations/icbper', 'Tenant\ConfigurationController@icbper');
+            Route::post('configurations/changeFormat', 'Tenant\ConfigurationController@changeFormat');
+            Route::get('configurations/tables', 'Tenant\ConfigurationController@tables');
+            Route::get('configurations/visual_defaults', 'Tenant\ConfigurationController@visualDefaults')->name('visual_defaults');
+            Route::post('configurations/visual_settings', 'Tenant\ConfigurationController@visualSettings')->name('visual-settings');
+            Route::get('configurations/pdf_templates', 'Tenant\ConfigurationController@pdfTemplates')->name('tenant.advanced.pdf_templates');
+
 
             //Certificates
             Route::get('certificates/record', 'Tenant\CertificateController@record');
@@ -146,6 +154,13 @@ if ($hostname) {
             Route::post('items/upload', 'Tenant\ItemController@upload');
             Route::post('items/visible_store', 'Tenant\ItemController@visibleStore');
             Route::post('items/duplicate', 'Tenant\ItemController@duplicate');
+            Route::get('items/disable/{item}', 'Tenant\ItemController@disable');
+            Route::get('items/enable/{item}', 'Tenant\ItemController@enable');
+            Route::get('items/images/{item}', 'Tenant\ItemController@images');
+            Route::get('items/images/delete/{id}', 'Tenant\ItemController@delete_images');
+
+
+
 
 
 
@@ -177,15 +192,18 @@ if ($hostname) {
             Route::post('persons', 'Tenant\PersonController@store');
             Route::delete('persons/{person}', 'Tenant\PersonController@destroy');
             Route::post('persons/import', 'Tenant\PersonController@import');
+            Route::get('persons/enabled/{type}/{person}', 'Tenant\PersonController@enabled');
 
             //Documents
+            Route::post('documents/categories', 'Tenant\DocumentController@storeCategories');
+            Route::post('documents/brands', 'Tenant\DocumentController@storeBrands');
             Route::get('documents/search/customers', 'Tenant\DocumentController@searchCustomers');
             Route::get('documents/search/customer/{id}', 'Tenant\DocumentController@searchCustomerById');
 
-            Route::get('documents', 'Tenant\DocumentController@index')->name('tenant.documents.index')->middleware('redirect.level');
+            Route::get('documents', 'Tenant\DocumentController@index')->name('tenant.documents.index')->middleware(['redirect.level','tenant.internal.mode']);
             Route::get('documents/columns', 'Tenant\DocumentController@columns');
             Route::get('documents/records', 'Tenant\DocumentController@records');
-            Route::get('documents/create', 'Tenant\DocumentController@create')->name('tenant.documents.create')->middleware('redirect.level');
+            Route::get('documents/create', 'Tenant\DocumentController@create')->name('tenant.documents.create')->middleware(['redirect.level','tenant.internal.mode']);
             Route::get('documents/create_tensu', 'Tenant\DocumentController@create_tensu')->name('tenant.documents.create_tensu');
 
             Route::get('documents/tables', 'Tenant\DocumentController@tables');
@@ -207,6 +225,8 @@ if ($hostname) {
            Route::post('document_payments', 'Tenant\DocumentPaymentController@store');
            Route::delete('document_payments/{document_payment}', 'Tenant\DocumentPaymentController@destroy');
            Route::get('document_payments/initialize_balance', 'Tenant\DocumentPaymentController@initialize_balance');
+           Route::get('document_payments/report/{start}/{end}', 'Tenant\DocumentPaymentController@report');
+
 
             Route::get('documents/send_server/{document}/{query?}', 'Tenant\DocumentController@sendServer');
             Route::get('documents/check_server/{document}', 'Tenant\DocumentController@checkServer');
@@ -222,14 +242,14 @@ if ($hostname) {
             Route::get('documents/data-table/items', 'Tenant\DocumentController@getDataTableItem');
 
             //Contingencies
-            Route::get('contingencies', 'Tenant\ContingencyController@index')->name('tenant.contingencies.index')->middleware('redirect.level');
+            Route::get('contingencies', 'Tenant\ContingencyController@index')->name('tenant.contingencies.index')->middleware('redirect.level','tenant.internal.mode');
             Route::get('contingencies/columns', 'Tenant\ContingencyController@columns');
             Route::get('contingencies/records', 'Tenant\ContingencyController@records');
             Route::get('contingencies/create', 'Tenant\ContingencyController@create')->name('tenant.contingencies.create');
 
 
             //Summaries
-            Route::get('summaries', 'Tenant\SummaryController@index')->name('tenant.summaries.index')->middleware('redirect.level');
+            Route::get('summaries', 'Tenant\SummaryController@index')->name('tenant.summaries.index')->middleware('redirect.level','tenant.internal.mode');
             Route::get('summaries/records', 'Tenant\SummaryController@records');
             Route::post('summaries/documents', 'Tenant\SummaryController@documents');
             Route::post('summaries', 'Tenant\SummaryController@store');
@@ -248,12 +268,14 @@ if ($hostname) {
         //    Route::post('inventories/remove', 'Tenant\InventoryController@remove');
 
             //Voided
-            Route::get('voided', 'Tenant\VoidedController@index')->name('tenant.voided.index')->middleware('redirect.level');
+            Route::get('voided', 'Tenant\VoidedController@index')->name('tenant.voided.index')->middleware('redirect.level','tenant.internal.mode');
             Route::get('voided/columns', 'Tenant\VoidedController@columns');
             Route::get('voided/records', 'Tenant\VoidedController@records');
             Route::post('voided', 'Tenant\VoidedController@store');
 //            Route::get('voided/download/{type}/{voided}', 'Tenant\VoidedController@download')->name('tenant.voided.download');
             Route::get('voided/status/{voided}', 'Tenant\VoidedController@status');
+            Route::get('voided/status_masive', 'Tenant\VoidedController@status_masive');
+
             Route::delete('voided/{voided}', 'Tenant\VoidedController@destroy');
 //            Route::get('voided/ticket/{voided_id}/{group_id}', 'Tenant\VoidedController@ticket');
 
@@ -304,7 +326,7 @@ if ($hostname) {
 //            Route::post('reports/kardex/pdf', 'Tenant\ReportKardexController@pdf')->name('tenant.report.kardex.pdf');
 //            Route::post('reports/kardex/excel', 'Tenant\ReportKardexController@excel')->name('tenant.report.kardex.report_excel');
 
-            Route::get('reports/consistency-documents', 'Tenant\ReportConsistencyDocumentController@index')->name('tenant.consistency-documents.index');
+            Route::get('reports/consistency-documents', 'Tenant\ReportConsistencyDocumentController@index')->name('tenant.consistency-documents.index')->middleware('tenant.internal.mode');
             Route::post('reports/consistency-documents/lists', 'Tenant\ReportConsistencyDocumentController@lists');
 
             Route::post('options/delete_documents', 'Tenant\OptionController@deleteDocuments');
@@ -401,9 +423,11 @@ if ($hostname) {
             Route::get('quotations', 'Tenant\QuotationController@index')->name('tenant.quotations.index')->middleware('redirect.level');
             Route::get('quotations/columns', 'Tenant\QuotationController@columns');
             Route::get('quotations/records', 'Tenant\QuotationController@records');
-            Route::get('quotations/create', 'Tenant\QuotationController@create')->name('tenant.quotations.create')->middleware('redirect.level');
+            Route::get('quotations/create/{saleOpportunityId?}', 'Tenant\QuotationController@create')->name('tenant.quotations.create')->middleware('redirect.level');
             Route::get('quotations/edit/{id}', 'Tenant\QuotationController@edit')->middleware('redirect.level');
 
+            Route::get('quotations/state-type/{state_type_id}/{id}', 'Tenant\QuotationController@updateStateType');
+            Route::get('quotations/filter', 'Tenant\QuotationController@filter');
             Route::get('quotations/tables', 'Tenant\QuotationController@tables');
             Route::get('quotations/table/{table}', 'Tenant\QuotationController@table');
             Route::post('quotations', 'Tenant\QuotationController@store');
@@ -419,6 +443,7 @@ if ($hostname) {
             Route::post('quotations/email', 'Tenant\QuotationController@email');
             Route::post('quotations/duplicate', 'Tenant\QuotationController@duplicate');
             Route::get('quotations/record2/{quotation}', 'Tenant\QuotationController@record2');
+            Route::get('quotations/changed/{quotation}', 'Tenant\QuotationController@changed');
 
             // Route::get('reports/quotations', 'Tenant\ReportQuotationController@index')->name('tenant.reports.quotations.index');
             // Route::get('reports/quotations/search', 'Tenant\ReportQuotationController@search')->name('tenant.reports.quotations.search');
@@ -480,6 +505,8 @@ if ($hostname) {
 
            //POS
            Route::get('pos', 'Tenant\PosController@index')->name('tenant.pos.index');
+           Route::get('pos_full', 'Tenant\PosController@index_full')->name('tenant.pos_full.index');
+
            Route::get('pos/search_items', 'Tenant\PosController@search_items');
            Route::get('pos/tables', 'Tenant\PosController@tables');
            Route::get('pos/table/{table}', 'Tenant\PosController@table');
@@ -501,11 +528,16 @@ if ($hostname) {
            Route::post('cash/cash_document', 'Tenant\CashController@cash_document');
            Route::get('cash/close/{cash}', 'Tenant\CashController@close');
            Route::get('cash/report/{cash}', 'Tenant\CashController@report');
+           Route::get('cash/report', 'Tenant\CashController@report_general');
+
            Route::get('cash/record/{cash}', 'Tenant\CashController@record');
            Route::delete('cash/{cash}', 'Tenant\CashController@destroy');
            Route::get('cash/item/tables', 'Tenant\CashController@item_tables');
            Route::get('cash/search/customers', 'Tenant\CashController@searchCustomers');
            Route::get('cash/search/customer/{id}', 'Tenant\CashController@searchCustomerById');
+
+           Route::get('cash/report/products/{cash}', 'Tenant\CashController@report_products');
+
 
            //Tags
            Route::get('tags', 'Tenant\TagController@index')->name('tenant.tags.index');
@@ -559,6 +591,9 @@ if ($hostname) {
            Route::post('payment_method', 'Tenant\PaymentMethodTypeController@store');
            Route::delete('payment_method/{code}', 'Tenant\PaymentMethodTypeController@destroy');
 
+           //formats PDF
+           Route::get('templates', 'Tenant\FormatTemplateController@records');
+
         });
     });
 } else {
@@ -567,6 +602,7 @@ if ($hostname) {
         Route::get('login', 'System\LoginController@showLoginForm')->name('login');
         Route::post('login', 'System\LoginController@login');
         Route::post('logout', 'System\LoginController@logout')->name('logout');
+        Route::get('phone', 'System\UserController@getPhone');
 
         Route::middleware('auth:admin')->group(function() {
             Route::get('logs', '\Rap2hpoutre\LaravelLogViewer\LogViewerController@index');
@@ -598,6 +634,9 @@ if ($hostname) {
 
             Route::post('clients/locked_tenant', 'System\ClientController@lockedTenant');
 
+            Route::post('clients/upload', 'System\ClientController@upload');
+
+
 
 
             Route::get('client_payments/records/{client_id}', 'System\ClientPaymentController@records');
@@ -611,6 +650,8 @@ if ($hostname) {
             Route::get('client_account_status/records/{client_id}', 'System\AccountStatusController@records');
             Route::get('client_account_status/client/{client_id}', 'System\AccountStatusController@client');
             Route::get('client_account_status/tables', 'System\AccountStatusController@tables');
+
+
 
             //Planes
             Route::get('plans', 'System\PlanController@index')->name('system.plans.index');
@@ -626,6 +667,16 @@ if ($hostname) {
             Route::post('users', 'System\UserController@store');
 
             Route::get('services/ruc/{number}', 'System\ServiceController@ruc');
+
+
+            Route::get('certificates/record', 'System\CertificateController@record');
+            Route::post('certificates/uploads', 'System\CertificateController@uploadFile');
+            Route::post('certificates/saveSoapUser', 'System\CertificateController@saveSoapUser');
+            Route::delete('certificates', 'System\CertificateController@destroy');
+            Route::get('configurations', 'System\ConfigurationController@index')->name('system.configuration.index');
+
+            Route::get('companies/record', 'System\CompanyController@record');
+            Route::post('companies', 'System\CompanyController@store');
 
 
         });

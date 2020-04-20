@@ -3,7 +3,7 @@
         <div class="page-header pr-0">
             <h2><a href="/dashboard"><i class="fas fa-tachometer-alt"></i></a></h2>
             <ol class="breadcrumbs">
-                <li class="active"><span>Cotizaciones</span></li>
+                <li class="active"><span>Cotizaciones {{soapCompany}}</span></li>
             </ol>
             <div class="right-wrapper pull-right">
                 <a :href="`/${resource}/create`" class="btn btn-custom btn-sm  mt-2 mr-2"><i class="fa fa-plus-circle"></i> Nuevo</a>
@@ -27,14 +27,19 @@
                     <tr slot="heading">
                         <th>#</th>
                         <th class="text-center">Fecha Emisión</th>
+                        <th class="text-center" v-if="columns.delivery_date.visible">Fecha Entrega</th>
+                        <th>Vendedor</th>
                         <th>Cliente</th>
                         <th>Estado</th>
                         <th>Cotización</th>
                         <th>Comprobantes</th>
                         <th>Notas de venta</th>
+                        <th>Oportunidad Venta</th>
+                        <th v-if="columns.contract.visible">Contrato</th>
                         <!-- <th>Estado</th> -->
                         <th class="text-center">Moneda</th>
                         <th class="text-right" v-if="columns.total_exportation.visible">T.Exportación</th>
+                        <th class="text-right" v-if="columns.total_free.visible">T.Gratuito</th>
                         <th class="text-right" v-if="columns.total_unaffected.visible">T.Inafecta</th>
                         <th class="text-right" v-if="columns.total_exonerated.visible">T.Exonerado</th>
                         <th class="text-right">T.Gravado</th>
@@ -46,8 +51,19 @@
                     <tr slot-scope="{ index, row }" :class="{ anulate_color : row.state_type_id == '11' }">
                         <td>{{ index }}</td>
                         <td class="text-center">{{ row.date_of_issue }}</td>
+                        <td class="text-center" v-if="columns.delivery_date.visible">{{ row.delivery_date }}</td>
+                        <td>{{ row.user_name }}</td>
                         <td>{{ row.customer_name }}<br/><small v-text="row.customer_number"></small></td>
-                        <td>{{row.state_type_description}}</td>
+                        <td>
+                            <template v-if="row.state_type_id == '11'">
+                                {{row.state_type_description}}
+                            </template>
+                            <template v-else>
+                                <el-select v-model="row.state_type_id" @change="changeStateType(row)" style="width:120px !important">
+                                    <el-option v-for="option in state_types" :key="option.id" :value="option.id" :label="option.description"></el-option>
+                                </el-select>
+                            </template>
+                        </td>
                         <td>{{ row.identifier }}
                         </td>
                         <td>
@@ -60,9 +76,55 @@
                                 <label :key="i" v-text="sale_note.identifier" class="d-block"></label>
                             </template>
                         </td>
+                        <td>
+                            <!-- {{ row.sale_opportunity_number_full }} -->
+
+                            <el-popover
+                                placement="right"
+                                v-if="row.sale_opportunity"
+                                width="400"
+                                trigger="click">
+
+                                <div class="col-md-12 mt-4">
+                                    <table>
+                                        <tr>
+                                            <td><strong>O. Venta: </strong></td>
+                                            <td><strong>{{row.sale_opportunity_number_full}}</strong></td>
+                                        </tr>
+                                        <tr  class="mt-4 mb-4">
+                                            <td><strong>F. Emisión:</strong></td>
+                                            <td><strong>{{row.date_of_issue}}</strong></td>
+                                        </tr>
+                                    </table>
+                                    <div class="table-responsive mt-4">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Descripción</th>
+                                                    <th>Cantidad</th>
+                                                    <th>Total</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="(row, index) in row.sale_opportunity.items" :key="index">
+                                                    <td>{{index+1}}</td>
+                                                    <td>{{row.item.description}}</td>
+                                                    <td>{{row.quantity}}</td>
+                                                    <td>{{row.total}}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <el-button slot="reference"> <i class="fa fa-eye"></i></el-button>
+                            </el-popover>
+                        </td>
                         <!-- <td>{{ row.state_type_description }}</td> -->
+                        <td v-if="columns.contract.visible">{{ row.contract_number_full }}</td>
                         <td class="text-center">{{ row.currency_type_id }}</td>
                         <td class="text-right"  v-if="columns.total_exportation.visible" >{{ row.total_exportation }}</td>
+                        <td class="text-right" v-if="columns.total_free.visible">{{ row.total_free }}</td>
                         <td class="text-right" v-if="columns.total_unaffected.visible">{{ row.total_unaffected }}</td>
                         <td class="text-right" v-if="columns.total_exonerated.visible">{{ row.total_exonerated }}</td>
                         <td class="text-right">{{ row.total_taxed }}</td>
@@ -75,13 +137,19 @@
                         </td>
 
                         <td class="text-right">
-                            <button v-if="row.state_type_id != '11' && row.btn_generate"  type="button" class="btn waves-effect waves-light btn-xs btn-info"
-                                    @click.prevent="clickOptions(row.id)" >Generar comprobante</button>
+                            <button v-if="row.state_type_id != '11' && row.btn_generate && typeUser == 'admin' && soapCompany != '03'"
+                                    type="button"
+                                    class="btn waves-effect waves-light btn-xs btn-info"
+                                    @click.prevent="clickOptions(row.id)" >
+                                Generar comprobante
+                            </button>
 
                             <a v-if="row.documents.length == 0 && row.state_type_id != '11'" :href="`/${resource}/edit/${row.id}`" type="button" class="btn waves-effect waves-light btn-xs btn-info">Editar</a>
                             <button v-if="row.documents.length == 0 && row.state_type_id != '11'" type="button" class="btn waves-effect waves-light btn-xs btn-danger" @click.prevent="clickAnulate(row.id)">Anular</button>
                             <button @click="duplicate(row.id)"  type="button" class="btn waves-effect waves-light btn-xs btn-info">Duplicar</button>
                             <a :href="`/dispatches/create/${row.id}/q`" class="btn waves-effect waves-light btn-xs btn-warning m-1__2">Guía</a>
+
+                            <a v-if="row.btn_generate_cnt && row.state_type_id != '11'" :href="`/contracts/generate-quotation/${row.id}`" class="btn waves-effect waves-light btn-xs btn-primary m-1__2">Generar contrato</a>
 
 
                         </td>
@@ -115,6 +183,7 @@
     import {deletable} from '../../../mixins/deletable'
 
     export default {
+        props:['typeUser', 'soapCompany'],
         mixins: [deletable],
         components: {DataTable,QuotationOptions, QuotationOptionsPdf},
         data() {
@@ -123,6 +192,7 @@
                 recordId: null,
                 showDialogOptions: false,
                 showDialogOptionsPdf: false,
+                state_types: [],
                 columns: {
                     total_exportation: {
                         title: 'T.Exportación',
@@ -135,13 +205,39 @@
                     total_exonerated: {
                         title: 'T.Exonerado',
                         visible: false
+                    },
+                    total_free: {
+                        title: 'T.Gratuito',
+                        visible: false
+                    },
+                    contract: {
+                        title: 'Contrato',
+                        visible: false
+                    },
+                    delivery_date: {
+                        title: 'F.Entrega',
+                        visible: false
                     }
                 }
             }
         },
-        created() {
+        async created() {
+            await this.filter()
         },
         methods: {
+            async changeStateType(row){
+
+                await this.updateStateType(`/${this.resource}/state-type/${row.state_type_id}/${row.id}`).then(() =>
+                    this.$eventHub.$emit('reloadData')
+                )
+
+            },
+            filter(){
+                this.$http.get(`/${this.resource}/filter`)
+                            .then(response => {
+                                this.state_types = response.data.state_types
+                            })
+            },
             clickEdit(id)
             {
                 this.recordId = id

@@ -23,6 +23,44 @@ if($current_hostname) {
 
             });
 
+            
+            Route::prefix('expense-payments')->group(function () {
+
+                Route::get('/records/{expense_id}', 'ExpensePaymentController@records');
+                Route::get('/expense/{expense_id}', 'ExpensePaymentController@expense');
+                Route::get('/tables', 'ExpensePaymentController@tables');
+                Route::post('', 'ExpensePaymentController@store');
+                Route::delete('/{expense_payment}', 'ExpensePaymentController@destroy');
+
+            });
+
+            Route::prefix('expense-types')->group(function () {
+
+                Route::get('/records', 'ExpenseTypeController@records');
+                Route::get('/record/{id}', 'ExpenseTypeController@record');
+                Route::post('', 'ExpenseTypeController@store');
+                Route::delete('/{id}', 'ExpenseTypeController@destroy');
+
+            });
+
+            Route::prefix('expense-reasons')->group(function () {
+
+                Route::get('/records', 'ExpenseReasonController@records');
+                Route::get('/record/{id}', 'ExpenseReasonController@record');
+                Route::post('', 'ExpenseReasonController@store');
+                Route::delete('/{id}', 'ExpenseReasonController@destroy');
+
+            });
+
+            Route::prefix('expense-method-types')->group(function () {
+
+                Route::get('/records', 'ExpenseMethodTypeController@records');
+                Route::get('/record/{id}', 'ExpenseMethodTypeController@record');
+                Route::post('', 'ExpenseMethodTypeController@store');
+                Route::delete('/{id}', 'ExpenseMethodTypeController@destroy');
+
+            });
+
         });
     });
 }

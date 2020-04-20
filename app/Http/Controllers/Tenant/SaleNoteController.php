@@ -43,19 +43,26 @@ use Illuminate\Support\Facades\Mail;
 use Modules\Inventory\Models\Warehouse;
 use Modules\Item\Models\ItemLot;
 use App\Models\Tenant\ItemWarehouse;
+use Modules\Finance\Traits\FinanceTrait;
+use Modules\Item\Models\ItemLotsGroup;
+use App\Models\Tenant\Configuration;
 
 
 class SaleNoteController extends Controller
 {
 
-    use StorageDocument;
+    use StorageDocument, FinanceTrait;
 
     protected $sale_note;
     protected $company;
+    protected $apply_change;
 
     public function index()
     {
-        return view('tenant.sale_notes.index');
+        $company = Company::select('soap_type_id')->first();
+        $soap_company  = $company->soap_type_id;
+
+        return view('tenant.sale_notes.index', compact('soap_company'));
     }
 
 
@@ -98,6 +105,7 @@ class SaleNoteController extends Controller
         $customers = Person::where('number','like', "%{$request->input}%")
                             ->orWhere('name','like', "%{$request->input}%")
                             ->whereType('customers')->orderBy('name')
+                            ->whereIsEnabled()
                             ->get()->transform(function($row) {
                                 return [
                                     'id' => $row->id,
@@ -130,9 +138,10 @@ class SaleNoteController extends Controller
                 'number' => $row->number
             ];
         });
+        $payment_destinations = $this->getPaymentDestinations();
 
         return compact('customers', 'establishments','currency_types', 'discount_types',
-                         'charge_types','company','payment_method_types', 'series');
+                         'charge_types','company','payment_method_types', 'series', 'payment_destinations');
     }
 
     public function changed($id)
@@ -184,7 +193,8 @@ class SaleNoteController extends Controller
                 $data);
 
 
-            $this->sale_note->payments()->delete();
+            // $this->sale_note->payments()->delete();
+            $this->deleteAllPayments($this->sale_note->payments);
 
 
             foreach($data['items'] as $row) {
@@ -209,12 +219,21 @@ class SaleNoteController extends Controller
                     }
                 }
 
+                if(isset($row['IdLoteSelected']))
+                {
+                    $lot = ItemLotsGroup::find($row['IdLoteSelected']);
+                    $lot->quantity = ($lot->quantity - $row['quantity']);
+                    $lot->save();
+                }
+
             }
 
             //pagos
-            foreach ($data['payments'] as $row) {
-                $this->sale_note->payments()->create($row);
-            }
+            // foreach ($data['payments'] as $row) {
+            //     $this->sale_note->payments()->create($row);
+            // }
+
+            $this->savePayments($this->sale_note, $data['payments']);
 
             $this->setFilename();
             $this->createPdf($this->sale_note,"a4", $this->sale_note->filename);
@@ -229,7 +248,6 @@ class SaleNoteController extends Controller
         ];
 
     }
-
 
 
     public function destroy_sale_note_item($id)
@@ -352,8 +370,9 @@ class SaleNoteController extends Controller
         $this->company = ($this->company != null) ? $this->company : Company::active();
         $this->document = ($sale_note != null) ? $sale_note : $this->sale_note;
 
-
-        $base_template = config('tenant.pdf_template');
+        $this->configuration = Configuration::first();
+        $configuration = $this->configuration->formats;
+        $base_template = $configuration;
 
         $html = $template->pdf($base_template, "sale_note", $this->company, $this->document, $format_pdf);
 
@@ -532,7 +551,7 @@ class SaleNoteController extends Controller
         switch ($table) {
             case 'customers':
 
-                $customers = Person::whereType('customers')->orderBy('name')->take(20)->get()->transform(function($row) {
+                $customers = Person::whereType('customers')->whereIsEnabled()->orderBy('name')->take(20)->get()->transform(function($row) {
                     return [
                         'id' => $row->id,
                         'description' => $row->number.' - '.$row->name,
@@ -552,27 +571,31 @@ class SaleNoteController extends Controller
                 $warehouse = Warehouse::where('establishment_id', $establishment_id)->first();
                 $warehouse_id = ($warehouse) ? $warehouse->id:null;
 
-                $items_u = Item::whereWarehouse()->whereNotIsSet()->orderBy('description')->get();
+                $items_u = Item::whereWarehouse()->whereIsActive()->whereNotIsSet()->orderBy('description')->get();
 
-                $items_s = Item::where('unit_type_id','ZZ')->orderBy('description')->get();
+                $items_s = Item::where('unit_type_id','ZZ')->whereIsActive()->orderBy('description')->get();
 
                 $items = $items_u->merge($items_s);
 
-                return collect($items)->transform(function($row) use($warehouse_id){
-                    $full_description = $this->getFullDescription($row);
+                return collect($items)->transform(function($row) use($warehouse_id, $warehouse){
+                    $detail = $this->getFullDescription($row, $warehouse);
                     return [
                         'id' => $row->id,
-                        'full_description' => $full_description,
+                        'full_description' => $detail['full_description'],
+                        'brand' => $detail['brand'],
+                        'category' => $detail['category'],
+                        'stock' => $detail['stock'],
                         'description' => $row->description,
                         'currency_type_id' => $row->currency_type_id,
                         'currency_type_symbol' => $row->currency_type->symbol,
-                        'sale_unit_price' => $row->sale_unit_price,
+                        'sale_unit_price' => round($row->sale_unit_price, 2),
                         'purchase_unit_price' => $row->purchase_unit_price,
                         'unit_type_id' => $row->unit_type_id,
                         'sale_affectation_igv_type_id' => $row->sale_affectation_igv_type_id,
                         'purchase_affectation_igv_type_id' => $row->purchase_affectation_igv_type_id,
                         'has_igv' => (bool) $row->has_igv,
                         'lots_enabled' => (bool) $row->lots_enabled,
+                        'series_enabled' => (bool) $row->series_enabled,
                         'is_set' => (bool) $row->is_set,
                         'warehouses' => collect($row->warehouses)->transform(function($row) use($warehouse_id){
                             return [
@@ -595,6 +618,17 @@ class SaleNoteController extends Controller
                                 'lot_code' => ($row->item_loteable_type) ? (isset($row->item_loteable->lot_code) ? $row->item_loteable->lot_code:null):null
                             ];
                         }),
+                        'lots_group' => collect($row->lots_group)->transform(function($row){
+                            return [
+                                'id'  => $row->id,
+                                'code' => $row->code,
+                                'quantity' => $row->quantity,
+                                'date_of_due' => $row->date_of_due,
+                                'checked'  => false
+                            ];
+                        }),
+                        'lot_code' => $row->lot_code,
+                        'date_of_due' => $row->date_of_due
                     ];
                 });
 
@@ -609,15 +643,30 @@ class SaleNoteController extends Controller
     }
 
 
-    public function getFullDescription($row){
+    public function getFullDescription($row, $warehouse){
 
         $desc = ($row->internal_id)?$row->internal_id.' - '.$row->description : $row->description;
-        $category = ($row->category) ? " - {$row->category->name}" : "";
-        $brand = ($row->brand) ? " - {$row->brand->name}" : "";
+        $category = ($row->category) ? "{$row->category->name}" : "";
+        $brand = ($row->brand) ? "{$row->brand->name}" : "";
 
-        $desc = "{$desc} {$category} {$brand}";
+        if($row->unit_type_id != 'ZZ')
+        {
+            $warehouse_stock = ($row->warehouses && $warehouse) ? number_format($row->warehouses->where('warehouse_id', $warehouse->id)->first()->stock,2) : 0;
+            $stock = ($row->warehouses && $warehouse) ? "{$warehouse_stock}" : "";
+        }
+        else{
+            $stock = '';
+        }
 
-        return $desc;
+
+        $desc = "{$desc} - {$brand}";
+
+        return [
+            'full_description' => $desc,
+            'brand' => $brand,
+            'category' => $category,
+            'stock' => $stock,
+        ];
     }
 
 
@@ -693,35 +742,41 @@ class SaleNoteController extends Controller
 
     public function anulate($id)
     {
-        $obj =  SaleNote::find($id);
-        $obj->state_type_id = 11;
-        $obj->save();
 
-        $establishment = Establishment::where('id', auth()->user()->establishment_id)->first();
-        $warehouse = Warehouse::where('establishment_id',$establishment->id)->first();
+        DB::connection('tenant')->transaction(function () use ($id) {
 
-        foreach ($obj->items as $item) {
-            $item->sale_note->inventory_kardex()->create([
-                'date_of_issue' => date('Y-m-d'),
-                'item_id' => $item->item_id,
-                'warehouse_id' => $warehouse->id,
-                'quantity' => $item->quantity,
-            ]);
-            $wr = ItemWarehouse::where([['item_id', $item->item_id],['warehouse_id', $warehouse->id]])->first();
-            if($wr)
-            {
-                $wr->stock =  $wr->stock + $item->quantity;
-                $wr->save();
+            $obj =  SaleNote::find($id);
+            $obj->state_type_id = 11;
+            $obj->save();
+
+            $establishment = Establishment::where('id', auth()->user()->establishment_id)->first();
+            $warehouse = Warehouse::where('establishment_id',$establishment->id)->first();
+
+            foreach ($obj->items as $item) {
+                $item->sale_note->inventory_kardex()->create([
+                    'date_of_issue' => date('Y-m-d'),
+                    'item_id' => $item->item_id,
+                    'warehouse_id' => $warehouse->id,
+                    'quantity' => $item->quantity,
+                ]);
+                $wr = ItemWarehouse::where([['item_id', $item->item_id],['warehouse_id', $warehouse->id]])->first();
+                if($wr)
+                {
+                    $wr->stock =  $wr->stock + $item->quantity;
+                    $wr->save();
+                }
+
+                //habilito las series
+                // ItemLot::where('item_id', $item->item_id )->where('warehouse_id', $warehouse->id)->update(['has_sale' => false]);
+                $this->voidedLots($item);
+
             }
 
-            //habilito las series
-            ItemLot::where('item_id', $item->item_id )->where('warehouse_id', $warehouse->id)->update(['has_sale' => false]);
-
-        }
+        });
 
         return [
             'success' => true,
-            'message' => 'Compra anulada con éxito'
+            'message' => 'N. Venta anulada con éxito'
         ];
 
 
@@ -761,6 +816,106 @@ class SaleNoteController extends Controller
         $document = SaleNote::where('external_id', $external_id)->first();
         $this->reloadPDF($document, 'a4', null);
         return $this->downloadStorage($document->filename, 'sale_note');
+
+    }
+
+
+    private function savePayments($sale_note, $payments){
+
+        $total = $sale_note->total;
+        $balance = $total - collect($payments)->sum('payment');
+
+        $search_cash = ($balance < 0) ? collect($payments)->firstWhere('payment_method_type_id', '01') : null;
+
+        $this->apply_change = false;
+
+        if($balance < 0 && $search_cash){
+
+            $payments = collect($payments)->map(function($row) use($balance){
+
+                $change = null;
+                $payment = $row['payment'];
+
+                if($row['payment_method_type_id'] == '01' && !$this->apply_change){
+
+                    $change = abs($balance);
+                    $payment = $row['payment'] - abs($balance);
+                    $this->apply_change = true;
+
+                }
+
+                return [
+                    "id" => null,
+                    "document_id" => null,
+                    "sale_note_id" => null,
+                    "date_of_payment" => $row['date_of_payment'],
+                    "payment_method_type_id" => $row['payment_method_type_id'],
+                    "reference" => $row['reference'],
+                    "payment_destination_id" => isset($row['payment_destination_id']) ? $row['payment_destination_id'] : null,
+                    "payment_filename" => isset($row['payment_filename']) ? $row['payment_filename'] : null,
+                    "change" => $change,
+                    "payment" => $payment
+                ];
+
+            });
+        }
+
+        // dd($payments, $balance, $this->apply_change);
+
+        foreach ($payments as $row) {
+
+            if($balance < 0 && !$this->apply_change){
+                $row['change'] = abs($balance);
+                $row['payment'] = $row['payment'] - abs($balance);
+                $this->apply_change = true;
+            }
+
+            $record_payment = $sale_note->payments()->create($row);
+
+            if(isset($row['payment_destination_id'])){
+                $this->createGlobalPayment($record_payment, $row);
+            }
+
+            if(isset($row['payment_filename'])){
+                $record_payment->payment_file()->create([
+                    'filename' => $row['payment_filename']
+                ]);
+            }
+
+        }
+    }
+
+
+    private function voidedLots($item){
+
+        $i_lots_group = isset($item->item->lots_group) ? $item->item->lots_group:[];
+
+        $lot_group_selected = collect($i_lots_group)->first(function($row){
+            return $row->checked;
+        });
+
+        if($lot_group_selected){
+
+            $lot = ItemLotsGroup::find($lot_group_selected->id);
+            $lot->quantity =  $lot->quantity + $item->quantity;
+            $lot->save();
+
+        }
+
+        if(isset($item->item->lots)){
+
+            foreach ($item->item->lots as $it) {
+
+                if($it->has_sale == true){
+
+                    $ilt = ItemLot::find($it->id);
+                    $ilt->has_sale = false;
+                    $ilt->save();
+                    
+                }
+
+            } 
+        }
 
     }
 

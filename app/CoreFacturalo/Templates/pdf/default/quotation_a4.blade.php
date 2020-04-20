@@ -2,6 +2,7 @@
     $establishment = $document->establishment;
     $customer = $document->customer;
     //$path_style = app_path('CoreFacturalo'.DIRECTORY_SEPARATOR.'Templates'.DIRECTORY_SEPARATOR.'pdf'.DIRECTORY_SEPARATOR.'style.css');
+    $accounts = \App\Models\Tenant\BankAccount::all();
     $tittle = $document->prefix.'-'.str_pad($document->id, 8, '0', STR_PAD_LEFT);
 @endphp
 <html>
@@ -74,12 +75,36 @@
     @if ($customer->address !== '')
     <tr>
         <td class="align-top">Dirección:</td>
-        <td colspan="3">
+        <td colspan="">
             {{ $customer->address }}
             {{ ($customer->district_id !== '-')? ', '.$customer->district->description : '' }}
             {{ ($customer->province_id !== '-')? ', '.$customer->province->description : '' }}
             {{ ($customer->department_id !== '-')? '- '.$customer->department->description : '' }}
         </td>
+        @if($document->delivery_date)
+            <td width="25%">Fecha de entrega:</td>
+            <td width="15%">{{ $document->delivery_date->format('Y-m-d') }}</td>
+        @endif
+    </tr>
+    @endif
+    @if ($document->payment_method_type)
+    <tr>
+        <td class="align-top">T. Pago:</td>
+        <td colspan="">
+            {{ $document->payment_method_type->description }} 
+        </td>
+        @if($document->sale_opportunity)
+            <td width="25%">O. Venta:</td>
+            <td width="15%">{{ $document->sale_opportunity->number_full }}</td>
+        @endif
+    </tr>
+    @endif
+    @if ($document->account_number)
+    <tr>
+        <td class="align-top">N° Cuenta:</td>
+        <td colspan="3">
+            {{ $document->account_number }} 
+        </td> 
     </tr>
     @endif
     @if ($document->shipping_address)
@@ -95,14 +120,6 @@
         <td class="align-top">Teléfono:</td>
         <td colspan="3">
             {{ $customer->telephone }} 
-        </td>
-    </tr>
-    @endif
-    @if ($document->payment_method_type)
-    <tr>
-        <td class="align-top">T. Pago:</td>
-        <td colspan="3">
-            {{ $document->payment_method_type->description }} 
         </td>
     </tr>
     @endif
@@ -175,6 +192,13 @@
                         <br/><span style="font-size: 9px">{{ $dtos->factor * 100 }}% {{$dtos->description }}</span>
                     @endforeach
                 @endif
+                
+                @if($row->item->is_set == 1)
+                 <br>
+                @inject('itemSet', 'App\Services\ItemSetService')
+                    {{join( "-", $itemSet->getItemsSet($row->item_id) )}}
+                @endif
+
             </td>
             <td class="text-right align-top">{{ number_format($row->unit_price, 2) }}</td>
             <td class="text-right align-top">
@@ -226,9 +250,9 @@
                 <td class="text-right font-bold">{{ number_format($document->total_taxed, 2) }}</td>
             </tr>
         @endif
-        @if($document->total_discount > 0)
+       @if($document->total_discount > 0)
             <tr>
-                <td colspan="5" class="text-right font-bold">DESCUENTO TOTAL: {{ $document->currency_type->symbol }}</td>
+                <td colspan="5" class="text-right font-bold">{{(($document->total_prepayment > 0) ? 'ANTICIPO':'DESCUENTO TOTAL')}}: {{ $document->currency_type->symbol }}</td>
                 <td class="text-right font-bold">{{ number_format($document->total_discount, 2) }}</td>
             </tr>
         @endif
@@ -244,6 +268,20 @@
 </table>
 <table class="full-width">
     <tr>
+        <td width="65%" style="text-align: top; vertical-align: top;"> 
+            <br>
+            @foreach($accounts as $account)
+                <p>
+                <span class="font-bold">{{$account->bank->description}}</span> {{$account->currency_type->description}} 
+                <span class="font-bold">N°:</span> {{$account->number}} 
+                @if($account->cci)
+                - <span class="font-bold">CCI:</span> {{$account->cci}}
+                @endif
+                </p>
+            @endforeach
+        </td> 
+    </tr>
+    <tr>
         {{-- <td width="65%">
             @foreach($document->legends as $row)
                 <p>Son: <span class="font-bold">{{ $row->value }} {{ $document->currency_type->description }}</span></p>
@@ -255,6 +293,24 @@
             @endforeach
         </td> --}}
     </tr>
+</table>
+<br>
+<table class="full-width">
+<tr>
+    <td>
+    <strong>PAGOS:</strong> </td></tr>
+        @php
+            $payment = 0;
+        @endphp
+        @foreach($document->payments as $row)
+            <tr><td>- {{ $row->payment_method_type->description }} - {{ $row->reference ? $row->reference.' - ':'' }} {{ $document->currency_type->symbol }} {{ $row->payment }}</td></tr>
+            @php
+                $payment += (float) $row->payment;
+            @endphp
+        @endforeach
+        <tr><td><strong>SALDO:</strong> {{ $document->currency_type->symbol }} {{ number_format($document->total - $payment, 2) }}</td>
+    </tr>
+
 </table>
 </body>
 </html>

@@ -35,11 +35,28 @@ class ClientRequest extends FormRequest
                 'required'
             ],
             'plan_id' => [
-                'required', 
+                'required',
             ],
             'type' => [
-                'required', 
+                'required',
             ],
+            'soap_send_id' => [
+                'required',
+            ],
+            'soap_type_id' => [
+                'required',
+            ],
+            'soap_username' => [
+                'required_if:soap_type_id,"02"'
+            ],
+            'soap_password' => [
+                'required_if:soap_type_id,"02"'
+            ],
+            'soap_url' => [
+                'required_if:soap_send_id,"02"'
+            ],
+
+
         ];
     }
 }

@@ -30,10 +30,12 @@ use Mpdf\Config\ConfigVariables;
 use Mpdf\Config\FontVariables;
 use App\Models\Tenant\Perception;
 use App\Models\Tenant\Configuration;
+use Modules\Finance\Traits\FinanceTrait; 
+
 
 class Facturalo
 {
-    use StorageDocument;
+    use StorageDocument, FinanceTrait;
 
     const SENT = '03';
     const ACCEPTED = '05';
@@ -58,6 +60,7 @@ class Facturalo
     protected $soapPassword;
     protected $endpoint;
     protected $response;
+    protected $apply_change;
 
     public function __construct()
     {
@@ -107,9 +110,7 @@ class Facturalo
                 break;
             case 'invoice':
                 $document = Document::create($inputs);
-                foreach ($inputs['payments'] as $row) {
-                    $document->payments()->create($row);
-                }
+                $this->savePayments($document, $inputs['payments']);
                 foreach ($inputs['items'] as $row) {
                     $document->items()->create($row);
                 }
@@ -203,9 +204,12 @@ class Facturalo
 
     public function updateState($state_type_id)
     {
+
         $this->document->update([
-            'state_type_id' => $state_type_id
+            'state_type_id' => $state_type_id,
+            'soap_shipping_response' => isset($this->response['sent']) ? $this->response:null
         ]);
+
     }
 
     public function updateSoap($soap_type_id, $type)
@@ -268,21 +272,30 @@ class Facturalo
         $format_pdf = ($format != null) ? $format : $format_pdf;
         $this->type = ($type != null) ? $type : $this->type;
 
-        $base_pdf_template = config('tenant.pdf_template');
+        $configuration = $this->configuration->formats;
+        
+        $base_pdf_template = $configuration;//config(['tenant.pdf_template'=> $configuration]);
+        // dd($base_pdf_template);
+   
 
         $html = $template->pdf($base_pdf_template, $this->type, $this->company, $this->document, $format_pdf);
 
-        if (($format_pdf === 'ticket') OR ($format_pdf === 'ticket_58')) {
+        if (($format_pdf === 'ticket') OR
+            ($format_pdf === 'ticket_58') OR
+            ($format_pdf === 'ticket_50'))
+        {
 
             $width = ($format_pdf === 'ticket_58') ? 56 : 78 ;
             if(config('tenant.enabled_template_ticket_80')) $width = 76;
-            
+            if(config('tenant.enabled_template_ticket_70')) $width = 70;
+            if($format_pdf === 'ticket_50') $width = 45;
+
             $company_name      = (strlen($this->company->name) / 20) * 10;
             $company_address   = (strlen($this->document->establishment->address) / 30) * 10;
             $company_number    = $this->document->establishment->telephone != '' ? '10' : '0';
             $customer_name     = strlen($this->document->customer->name) > '25' ? '10' : '0';
             $customer_address  = (strlen($this->document->customer->address) / 200) * 10;
-            $customer_department_id  = ($this->document->customer->department_id == 16) ? 20:0; 
+            $customer_department_id  = ($this->document->customer->department_id == 16) ? 20:0;
             $p_order           = $this->document->purchase_order != '' ? '10' : '0';
 
             $total_prepayment = $this->document->total_prepayment != '' ? '10' : '0';
@@ -301,6 +314,7 @@ class Facturalo
             $quantity_rows     = count($this->document->items) + $was_deducted_prepayment;
             $document_payments     = count($this->document->payments);
 
+            $extra_by_item_additional_information = 0;
             $extra_by_item_description = 0;
             $discount_global = 0;
             foreach ($this->document->items as $it) {
@@ -310,17 +324,22 @@ class Facturalo
                 if ($it->discounts) {
                     $discount_global = $discount_global + 1;
                 }
+                if($it->additional_information){
+                    $extra_by_item_additional_information += count($it->additional_information) * 5;
+                }
             }
             $legends = $this->document->legends != '' ? '10' : '0';
+
+            $quotation_id = ($this->document->quotation_id) ? 15:0;
 
             $pdf = new Mpdf([
                 'mode' => 'utf-8',
                 'format' => [
                     $width,
-                    120 +
+                    130 +
                     (($quantity_rows * 8) + $extra_by_item_description) +
                     ($document_payments * 8) +
-                    ($discount_global * 3) +
+                    ($discount_global * 8) +
                     $company_name +
                     $company_address +
                     $company_number +
@@ -339,13 +358,16 @@ class Facturalo
                     $was_deducted_prepayment +
                     $customer_department_id+
                     $detraction+
-                    $total_plastic_bag_taxes],
+                    $total_plastic_bag_taxes+
+                    $quotation_id+
+                    $extra_by_item_additional_information
+                ],
                 'margin_top' => 0,
                 'margin_right' => 1,
                 'margin_bottom' => 0,
                 'margin_left' => 1
             ]);
-        } else if($format_pdf === 'a5'){
+        }else if($format_pdf === 'a5'){
 
             $company_name      = (strlen($this->company->name) / 20) * 10;
             $company_address   = (strlen($this->document->establishment->address) / 30) * 10;
@@ -395,7 +417,7 @@ class Facturalo
                 'mode' => 'utf-8',
                 'format' => [
                     210,
-                    $diferencia + $height 
+                    $diferencia + $height
                     ],
                 'margin_top' => 2,
                 'margin_right' => 5,
@@ -405,7 +427,7 @@ class Facturalo
 
 
        } else {
-            
+
             $pdf_font_regular = config('tenant.pdf_name_regular');
             $pdf_font_bold = config('tenant.pdf_name_bold');
 
@@ -446,6 +468,7 @@ class Facturalo
         $pdf->WriteHTML($html, HTMLParserMode::HTML_BODY);
 
         if (($format_pdf != 'ticket') AND ($format_pdf != 'ticket_58')) {
+            // dd($base_pdf_template);// = config(['tenant.pdf_template'=> $configuration]);
             if(config('tenant.pdf_template_footer')) {
                 $html_footer = $template->pdfFooter($base_pdf_template);
                 $pdf->SetHTMLFooter($html_footer);
@@ -493,7 +516,6 @@ class Facturalo
 
             $code = $cdrResponse->getCode();
             $description = $cdrResponse->getDescription();
-            $this->validationCodeResponse($code, $description);
 
             $this->response = [
                 'sent' => true,
@@ -501,15 +523,20 @@ class Facturalo
                 'description' => $cdrResponse->getDescription(),
                 'notes' => $cdrResponse->getNotes()
             ];
+
+            $this->validationCodeResponse($code, $description);
+
         } else {
             $code = $res->getError()->getCode();
             $message = $res->getError()->getMessage();
-            $this->validationCodeResponse($code, $message);
             $this->response = [
                 'sent' => true,
                 'code' => $code,
                 'description' => $message
             ];
+            
+            $this->validationCodeResponse($code, $message);
+
         }
     }
 
@@ -719,4 +746,77 @@ class Facturalo
             }
         }
     }
+
+    public function updateResponse(){
+
+        // if($this->response['sent']) {
+        //     return 
+            
+        //     $this->document->update([
+        //         'soap_shipping_response' => $this->response
+        //     ]);
+            
+        // }
+
+    }
+
+    private function savePayments($document, $payments){
+         
+        $total = $document->total;
+        $balance = $total - collect($payments)->sum('payment');
+        
+        $search_cash = ($balance < 0) ? collect($payments)->firstWhere('payment_method_type_id', '01') : null;
+
+        $this->apply_change = false;
+
+        if($balance < 0 && $search_cash){
+
+            $payments = collect($payments)->map(function($row) use($balance){
+    
+                $change = null;
+                $payment = $row['payment'];
+
+                if($row['payment_method_type_id'] == '01' && !$this->apply_change){
+        
+                    $change = abs($balance);
+                    $payment = $row['payment'] - abs($balance); 
+                    $this->apply_change = true; 
+    
+                }
+
+                return [
+                    "id" => null,
+                    "document_id" => null,
+                    "sale_note_id" => null,
+                    "date_of_payment" => $row['date_of_payment'],
+                    "payment_method_type_id" => $row['payment_method_type_id'],
+                    "reference" => $row['reference'],
+                    "payment_destination_id" => isset($row['payment_destination_id']) ? $row['payment_destination_id'] : null,
+                    "change" => $change,
+                    "payment" => $payment
+                ];
+
+            });
+        }
+
+        // dd($payments, $balance, $this->apply_change);
+
+        foreach ($payments as $row) {
+
+            if($balance < 0 && !$this->apply_change){
+                $row['change'] = abs($balance);
+                $row['payment'] = $row['payment'] - abs($balance); 
+                $this->apply_change = true; 
+            }
+
+            $record = $document->payments()->create($row);
+            
+            //considerar la creacion de una caja chica cuando recien se crea el cliente
+            if(isset($row['payment_destination_id'])){
+                $this->createGlobalPayment($record, $row);
+            }
+
+        }
+    }
+
 }

@@ -32,8 +32,10 @@
                         <th class="text-center" v-if="columns.date_of_due.visible" >F. Vencimiento</th>
                         <th>Proveedor</th>
                         <th>Estado</th>
+                        <th>Estado de pago</th>
                         <th>Número</th>
                         <th>Productos</th>
+                        <th>Pagos</th>
                         <!-- <th>F. Pago</th> -->
                         <!-- <th>Estado</th> -->
                         <th class="text-center">Moneda</th>
@@ -54,6 +56,7 @@
                         <td v-if="columns.date_of_due.visible" class="text-center">{{ row.date_of_due }}</td>
                         <td>{{ row.supplier_name }}<br/><small v-text="row.supplier_number"></small></td>
                         <td>{{row.state_type_description}}</td>
+                        <td>{{row.state_type_payment_description}}</td>
                         <td>{{ row.number }}<br/>
                             <small v-text="row.document_type_description"></small><br/>
                         </td>
@@ -79,6 +82,16 @@
                             </template>
                         </td> -->
                         <!-- <td>{{ row.state_type_description }}</td> -->
+                        <td class="text-right">
+                            <button
+                                v-if="row.state_type_id != '11'"
+                                type="button"
+                                style="min-width: 41px"
+                                class="btn waves-effect waves-light btn-xs btn-info m-1__2"
+                                @click.prevent="clickPurchasePayment(row.id)"
+                            >Pagos</button>
+                        </td>
+
                         <td class="text-center">{{ row.currency_type_id }}</td>
                         <!-- <td class="text-right">{{ row.total_exportation }}</td> -->
                         <td v-if="columns.total_free.visible" class="text-right">{{ row.total_free }}</td>
@@ -126,6 +139,13 @@
 
             <purchase-import :showDialog.sync="showImportDialog"></purchase-import>
         </div>
+
+        
+        <purchase-payments
+            :showDialog.sync="showDialogPurchasePayments"
+            :purchaseId="recordId"
+            :external="true"
+            ></purchase-payments>
     </div>
 </template>
 
@@ -136,18 +156,20 @@
     import DataTable from '../../../components/DataTable.vue'
     import {deletable} from '../../../mixins/deletable'
     import PurchaseImport from './import.vue'
+    import PurchasePayments from '@viewsModulePurchase/purchase_payments/payments.vue'
 
 
     export default {
         mixins: [deletable],
         // components: {DocumentsVoided, DocumentOptions, DataTable},
-        components: {DataTable, PurchaseImport},
+        components: {DataTable, PurchaseImport, PurchasePayments},
         data() {
             return {
                 showDialogVoided: false,
                 resource: 'purchases',
                 recordId: null,
                 showDialogOptions: false,
+                showDialogPurchasePayments: false,
                 showImportDialog: false,
                 columns: {
                     date_of_due: {
@@ -185,6 +207,10 @@
         created() {
         },
         methods: {
+            clickPurchasePayment(recordId) {
+                this.recordId = recordId;
+                this.showDialogPurchasePayments = true
+            },
             clickVoided(recordId = null) {
                 this.recordId = recordId
                 this.showDialogVoided = true

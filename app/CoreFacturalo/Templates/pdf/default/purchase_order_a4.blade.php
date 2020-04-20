@@ -112,6 +112,12 @@
             {{ $document->user->name }} 
         </td>
     </tr>
+    @if($document->sale_opportunity)
+    <tr>
+        <td class="align-top">O. Venta:</td>
+        <td  colspan="3">{{ $document->sale_opportunity->number_full }}</td>
+    </tr>
+    @endif
 </table>
 
 <table class="full-width ">
@@ -236,7 +242,7 @@
         @endif
         @if($document->total_discount > 0)
             <tr>
-                <td colspan="5" class="text-right font-bold">DESCUENTO TOTAL: {{ $document->currency_type->symbol }}</td>
+                <td colspan="5" class="text-right font-bold">{{(($document->total_prepayment > 0) ? 'ANTICIPO':'DESCUENTO TOTAL')}}: {{ $document->currency_type->symbol }}</td>
                 <td class="text-right font-bold">{{ number_format($document->total_discount, 2) }}</td>
             </tr>
         @endif

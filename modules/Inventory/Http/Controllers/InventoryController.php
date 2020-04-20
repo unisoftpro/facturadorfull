@@ -15,6 +15,8 @@ use Modules\Inventory\Models\ItemWarehouse;
 use Modules\Inventory\Models\Warehouse;
 use Modules\Inventory\Http\Requests\InventoryRequest;
 use Modules\Item\Models\ItemLot;
+use Modules\Item\Models\ItemLotsGroup;
+
 
 class InventoryController extends Controller
 {
@@ -160,18 +162,42 @@ class InventoryController extends Controller
             $inventory->lot_code = $lot_code;
             $inventory->save();
 
+
+            $lots_enabled = isset($request->lots_enabled) ? $request->lots_enabled:false;
+
             if($type == 'input'){
                 foreach ($lots as $lot){
+
+                    /*$inventory->lots()->create([
+                        'date' => $lot['date'],
+                        'series' => $lot['series'],
+                        'item_id' => $item_id,
+                        'warehouse_id' => $warehouse_id,
+                        'has_sale' => false
+                    ]);*/
 
                     $inventory->lots()->create([
                         'date' => $lot['date'],
                         'series' => $lot['series'],
                         'item_id' => $item_id,
                         'warehouse_id' => $warehouse_id,
-                        'has_sale' => false
+                        'has_sale' => false,
+                        'state' => $lot['state'],
                     ]);
 
                 }
+
+                if($lots_enabled)
+                {
+                    ItemLotsGroup::create([
+                        'code'  => $lot_code,
+                        'quantity'  => $quantity,
+                        'date_of_due'  => $request->date_of_due,
+                        'item_id' => $item_id
+                    ]);
+                }
+
+
             }else{
 
                 foreach ($lots as $lot){
@@ -179,11 +205,21 @@ class InventoryController extends Controller
                     if($lot['has_sale']){
 
                         $item_lot = ItemLot::findOrFail($lot['id']);
-                        $item_lot->delete();
-
+                        // $item_lot->delete();
+                        $item_lot->has_sale = true;
+                        $item_lot->state = 'Inactivo';
+                        $item_lot->save();
                     }
 
                 }
+
+                if(isset($request->IdLoteSelected))
+                {
+                    $lot = ItemLotsGroup::find($request->IdLoteSelected);
+                    $lot->quantity = ($lot->quantity - $quantity);
+                    $lot->save();
+                }
+
 
             }
 

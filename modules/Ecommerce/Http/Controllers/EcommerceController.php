@@ -14,14 +14,11 @@ use App\Models\Tenant\Order;
 use App\Models\Tenant\ItemsRating;
 use App\Models\Tenant\ConfigurationEcommerce;
 use Modules\Ecommerce\Http\Resources\ItemBarCollection;
-
-
-
-
 use stdClass;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\Tenant\CulqiEmail;
 use App\Http\Controllers\Tenant\Api\ServiceController;
+use Illuminate\Support\Facades\Validator;
 
 class EcommerceController extends Controller
 {
@@ -29,8 +26,13 @@ class EcommerceController extends Controller
      * Display a listing of the resource.
      * @return Response
      */
+    public function __construct(){
+        return view()->share('records', Item::where('apply_store', 1)->orderBy('id', 'DESC')->take(2)->get());
+    }
+
     public function index()
     {
+
         return view('ecommerce::index');
     }
 
@@ -56,7 +58,9 @@ class EcommerceController extends Controller
             'image' =>  $row->image,
             'image_medium' => $row->image_medium,
             'image_small' => $row->image_small,
-            'tags' => $row->tags->pluck('tag_id')->toArray()
+            'tags' => $row->tags->pluck('tag_id')->toArray(),
+            'images' => $row->images,
+            'attributes' => $row->attributes ? $row->attributes : []
         ];
 
         return view('ecommerce::items.record', compact('record'));
@@ -193,9 +197,17 @@ class EcommerceController extends Controller
 
     public function paymentCash(Request $request)
     {
-        try{
-            $user = auth()->user();
-            $order = Order::create([
+        $validator = Validator::make($request->all(), [
+            'telephone' => 'required',
+            'address' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        } else {
+            try {
+                $user = auth()->user();
+                $order = Order::create([
                 'external_id' => Str::uuid()->toString(),
                 'customer' =>  $request->customer,
                 'shipping_address' => 'direccion 1',
@@ -209,6 +221,8 @@ class EcommerceController extends Controller
             $document->client = $user->name;
             $document->product = $request->producto;
             $document->total = $request->precio_culqi;
+            $document->items = $request->items;
+
             Mail::to($customer_email)->send(new CulqiEmail($document));
             return [
                 'success' => true,
@@ -222,7 +236,7 @@ class EcommerceController extends Controller
                 'message' =>  $e->getMessage()
             ];
         }
-
+      }
     }
 
     public function ratingItem(Request $request)
@@ -265,16 +279,32 @@ class EcommerceController extends Controller
 
     }
 
-
-
-
     private function getExchangeRateSale(){
 
         $exchange_rate = app(ServiceController::class)->exchangeRateTest(date('Y-m-d'));
 
         return (array_key_exists('sale', $exchange_rate)) ? $exchange_rate['sale'] : 1;
 
+
     }
+
+    public function saveDataUser(Request $request)
+    {
+        $user = auth()->user();
+        if ($request->address) {
+            $user->address = $request->address;
+        }
+        if ($user->telephone = $request->telephone) {
+            $user->telephone = $request->telephone;
+        }
+
+        $user->save();
+
+        return ['success' => true];
+
+    }
+
+
 
 
 

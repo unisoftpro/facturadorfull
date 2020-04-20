@@ -1,30 +1,52 @@
 <template>
     <el-dialog :title="titleDialog" :visible="showDialog" @open="create" width="30%" :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false" append-to-body>
-        <div class="row">
             
+        <div class="row mb-4" v-if="form.response_message">
+            <div class="col-md-12">
+                <el-alert
+                    :title="form.response_message"
+                    :type="form.response_type"
+                    show-icon>
+                </el-alert>
+            </div>
+        </div>
+
+        <div class="row">
+
             <div class="col-lg-12 col-md-12 col-sm-12 text-center font-weight-bold" v-if="!locked_emission.success">
                 <el-alert    :title="locked_emission.message"    type="warning"    show-icon>  </el-alert>
             </div>
             
-            <div class="col-lg-4 col-md-4 col-sm-12 text-center font-weight-bold mt-4">
-                <p>Imprimir A4</p>
+            <div class="col-lg-3 col-md-3 col-sm-12 text-center font-weight-bold mt-3">
                 <button type="button" class="btn btn-lg btn-info waves-effect waves-light" @click="clickPrint('a4')">
                     <i class="fa fa-file-alt"></i>
                 </button>
+                <p>Imprimir A4</p>
             </div>
-            <div class="col-lg-4 col-md-4 col-sm-12 text-center font-weight-bold mt-4">
-                <p>Imprimir Ticket</p>
+             <div class="col-lg-3 col-md-3 col-sm-12 text-center font-weight-bold mt-3">
+               
                 <button type="button" class="btn btn-lg btn-info waves-effect waves-light" @click="clickPrint('ticket')">
                     <i class="fa fa-receipt"></i>
                 </button>
+                 <p>Imprimir Ticket 80MM</p>
             </div>
-            <div class="col-lg-4 col-md-4 col-sm-12 text-center font-weight-bold mt-4">
-                <p>Imprimir A5</p>
+
+             <div class="col-lg-3 col-md-3 col-sm-12 text-center font-weight-bold mt-3">
+                
+                <button type="button" class="btn btn-lg btn-info waves-effect waves-light" @click="clickPrint('ticket_50')">
+                    <i class="fa fa-receipt"></i>
+                </button>
+                <p>Imprimir Ticket 50MM</p>
+            </div>
+
+            <div class="col-lg-3 col-md-3 col-sm-12 text-center font-weight-bold mt-3">
+                
                 <button type="button" class="btn btn-lg btn-info waves-effect waves-light" @click="clickPrint('a5')">
                     <i class="fa fa-receipt"></i>
                 </button>
+                <p>Imprimir A5</p>
             </div>
-            <div class="col-lg-12 col-md-12 col-sm-12 text-center font-weight-bold mt-4" v-if="form.image_detraction">
+            <div class="col-lg-12 col-md-12 col-sm-12 text-center font-weight-bold mt-3" v-if="form.image_detraction">
                 <a :href="`${this.form.image_detraction}`" download class="text-center font-weight-bold text-dark">Descargar constancia de pago - detracción</a>
             </div>
         </div>
@@ -40,12 +62,25 @@
                 </button>
             </div>
         </div> -->
-        <div class="row mt-4">
+        <div class="row mt-3">
             <div class="col-md-12">
                 <el-input v-model="form.customer_email">
                     <el-button slot="append" icon="el-icon-message" @click="clickSendEmail" :loading="loading">Enviar</el-button>
                 </el-input>
                 <small class="form-control-feedback" v-if="errors.customer_email" v-text="errors.customer_email[0]"></small>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-md-12">
+                <el-input v-model="form.customer_telephone">
+                    <template slot="prepend">+51</template>
+                        <el-button slot="append" @click="clickSendWhatsapp" >Enviar
+                            <el-tooltip class="item" effect="dark"  content="Es necesario tener aperturado Whatsapp web" placement="top-start">
+                                <i class="fab fa-whatsapp" ></i>
+                            </el-tooltip>
+                        </el-button>
+                </el-input>
+                <small class="form-control-feedback" v-if="errors.customer_telephone" v-text="errors.customer_telephone[0]"></small>
             </div>
         </div>
         <!-- <div class="row mt-4" v-if="company.soap_type_id == '02'">
@@ -90,6 +125,15 @@
                 })
         },
         methods: {
+            clickSendWhatsapp() {
+                
+                if(!this.form.customer_telephone){
+                    return this.$message.error('El número es obligatorio')
+                }
+
+                window.open(`https://wa.me/51${this.form.customer_telephone}?text=${this.form.message_text}`, '_blank');
+            
+            },
             initForm() {
                 this.errors = {};
                 this.form = {
@@ -98,7 +142,11 @@
                     external_id: null,
                     number: null,
                     image_detraction: null,
-                    id: null
+                    id: null,
+                    response_message:null,
+                    response_type:null,
+                    customer_telephone:null,
+                    message_text:null
                 };
                 this.locked_emission = {
                     success: true,

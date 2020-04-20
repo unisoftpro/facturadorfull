@@ -5,16 +5,18 @@
         </div>
         <div class="card mb-0">
                 <div class="card-body">
-                    <data-table :resource="resource">
+                    <data-table :resource="resource" :applyCustomer="true">
                         <tr slot="heading">
                             <th>#</th>
                             <th class="text-center">Fecha Emisión</th>
+                            <th class="">Usuario/Vendedor</th>
                             <th>Cliente</th>
                             <th>Estado</th>
                             <th>Cotización</th>
 
                             <th>Comprobantes</th>
                             <th>Notas de venta</th>
+                            <th>Caso</th>
                             <th class="text-center">Moneda</th>
                             <th class="text-right">T.Exportación</th>
                             <th class="text-right" >T.Inafecta</th>
@@ -27,6 +29,7 @@
                         <tr slot-scope="{ index, row }">
                             <td>{{ index }}</td>  
                             <td>{{row.date_of_issue}}</td>
+                            <td>{{row.user_name}}</td>
                             <td>{{row.customer_name}}</td>
                             <td>{{row.state_type_description}}</td>
                             <td>{{row.identifier}}</td>
@@ -40,6 +43,7 @@
                                     <label class="d-block"  :key="i">{{s_note.identifier}}</label>
                                 </template>
                             </td>
+                            <td>{{row.sale_opportunity_number_full}}</td>
                             <td>{{row.currency_type_id}}</td>
                             <td >{{ row.total_exportation }}</td>
                             <td >{{ row.total_unaffected }}</td>

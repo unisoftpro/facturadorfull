@@ -86,10 +86,12 @@ class PersonController extends Controller
         $person->fill($request->all());
         $person->save();
 
-        // foreach ($request->input('more_address') as $row)
-        // {
-        //     $person->more_address()->create($row);
-        // }
+        $person->addresses()->delete();
+        $addresses = $request->input('addresses');
+        foreach ($addresses as $row)
+        {
+            $person->addresses()->updateOrCreate( ['id' => $row['id']], $row);
+        }
 
         return [
             'success' => true,
@@ -176,4 +178,22 @@ class PersonController extends Controller
 
         return $locations;
     }
+
+    
+    public function enabled($type, $id)
+    {
+
+        $person = Person::findOrFail($id);
+        $person->enabled = $type;
+        $person->save();
+
+        $type_message = ($type) ? 'habilitado':'inhabilitado';
+
+        return [
+            'success' => true,
+            'message' => "Cliente {$type_message} con éxito"
+        ];
+
+    }
+
 }

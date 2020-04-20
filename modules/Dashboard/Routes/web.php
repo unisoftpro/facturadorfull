@@ -13,10 +13,14 @@ if($current_hostname) {
                 Route::get('filter', 'DashboardController@filter');
                 Route::post('data', 'DashboardController@data');
                 Route::post('data_aditional', 'DashboardController@data_aditional');
-                Route::post('unpaid', 'DashboardController@unpaid');
+                // Route::post('unpaid', 'DashboardController@unpaid');
+                // Route::get('unpaidall', 'DashboardController@unpaidall')->name('unpaidall');
                 Route::get('stock-by-product/records', 'DashboardController@stockByProduct');
                 Route::post('utilities', 'DashboardController@utilities');
             });
+
+            //Commands
+            Route::get('command/df', 'DashboardController@df')->name('command.df');
 
         });
     });

@@ -16,6 +16,8 @@ use App\Models\Tenant\{
     Item
 };
 use Exception;
+use Modules\Item\Models\ItemLotsGroup;
+use Modules\Item\Models\ItemLot;
 
 trait InventoryTrait
 {
@@ -105,6 +107,7 @@ trait InventoryTrait
                 'id' => $row->id,
                 'description' => ($row->internal_id) ? "{$row->internal_id} - {$row->description}" :$row->description,
                 'lots_enabled' => (bool) $row->lots_enabled,
+                'series_enabled' => (bool) $row->series_enabled,
                 'lots' => $row->item_lots->where('has_sale', false)->transform(function($row) {
                     return [
                         'id' => $row->id,
@@ -116,6 +119,15 @@ trait InventoryTrait
                         'lot_code' => ($row->item_loteable_type) ? (isset($row->item_loteable->lot_code) ? $row->item_loteable->lot_code:null):null
                     ];
                 }),
+                'lots_group' => collect($row->lots_group)->transform(function($row){
+                    return [
+                        'id'  => $row->id,
+                        'code' => $row->code,
+                        'quantity' => $row->quantity,
+                        'date_of_due' => $row->date_of_due,
+                        'checked'  => false
+                    ];
+                })
             ];
         });
     }
@@ -262,4 +274,68 @@ trait InventoryTrait
         $model->inventory_kardex()->delete();
     }
 
+    private function updateDataLots($document_item){
+        
+        // dd($document_item);
+        
+        if(isset($document_item->item->IdLoteSelected) )
+        {
+            if($document_item->item->IdLoteSelected != null)
+            {
+                $lot = ItemLotsGroup::find($document_item->item->IdLoteSelected);
+                $lot->quantity =  $lot->quantity + $document_item->quantity;
+                $lot->save();
+            }
+        }
+
+        if(isset($document_item->item->lots) )
+        {
+            foreach ($document_item->item->lots as $it) {
+
+                if($it->has_sale == true)
+                {
+                    $r = ItemLot::find($it->id);
+                    $r->has_sale = false;
+                    $r->save();
+                }
+
+            } 
+        }
+
+    }
+
+    
+    private function deleteItemLots($item){
+
+        $i_lots_group = isset($item->item->lots_group) ? $item->item->lots_group:[];
+
+        $lot_group_selected = collect($i_lots_group)->first(function($row){
+            return $row->checked;
+        });
+
+        if($lot_group_selected){
+
+            $lot = ItemLotsGroup::find($lot_group_selected->id);
+            $lot->quantity =  $lot->quantity + $item->quantity;
+            $lot->save();
+
+        }
+
+        if(isset($item->item->lots)){
+
+            foreach ($item->item->lots as $it) {
+
+                if($it->has_sale == true){
+
+                    $ilt = ItemLot::find($it->id);
+                    $ilt->has_sale = false;
+                    $ilt->save();
+                    
+                }
+
+            } 
+        }
+
+    }
+    
 }

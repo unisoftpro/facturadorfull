@@ -61,7 +61,8 @@ class Purchase extends ModelTenant
         'legends',
         'date_of_due',
         'purchase_order_id',
-
+        'customer_id',
+        'total_canceled'
     ];
 
     protected $casts = [
@@ -250,6 +251,20 @@ class Purchase extends ModelTenant
     public function purchase_order()
     {
         return $this->belongsTo(PurchaseOrder::class);
+    }
+
+    public function scopeWhereStateTypeAccepted($query)
+    {
+        return $query->whereIn('state_type_id', ['01','03','05','07','13']);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(PurchasePayment::class);
+    }
+
+    public function customer() {
+        return $this->belongsTo(Person::class, 'customer_id');
     }
 
 }

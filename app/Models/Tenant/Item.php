@@ -10,6 +10,8 @@ use Modules\Account\Models\Account;
 use Modules\Item\Models\Category;
 use Modules\Item\Models\Brand;
 use Modules\Item\Models\ItemLot;
+use Modules\Item\Models\ItemLotsGroup;
+
 
 class Item extends ModelTenant
 {
@@ -42,8 +44,8 @@ class Item extends ModelTenant
         'percentage_of_profit',
 
         'attributes',
-        'has_perception',        
-        'percentage_perception',        
+        'has_perception',
+        'percentage_perception',
         'image',
         'image_medium',
         'image_small',
@@ -58,21 +60,22 @@ class Item extends ModelTenant
         'category_id',
         'lot_code',
         'lots_enabled',
+        'active',
+        'series_enabled'
         // 'warehouse_id'
     ];
 
-    //  protected static function boot()
-    // {
-    //     parent::boot();
-
-    //     static::addGlobalScope('active', function (Builder $builder) {
-    //         $builder->where('status', 1);
-    //     });
-    // }
+    /*protected static function boot()
+    {
+        parent::boot();
+        static::addGlobalScope('active', function (Builder $builder) {
+            $builder->where('active', 1);
+        });
+    }*/
 
     public function getAttributesAttribute($value)
     {
-        return (is_null($value))?null:(object) json_decode($value);
+        return (is_null($value))?null:json_decode($value);
     }
 
     public function setAttributesAttribute($value)
@@ -137,25 +140,30 @@ class Item extends ModelTenant
         if ($warehouse) {
             return $query->whereHas('warehouses', function($query) use($warehouse) {
                             $query->where('warehouse_id', $warehouse->id);
-                        });
+                        })->orWhere('unit_type_id', 'ZZ');
         }
         return $query;
      }
- 
+
     public function scopeWhereTypeUser($query)
     {
-        $user = auth()->user();         
-        return ($user->type == 'seller') ? $this->scopeWhereWarehouse($query) : null; 
+        $user = auth()->user();
+        return ($user->type == 'seller') ? $this->scopeWhereWarehouse($query) : null;
     }
 
     public function scopeWhereNotIsSet($query)
     {
-        return $query->where('is_set', false); 
+        return $query->where('is_set', false);
+    }
+
+    public function scopeWhereIsActive($query)
+    {
+        return $query->where('active', true);
     }
 
     public function scopeWhereIsSet($query)
     {
-        return $query->where('is_set', true); 
+        return $query->where('is_set', true);
     }
 
     public function getStockByWarehouse()
@@ -167,9 +175,9 @@ class Item extends ModelTenant
             if ($warehouse) {
                 $item_warehouse = $this->warehouses->where('warehouse_id',$warehouse->id)->first();
                 return ($item_warehouse) ? $item_warehouse->stock : 0;
-            } 
+            }
         }
-        
+
         return 0;
     }
 
@@ -188,17 +196,17 @@ class Item extends ModelTenant
     {
         return $this->hasMany(ItemTag::class);
     }
-    
+
     public function sets()
     {
-        return $this->hasMany(ItemSet::class);
+    return $this->hasMany(ItemSet::class);
     }
-    
+
     public function brand()
     {
         return $this->belongsTo(Brand::class);
     }
-    
+
     public function category()
     {
         return $this->belongsTo(Category::class);
@@ -214,5 +222,77 @@ class Item extends ModelTenant
         return $this->morphMany(ItemLot::class, 'item_loteable');
     }
 
+    public  function images()
+    {
+        return $this->hasMany(ItemImage::class, 'item_id');
+    }
+
+    public function lots_group()
+    {
+        return $this->hasMany(ItemLotsGroup::class, 'item_id');
+    }
+
+
+    public function scopeWhereNotService($query)
+    {
+        return $query->where('unit_type_id','!=', 'ZZ');
+    }
+
+    public  function document_items()
+    {
+        return $this->hasMany(DocumentItem::class, 'item_id');
+    }
+
+    public  function sale_note_items()
+    {
+        return $this->hasMany(SaleNoteItem::class, 'item_id');
+    }
+    
+    public function scopeWhereFilterValuedKardex($query, $params)
+    {
+
+        if($params->establishment_id){
+
+            return $query->with(['document_items'=> function($q) use($params){
+                        $q->whereHas('document', function($q) use($params){
+                            $q->whereStateTypeAccepted()
+                                ->whereTypeUser()
+                                ->whereBetween('date_of_issue', [$params->date_start, $params->date_end])
+                                ->where('establishment_id', $params->establishment_id);
+                        });
+                    },
+                    'sale_note_items' => function($q) use($params){
+                        $q->whereHas('sale_note', function($q) use($params){
+                            $q->whereStateTypeAccepted()
+                                ->whereNotChanged()
+                                ->whereTypeUser()
+                                ->whereBetween('date_of_issue', [$params->date_start, $params->date_end])
+                                ->where('establishment_id', $params->establishment_id);
+                        });
+                    }]);
+
+        }
+
+        return $query->with(['document_items'=> function($q) use($params){
+                    $q->whereHas('document', function($q) use($params){
+                        $q->whereStateTypeAccepted()
+                            ->whereTypeUser()
+                            ->whereBetween('date_of_issue', [$params->date_start, $params->date_end]);
+                    });
+                },
+                'sale_note_items' => function($q) use($params){
+                    $q->whereHas('sale_note', function($q) use($params){
+                        $q->whereStateTypeAccepted()
+                            ->whereNotChanged()
+                            ->whereTypeUser()
+                            ->whereBetween('date_of_issue', [$params->date_start, $params->date_end]);
+                    });
+                }]);
+    }
+
+    public function scopeWhereIsNotActive($query)
+    {
+        return $query->where('active', false);
+    }
     
 }

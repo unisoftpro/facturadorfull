@@ -95,7 +95,7 @@
                     con EFECTIVO</a>
                 <a style="margin-left:15%" href="{{route('tenant_ecommerce_login')}}"
                     class="btn btn-block btn-sm login-link">
-                    <img src="https://www.paypalobjects.com/en_US/i/btn/btn_buynowCC_LG.gif" alt="">
+                    <img src="{{ asset('porto-ecommerce/assets/images/btn_buynowCC_LG.gif') }}" alt="">
                 </a>
 
                 @else
@@ -127,7 +127,27 @@
 
             </div><!-- End .checkout-methods -->
         </div><!-- End .cart-summary -->
+
+
+        <div class="cart-summary">
+            <h3>Datos de contacto y envío</h3>
+
+            <form autocomplete="off" action="#">
+                <div class="form-group" :class="{'text-danger': errors.telephone}">
+                    <label for="email">Telefono:</label>
+                    <input v-model="form_contact.telephone" type="text" autocomplete="off" class="form-control" placeholder="Ingrese número de teléfono" name="teléfono">
+                    <small class="form-control-feedback" v-if="errors.telephone" v-text="errors.telephone[0]"></small>
+                </div>
+                <div class="form-group" :class="{'text-danger': errors.address}">
+                    <label for="email">Dirección:</label>
+                    <textarea v-model="form_contact.address" class="form-control" placeholder="Ingrese dirección de envío" rows="2" cols="10"></textarea>
+                    <small class="form-control-feedback" v-if="errors.address" v-text="errors.address[0]"></small>
+                </div>
+            </form>
+        </div>
     </div><!-- End .col-lg-4 -->
+
+
 
 
     <div class="modal fade" id="modal_ask_document" tabindex="-1" role="dialog" data-backdrop="static"
@@ -180,14 +200,14 @@
                                     aria-describedby="button-addon2">
                                 <div class="input-group-append">
 
-                                    <button :disabled="!formIdentity.number" @click.prevent="searchCustomer"
+                                    <button  :disabled="!formIdentity.number" @click.prevent="searchCustomer"
                                         class="btn btn-outline-secondary" type="button" id="button-addon2">
 
                                         <template v-if="formIdentity.identity_document_type_id === '6'">
-                                            <i class="icon-search"></i> <span>SUNAT</span>
+                                            <i class="icon-search"></i> <span>SUNAT @{{ text_search }}</span>
                                         </template>
                                         <template v-if="formIdentity.identity_document_type_id === '1'">
-                                            <i class="icon-search"></i> <span>RENIEC</span>
+                                            <i class="icon-search"></i> <span>RENIEC @{{ text_search }}</span>
                                         </template>
                                     </button>
                                 </div>
@@ -216,21 +236,26 @@
 @endsection
 
 @push('scripts')
-<script src="https://checkout.culqi.com/js/v3"></script>
+<!-- script src="https://checkout.culqi.com/js/v3"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@7.31.1/dist/sweetalert2.all.min.js"></script>
 <script src="https://momentjs.com/downloads/moment.min.js"></script>
-<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script -->
 
 
 <script type="text/javascript">
     var app_cart = new Vue({
         el: '#app',
         data: {
+            form_contact: {
+                address:   '',
+                telephone:   '',
+            },
             payment_cash: {
                 amount: '',
                 clicked: false
             },
             response_search: {},
+            text_search: '',
             loading_search: false,
             identity_document_types: [{
                 id: '1',
@@ -254,7 +279,8 @@
             form_document: {},
             user: {},
             typeDocumentSelected: '',
-            response_order_total:0
+            response_order_total:0,
+            errors: {}
         },
         computed: {
             maxLength: function () {
@@ -303,7 +329,9 @@
                     precio: precio,
                     precio_culqi: precio_culqi,
                     customer: this.form_document.datos_del_cliente_o_receptor,
-                    items: this.records
+                    items: this.records,
+                    telephone: this.form_contact.telephone,
+                    address: this.form_contact.address
                 }
             },
             async paymentCash() {
@@ -318,8 +346,9 @@
                 });
 
                 let url_finally = '{{ route("tenant_ecommerce_payment_cash")}}';
-                let response = await axios.post(url_finally, this.getFormPaymentCash(), this.getHeaderConfig())
+                let response = await axios.post(url_finally, this.getFormPaymentCash(), this.getHeaderConfig()).then(response => {
                 if (response.data.success) {
+                    this.saveContactDataUser()
                     this.clearShoppingCart()
                     this.response_order_total = response.data.order.total
                     swal({
@@ -329,15 +358,22 @@
                     }).then((x) => {
                         askedDocument(response.data.order);
                     })
-                } else {
-                    swal("Pago No realizado", 'Sucedio algo inesperado.', "error");
                 }
+              }).catch(error => {
+                swal("Pago No realizado", 'Sucedio algo inesperado.', "error");
+                if (error.response.status === 422) {
+                  this.errors = error.response.data;
+                } else {
+                  console.log(error);
+                }
+              });
 
             },
             redirectHome() {
                 window.location = "{{ route('tenant.ecommerce.index') }}";
             },
             async searchCustomer() {
+                this.text_search = 'Buscando...'
                 this.response_search = {
                     succes: false,
                     message: ''
@@ -376,6 +412,8 @@
                     this.form_document.datos_del_cliente_o_receptor.codigo_tipo_documento_identidad = "0"
                     this.form_document.datos_del_cliente_o_receptor.numero_documento = "0"
                 }
+
+                this.text_search = ''
 
             },
             getHeaderConfig() {
@@ -597,6 +635,7 @@
                 return rec
             },
             initForm() {
+              this.errors = {}
                 this.user = JSON.parse('{!! json_encode( Auth::user() ) !!}')
                 if(!this.user){
                     return false
@@ -634,6 +673,10 @@
                     identity_document_type_id: '6'
                 }
 
+                this.form_contact.address =  this.user.address
+                this.form_contact.telephone =  this.user.telephone
+
+
             },
             deleteItem(id, index) {
                 //remove en fronted
@@ -650,7 +693,7 @@
 
             },
             clearShoppingCart() {
-
+              this.errors = {}
                 this.records_old = this.records
                 this.records = []
                 localStorage.setItem('products_cart', JSON.stringify([]))
@@ -728,6 +771,17 @@
                 // $("#total_amount").data('total', this.summary.total);
 
                 // this.payment_cash.amount = this.summary.total
+            },
+            saveContactDataUser()
+            {
+                let url_finally = '{{ route("tenant_ecommerce_user_data")}}';
+                axios.post(url_finally, this.form_contact, this.getHeaderConfig())
+                    .then(response => {
+                       console.log(response.data)
+                    })
+                    .catch(error => {
+
+                    });
             }
         }
     })
@@ -736,6 +790,17 @@
 
 <script>
     Culqi.publicKey = {!! json_encode($configuration->token_public_culqui ) !!};
+    if(!Culqi.publicKey)
+    {
+        swal({
+
+            title: "Culqi configuración",
+            text: "El pago con visa aun no esta disponible. Intente con efectivo.",
+            type: "error",
+            position: 'top-end',
+            icon: 'warning',
+        })
+    }
     Culqi.options({
         installments: true
     });
@@ -808,6 +873,7 @@
                         }).then((x) => {
 
                             askedDocument(data.order);
+                            app_cart.saveContactDataUser();
                             //window.location = "{{ route('tenant.ecommerce.index') }}";
                         })
                     } else {

@@ -171,7 +171,7 @@
 
                     <div  v-show="form.unit_type_id !='ZZ'" class="col-md-3 center-el-checkbox" >
                         <div class="form-group"  >
-                            <el-checkbox v-model="form.lots_enabled" @change="changeLotsEnabled">¿Maneja series o lotes?</el-checkbox><br>
+                            <el-checkbox v-model="form.lots_enabled" @change="changeLotsEnabled">¿Maneja lotes?</el-checkbox><br>
                         </div>
                     </div>
                     <div class="col-md-3" v-show="form.unit_type_id !='ZZ' && form.lots_enabled">
@@ -181,8 +181,26 @@
                                 Código lote
                             </label>
                             <el-input v-model="form.lot_code" >
-                                <el-button slot="append" icon="el-icon-edit-outline"  @click.prevent="clickLotcode"></el-button>
+                                <!--<el-button slot="append" icon="el-icon-edit-outline"  @click.prevent="clickLotcode"></el-button> -->
                             </el-input>
+                            <small class="form-control-feedback" v-if="errors.lot_code" v-text="errors.lot_code[0]"></small>
+                        </div>
+                    </div>
+
+                     <div  v-show="form.unit_type_id !='ZZ'" class="col-md-3 center-el-checkbox" >
+                        <div class="form-group"  >
+                            <el-checkbox v-model="form.series_enabled" @change="changeLotsEnabled">¿Maneja series?</el-checkbox><br>
+                        </div>
+                    </div>
+                    <div class="col-md-3" v-show="form.unit_type_id !='ZZ' && form.series_enabled">
+                        <div class="form-group" :class="{'has-danger': errors.lot_code}">
+                            <label class="control-label">
+                                <!-- <el-checkbox v-model="enabled_lots"  @change="changeEnabledPercentageOfProfit">Código lote</el-checkbox> -->
+                                Ingrese series
+                            </label>
+
+                            <el-button style="margin-top:2%;" type="primary" icon="el-icon-edit-outline"  @click.prevent="clickLotcode"></el-button>
+
                             <small class="form-control-feedback" v-if="errors.lot_code" v-text="errors.lot_code[0]"></small>
                         </div>
                     </div>
@@ -239,12 +257,13 @@
                     <div v-show="form.unit_type_id !='ZZ'" class="col-md-12">
                         <h5 class="separator-title ">
                             Listado de precios
-                            <el-tooltip class="item" effect="dark" content="Diferentes presentaciones para la venta del producto" placement="top">
+                            <el-tooltip class="item" effect="dark" content="Aplica para realizar compra/venta en presentacion de diferentes precios y/o cantidades" placement="top">
                                 <i class="fa fa-info-circle"></i>
                             </el-tooltip>
                              <a href="#" class="control-label font-weight-bold text-info" @click="clickAddRow"> [ + Nuevo]</a>
                         </h5>
                     </div>
+
                     <div v-show="form.unit_type_id !='ZZ'" class="col-md-12" v-if="form.item_unit_types.length > 0">
                         <div class="table-responsive">
                             <table class="table">
@@ -271,9 +290,9 @@
                                         <td class="text-center">{{row.unit_type_id}}</td>
                                         <td class="text-center">{{row.description}}</td>
                                         <td class="text-center">{{row.quantity_unit}}</td>
-                                        <td class="text-center">{{row.price1}}</td>
-                                        <td class="text-center">{{row.price2}}</td>
-                                        <td class="text-center">{{row.price3}}</td>
+                                        <td class="text-center"><el-input v-model="row.price1"></el-input></td>
+                                        <td class="text-center"><el-input v-model="row.price2"></el-input></td>
+                                        <td class="text-center"><el-input v-model="row.price3"></el-input></td>
                                         <td class="text-center">Precio {{row.price_default}}</td>
                                         <td class="series-table-actions text-right">
                                         <button type="button" class="btn waves-effect waves-light btn-xs btn-danger" @click.prevent="clickDelete(row.id)">
@@ -345,6 +364,43 @@
                         </div>
                     </div>
 
+                    <div v-if="attribute_types.length > 0" class="col-md-12">
+                        <h5 class="separator-title ">
+                           Atributos
+                            <el-tooltip class="item" effect="dark" content="Diferentes presentaciones para la venta del producto" placement="top">
+                                <i class="fa fa-info-circle"></i>
+                            </el-tooltip>
+                            <a href="#" class="control-label font-weight-bold text-info" @click.prevent="clickAddAttribute">[+ Agregar]</a>
+                        </h5>
+                    </div>
+                    <div v-if="form.attributes.length > 0" class="col-md-12">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th>Tipo</th>
+                                    <th>Descripción</th>
+                                    <th></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr v-for="(row, index) in form.attributes">
+                                    <td>
+                                        <el-select v-model="row.attribute_type_id" filterable @change="changeAttributeType(index)">
+                                            <el-option v-for="option in attribute_types" :key="option.id" :value="option.id" :label="option.description"></el-option>
+                                        </el-select>
+                                    </td>
+                                    <td>
+                                        <el-input v-model="row.value"></el-input>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-danger" @click.prevent="clickRemoveAttribute(index)">x</button>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
 
                     <div class="col-md-12">
                         <h5 class="separator-title">Campos adicionales</h5>
@@ -465,6 +521,7 @@
                 errors: {},
                 headers: headers_token,
                 form: {},
+                configuration: {},
                 unit_types: [],
                 currency_types: [],
                 system_isc_types: [],
@@ -483,12 +540,13 @@
                         price3:0,
                         price_default:2,
 
-                }
+                },
+                attribute_types:  []
             }
         },
-        created() {
-            this.initForm()
-            this.$http.get(`/${this.resource}/tables`)
+        async created() {
+            await this.initForm()
+            await this.$http.get(`/${this.resource}/tables`)
                 .then(response => {
                     this.unit_types = response.data.unit_types
                     this.accounts = response.data.accounts
@@ -498,6 +556,8 @@
                     this.warehouses = response.data.warehouses
                     this.categories = response.data.categories
                     this.brands = response.data.brands
+                    this.attribute_types = response.data.attribute_types
+                    this.configuration = response.data.configuration
 
                     this.form.sale_affectation_igv_type_id = (this.affectation_igv_types.length > 0)?this.affectation_igv_types[0].id:null
                     this.form.purchase_affectation_igv_type_id = (this.affectation_igv_types.length > 0)?this.affectation_igv_types[0].id:null
@@ -511,9 +571,24 @@
             this.$eventHub.$on('reloadTables', ()=>{
                 this.reloadTables()
             })
+
+            await this.setDefaultConfiguration()
         },
 
         methods: {
+            setDefaultConfiguration(){
+                this.form.sale_affectation_igv_type_id = (this.configuration) ? this.configuration.affectation_igv_type_id : '10'
+            },
+            clickAddAttribute() {
+                this.form.attributes.push({
+                    attribute_type_id: null,
+                    description: null,
+                    value: null,
+                    start_date: null,
+                    end_date: null,
+                    duration: null,
+                })
+            },
             async reloadTables(){
 
                 await this.$http.get(`/${this.resource}/tables`)
@@ -635,7 +710,9 @@
                     date_of_due:null,
                     lot_code:null,
                     lots_enabled:false,
-                    lots:[]
+                    lots:[],
+                    attributes: [],
+                    series_enabled: false,
                 }
                 this.show_has_igv = true
                 this.enabled_percentage_of_profit = false
@@ -666,6 +743,7 @@
                 this.initForm()
                 this.form.sale_affectation_igv_type_id = (this.affectation_igv_types.length > 0)?this.affectation_igv_types[0].id:null
                 this.form.purchase_affectation_igv_type_id = (this.affectation_igv_types.length > 0)?this.affectation_igv_types[0].id:null
+                this.setDefaultConfiguration()
             },
             create() {
 
@@ -718,7 +796,7 @@
                 if(this.form.has_perception && !this.form.percentage_perception) return this.$message.error('Ingrese un porcentaje');
                 // if(!this.has_percentage_perception) this.form.percentage_perception = null
 
-                if(!this.recordId && this.form.lots_enabled){
+                /*if(!this.recordId && this.form.lots_enabled){
 
                     if(this.form.lots.length > this.form.stock)
                         return this.$message.error('La cantidad de series registradas es superior al stock');
@@ -729,6 +807,25 @@
                     if(this.form.lots.length != this.form.stock)
                         return this.$message.error('La cantidad de series registradas son diferentes al stock');
 
+                }*/
+
+                if(!this.recordId && this.form.lots_enabled){
+
+                    if(!this.form.lot_code)
+                        return this.$message.error('Código de lote es requerido');
+
+                    if(!this.form.date_of_due)
+                        return this.$message.error('Fecha de vencimiento es requerido si lotes esta habilitado.');
+                }
+
+                if(!this.recordId && this.form.series_enabled)
+                {
+
+                    if(this.form.lots.length > this.form.stock)
+                        return this.$message.error('La cantidad de series registradas es superior al stock');
+
+                    if(this.form.lots.length != this.form.stock)
+                        return this.$message.error('La cantidad de series registradas son diferentes al stock');
                 }
 
                 this.loading_submit = true
@@ -810,7 +907,15 @@
 
 
 
-            }
+            },
+            changeAttributeType(index) {
+                let attribute_type_id = this.form.attributes[index].attribute_type_id
+                let attribute_type = _.find(this.attribute_types, {id: attribute_type_id})
+                this.form.attributes[index].description = attribute_type.description
+            },
+            clickRemoveAttribute(index) {
+                this.form.attributes.splice(index, 1)
+            },
         }
     }
 </script>
