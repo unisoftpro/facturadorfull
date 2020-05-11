@@ -151,8 +151,13 @@
                                     v-if="row.btn_voided"  >Anular</button>
                             <a :href="`/${resource}/note/${row.id}`" class="btn waves-effect waves-light btn-xs btn-warning m-1__2"
                                v-if="row.btn_note">Nota</a>
-                            <a :href="`/dispatches/create/${row.id}`" class="btn waves-effect waves-light btn-xs btn-warning m-1__2"
-                               v-if="row.btn_note">Guía</a>
+
+                            <!-- <a :href="`/dispatches/create/${row.id}`" class="btn waves-effect waves-light btn-xs btn-warning m-1__2"
+                               v-if="row.btn_note">Guía</a> -->
+
+                            <button type="button" class="btn waves-effect waves-light btn-xs btn-warning m-1__2"
+                                    @click.prevent="clickDispatch(row.id)"
+                                    v-if="row.btn_note" >Guía</button>
 
                             <button type="button" class="btn waves-effect waves-light btn-xs btn-info m-1__2"
                                     @click.prevent="clickResend(row.id)"
@@ -187,16 +192,21 @@
             <document-payments :showDialog.sync="showDialogPayments"
                                :documentId="recordId"></document-payments>
 
-
             <document-constancy-detraction :showDialog.sync="showDialogCDetraction"
                               :recordId="recordId"></document-constancy-detraction>
+
+            <documents-dispatch :showDialog.sync="showDialogDispatch"
+                            :recordId="recordId"></documents-dispatch>
+
             <report-payment  :showDialog.sync="showDialogReportPayment" ></report-payment>
+
         </div>
     </div>
 </template>
 
 <script>
 
+    import DocumentsDispatch from './partials/options_dispatch.vue'
     import DocumentsVoided from './partials/voided.vue'
     import DocumentOptions from './partials/options.vue'
     import DocumentPayments from './partials/payments.vue'
@@ -211,11 +221,12 @@
     export default {
         mixins: [deletable],
         props: ['isClient','typeUser','import_documents','import_documents_second'],
-        components: {DocumentsVoided, ItemsImport, DocumentImportSecond, DocumentOptions, DocumentPayments, DataTable, DocumentConstancyDetraction, ReportPayment},
+        components: {DocumentsVoided, ItemsImport, DocumentImportSecond, DocumentOptions, DocumentPayments, DataTable, DocumentConstancyDetraction, DocumentsDispatch, ReportPayment},
         data() {
             return {
                 showDialogReportPayment:false,
                 showDialogVoided: false,
+                showDialogDispatch: false,
                 showImportDialog: false,
                 showDialogCDetraction: false,
                 showImportSecondDialog: false,
@@ -258,6 +269,10 @@
         created() {
         },
         methods: {
+            clickDispatch(recordId = null) {
+                this.recordId = recordId
+                this.showDialogDispatch = true
+            },
             clickVoided(recordId = null) {
                 this.recordId = recordId
                 this.showDialogVoided = true

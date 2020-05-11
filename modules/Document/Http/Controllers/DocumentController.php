@@ -12,6 +12,7 @@ use App\Models\Tenant\Establishment;
 use App\Models\Tenant\Series;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Models\Tenant\Dispatch;
 use App\Models\Tenant\Person;
 use App\Models\Tenant\StateType;
 use App\Models\Tenant\Catalogs\DetractionType;
@@ -220,6 +221,19 @@ class DocumentController extends Controller
         ];
     }
 
+    public function dispatches()
+    {
+        $dispatches = Dispatch::latest()->get(['id','series','number'])->transform(function($row) {
+            return [
+                'id' => $row->id,
+                'series' => $row->series,
+                'number' => $row->number,
+                'number_full' => "{$row->series}-{$row->number}",
+            ];
+        }); ;
+
+        return $dispatches;
+    }
 
     public function prepayments($type)
     {
@@ -412,5 +426,4 @@ class DocumentController extends Controller
 
         return compact('items');
     }
-
 }

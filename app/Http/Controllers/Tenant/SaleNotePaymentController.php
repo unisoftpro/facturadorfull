@@ -54,7 +54,7 @@ class SaleNotePaymentController extends Controller
         }
 
         return [
-            'number_full' => $sale_note->identifier,
+            'identifier' => $sale_note->identifier,
             'total_paid' => $total_paid,
             'total' => $total,
             'total_difference' => $total_difference,

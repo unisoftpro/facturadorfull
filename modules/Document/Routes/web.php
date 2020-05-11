@@ -19,6 +19,7 @@ if($current_hostname) {
                 Route::post('pay-constancy/save', 'DocumentController@savePayConstancy');
                 Route::get('detraction/tables', 'DocumentController@detractionTables');
                 Route::get('data-table/customers', 'DocumentController@dataTableCustomers');
+                Route::get('dispatches', 'DocumentController@dispatches');
                 Route::get('prepayments/{type}', 'DocumentController@prepayments');
                 Route::get('search-items', 'DocumentController@searchItems');
                 Route::get('search/item/{item}', 'DocumentController@searchItemById');

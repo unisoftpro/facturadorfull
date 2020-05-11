@@ -92,7 +92,7 @@
                 this.$http.get(`/${this.resource}/record/${this.recordId}`)
                     .then(response => {
                         this.form = response.data.data
-                        this.titleDialog = `Nota de venta registrada:  ${this.form.serie}-${this.form.number}`
+                        this.titleDialog = `Nota de venta registrada:  ${this.form.identifier}`
                     })
             },
             clickFinalize() {
