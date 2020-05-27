@@ -62,6 +62,10 @@ class ViewServiceProvider extends ServiceProvider
             'App\Http\ViewComposers\Tenant\CompactSidebarViewComposer'
         );
 
+        view()->composer(
+            'dashboard::layouts.app',
+            'App\Http\ViewComposers\Tenant\CompactSidebarViewComposer'
+        );
         //Ecommerce
 
         /*view()->composer(
@@ -127,6 +131,10 @@ class ViewServiceProvider extends ServiceProvider
             'App\Http\ViewComposers\Tenant\ConfigurationVisualViewComposer'
         );
 
+        view()->composer(
+            'dashboard::layouts.app',
+            'App\Http\ViewComposers\Tenant\ConfigurationVisualViewComposer'
+        );
        /*view()->composer(
             'ecommerce',
             'Modules\Ecommerce\Http\ViewComposers\TakeProductoViewComposer'

@@ -39940,6 +39940,10 @@ a.link:focus {
   position: relative;
 }
 
+.el-select .el-select__tags > span {
+  display: contents;
+}
+
 .el-select:hover .el-input__inner {
   border-color: #c0c4cc;
 }
@@ -43115,6 +43119,10 @@ a.link:focus {
   -webkit-box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
           box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   border-radius: 4px;
+  border: 1px solid #e4e7ed;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  background-color: #fff;
 }
 
 .el-autocomplete-suggestion__wrap {
@@ -43122,10 +43130,6 @@ a.link:focus {
   padding: 10px 0;
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
-  overflow: auto;
-  background-color: #fff;
-  border: 1px solid #e4e7ed;
-  border-radius: 4px;
 }
 
 .el-autocomplete-suggestion__list {
@@ -44600,6 +44604,10 @@ a.link:focus {
 
 .el-button-group > .el-button + .el-button {
   margin-left: 0;
+}
+
+.el-button-group > .el-button.is-disabled {
+  z-index: 1;
 }
 
 .el-button-group > .el-button:first-child {
@@ -48869,6 +48877,7 @@ a.link:focus {
   white-space: nowrap;
   outline: none;
   font-size: 14px;
+  margin-right: 30px;
   -moz-user-select: none;
   -webkit-user-select: none;
   -ms-user-select: none;
@@ -48941,8 +48950,8 @@ a.link:focus {
   width: 12px;
 }
 
-.el-radio + .el-radio {
-  margin-left: 30px;
+.el-radio:last-child {
+  margin-right: 0;
 }
 
 .el-radio__input {
@@ -50613,6 +50622,7 @@ a.link:focus {
      -moz-user-select: none;
       -ms-user-select: none;
           user-select: none;
+  margin-right: 30px;
 }
 
 .el-checkbox.is-bordered {
@@ -50847,8 +50857,8 @@ a.link:focus {
   font-size: 14px;
 }
 
-.el-checkbox + .el-checkbox {
-  margin-left: 30px;
+.el-checkbox:last-child {
+  margin-right: 0;
 }
 
 .el-checkbox-button {
@@ -55116,6 +55126,10 @@ a.link:focus {
   position: relative;
 }
 
+.el-select .el-select__tags > span {
+  display: contents;
+}
+
 .el-select:hover .el-input__inner {
   border-color: #c0c4cc;
 }
@@ -56318,6 +56332,10 @@ a.link:focus {
   margin-left: 0;
 }
 
+.el-button-group > .el-button.is-disabled {
+  z-index: 1;
+}
+
 .el-button-group > .el-button:first-child {
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
@@ -57154,6 +57172,7 @@ a.link:focus {
      -moz-user-select: none;
       -ms-user-select: none;
           user-select: none;
+  margin-right: 30px;
 }
 
 .el-checkbox.is-bordered {
@@ -57388,8 +57407,8 @@ a.link:focus {
   font-size: 14px;
 }
 
-.el-checkbox + .el-checkbox {
-  margin-left: 30px;
+.el-checkbox:last-child {
+  margin-right: 0;
 }
 
 .el-checkbox-button {
@@ -58395,6 +58414,7 @@ a.link:focus {
   font-size: 12px;
   line-height: 1.2;
   min-width: 10px;
+  word-wrap: break-word;
 }
 
 .el-tooltip__popper .popper__arrow,
@@ -58729,6 +58749,7 @@ a.link:focus {
 }
 
 .el-table__empty-text {
+  line-height: 60px;
   width: 50%;
   color: #909399;
 }
@@ -59975,6 +59996,7 @@ a.link:focus {
      -moz-user-select: none;
       -ms-user-select: none;
           user-select: none;
+  margin-right: 30px;
 }
 
 .el-checkbox.is-bordered {
@@ -60209,8 +60231,8 @@ a.link:focus {
   font-size: 14px;
 }
 
-.el-checkbox + .el-checkbox {
-  margin-left: 30px;
+.el-checkbox:last-child {
+  margin-right: 0;
 }
 
 .el-checkbox-button {
@@ -61803,6 +61825,11 @@ a.link:focus {
   cursor: pointer;
 }
 
+.el-month-table td.today .cell {
+  color: #409EFF;
+  font-weight: bold;
+}
+
 .el-month-table td.disabled .cell {
   background-color: #f5f7fa;
   cursor: not-allowed;
@@ -62014,6 +62041,11 @@ a.link:focus {
   text-align: center;
   padding: 20px 3px;
   cursor: pointer;
+}
+
+.el-year-table td.today .cell {
+  color: #409EFF;
+  font-weight: bold;
 }
 
 .el-year-table td.disabled .cell {
@@ -64572,6 +64604,8 @@ a.link:focus {
      -moz-user-select: none;
       -ms-user-select: none;
           user-select: none;
+  -webkit-box-sizing: content-box;
+          box-sizing: content-box;
 }
 
 .el-time-panel__content {
@@ -70533,6 +70567,8 @@ a.link:focus {
      -moz-user-select: none;
       -ms-user-select: none;
           user-select: none;
+  -webkit-box-sizing: content-box;
+          box-sizing: content-box;
 }
 
 .el-time-panel__content {
@@ -73626,6 +73662,7 @@ a.link:focus {
   font-size: 12px;
   line-height: 1.2;
   min-width: 10px;
+  word-wrap: break-word;
 }
 
 .el-tooltip__popper .popper__arrow,
@@ -75401,6 +75438,10 @@ a.link:focus {
 
 .el-button-group > .el-button + .el-button {
   margin-left: 0;
+}
+
+.el-button-group > .el-button.is-disabled {
+  z-index: 1;
 }
 
 .el-button-group > .el-button:first-child {
@@ -80303,6 +80344,7 @@ a.link:focus {
      -moz-user-select: none;
       -ms-user-select: none;
           user-select: none;
+  margin-right: 30px;
 }
 
 .el-checkbox.is-bordered {
@@ -80537,8 +80579,8 @@ a.link:focus {
   font-size: 14px;
 }
 
-.el-checkbox + .el-checkbox {
-  margin-left: 30px;
+.el-checkbox:last-child {
+  margin-right: 0;
 }
 
 .el-checkbox-button {
@@ -83551,6 +83593,7 @@ a.link:focus {
   font-size: 12px;
   line-height: 1.2;
   min-width: 10px;
+  word-wrap: break-word;
 }
 
 .el-tooltip__popper .popper__arrow,
@@ -85818,7 +85861,7 @@ a.link:focus {
   left: 100%;
 }
 
-@media only screen and (max-width: 768px) {
+@media only screen and (max-width: 767px) {
   .el-col-xs-0 {
     display: none;
   }
@@ -88737,6 +88780,8 @@ a.link:focus {
   border-radius: 100px;
   line-height: 1;
   white-space: nowrap;
+  -webkit-transition: width 0.6s ease;
+  transition: width 0.6s ease;
 }
 
 .el-progress-bar__inner::after {
@@ -90026,6 +90071,8 @@ a.link:focus {
   border-radius: 100px;
   line-height: 1;
   white-space: nowrap;
+  -webkit-transition: width 0.6s ease;
+  transition: width 0.6s ease;
 }
 
 .el-progress-bar__inner::after {
@@ -91180,6 +91227,26 @@ a.link:focus {
   padding: 0;
   right: 0;
   border-radius: 50%;
+}
+
+.el-badge__content--primary {
+  background-color: #409EFF;
+}
+
+.el-badge__content--success {
+  background-color: #67c23a;
+}
+
+.el-badge__content--warning {
+  background-color: #e6a23c;
+}
+
+.el-badge__content--info {
+  background-color: #909399;
+}
+
+.el-badge__content--danger {
+  background-color: #f56c6c;
 }
 
 /* BEM support Func
@@ -94884,6 +94951,12 @@ a.link:focus {
 }
 
 .el-collapse-item__header {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
   height: 48px;
   line-height: 48px;
   background-color: #fff;
@@ -94898,13 +94971,11 @@ a.link:focus {
 }
 
 .el-collapse-item__arrow {
-  margin-right: 8px;
+  margin: 0 8px 0 auto;
   -webkit-transition: -webkit-transform .3s;
   transition: -webkit-transform .3s;
   transition: transform .3s;
   transition: transform .3s, -webkit-transform .3s;
-  float: right;
-  line-height: 48px;
   font-weight: 300;
 }
 
@@ -96614,6 +96685,10 @@ a.link:focus {
           box-sizing: border-box;
   cursor: pointer;
   outline: none;
+}
+
+.el-cascader-menu__item span {
+  padding-right: 10px;
 }
 
 .el-cascader-menu__item--extensible:after {
@@ -99567,6 +99642,10 @@ a.link:focus {
   margin-left: 0;
 }
 
+.el-button-group > .el-button.is-disabled {
+  z-index: 1;
+}
+
 .el-button-group > .el-button:first-child {
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
@@ -100218,6 +100297,7 @@ a.link:focus {
      -moz-user-select: none;
       -ms-user-select: none;
           user-select: none;
+  margin-right: 30px;
 }
 
 .el-checkbox.is-bordered {
@@ -100452,8 +100532,8 @@ a.link:focus {
   font-size: 14px;
 }
 
-.el-checkbox + .el-checkbox {
-  margin-left: 30px;
+.el-checkbox:last-child {
+  margin-right: 0;
 }
 
 .el-checkbox-button {
