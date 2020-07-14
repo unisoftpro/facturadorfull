@@ -5,10 +5,11 @@ if ($hostname) {
     Route::domain($hostname->fqdn)->group(function() {
 
         Route::post('login', 'Tenant\Api\MobileController@login');
-
+        
         Route::middleware(['auth:api', 'locked.tenant'])->group(function() {
             //MOBILE
             Route::get('document/series', 'Tenant\Api\MobileController@getSeries');
+            Route::post('config_user', 'Tenant\Api\MobileController@config_user');
             Route::get('document/tables', 'Tenant\Api\MobileController@tables');
             Route::get('document/customers', 'Tenant\Api\MobileController@customers');
             Route::post('document/email', 'Tenant\Api\MobileController@document_email');

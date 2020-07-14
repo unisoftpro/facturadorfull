@@ -20,6 +20,7 @@ use App\Models\Tenant\Configuration;
 use App\Models\Tenant\Series;
 use App\Http\Requests\Tenant\PersonRequest;
 use Modules\Item\Http\Requests\ItemRequest;
+use Hyn\Tenancy\Models\Hostname;
 
 class MobileController extends Controller
 {
@@ -306,6 +307,37 @@ class MobileController extends Controller
     }
 
 
+    public function config_user(Request $request) 
+    {
+        $hostname = app(\Hyn\Tenancy\Contracts\CurrentHostname::class);
+        $fqdn     = $request->url;
 
+        $replace = ['http://' => '', 'https://' => ''];
+
+        foreach ($replace as $key => $value) {
+            $fqdn = str_replace($key, $value, $fqdn);
+        }
+
+        $hostname->fqdn = $fqdn;
+        $hostname->update();
+
+        $user = User::where('api_token', $request->api_token)->first();
+        
+        $request->request->remove('password');
+
+        if(!empty($request->password)) {
+            $request->merge(['password' => bcrypt($request->password)]);
+        }
+
+        $user->fill($request->all());
+        $user->update();
+
+        return response()->json([
+            'data' => [
+                'user_email' => $user->email,
+                'api_url'    => 'https://'.$hostname->fqdn
+            ]
+        ]);
+    }
 }
 
