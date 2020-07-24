@@ -42,6 +42,7 @@ class BackupController extends Controller
 
     public function upload(Request $request)
     {
+
         $config = [
             'driver' => 'ftp',
             'host'   => $request['host'],
@@ -51,15 +52,19 @@ class BackupController extends Controller
             'port'  => 21,
             'passive'   => true,
         ];
+
         Config::set('filesystems.disks.ftp', $config);
 
         // definimos y subimos el archivo
         // try {
 
             $most_recent = $this->mostRecent();
+            // dd($most_recent);
 
             $fileTo = $most_recent['name'];
-            $fileFrom = storage_path('app/'.$most_recent['path']);
+            $fileFrom = Storage::get($most_recent['path']);
+            // dd($fileFrom);
+
             $upload = Storage::disk('ftp')->put($fileTo, $fileFrom);
 
             return [
