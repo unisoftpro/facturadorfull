@@ -49,7 +49,7 @@ class BackupController extends Controller
             'username' => $request['username'],
             'password'   => $request['password'],
             'port'  => 21,
-            'passive'   => false,
+            'passive'   => true,
         ];
         Config::set('filesystems.disks.ftp', $config);
 
