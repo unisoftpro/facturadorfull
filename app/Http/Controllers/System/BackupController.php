@@ -54,7 +54,7 @@ class BackupController extends Controller
         Config::set('filesystems.disks.ftp', $config);
 
         // definimos y subimos el archivo
-        try {
+        // try {
 
             $most_recent = $this->mostRecent();
 
@@ -68,12 +68,12 @@ class BackupController extends Controller
             ];
 
 
-        } catch (\Exception $e) {
-            return [
-                'success' => false,
-                'message' => $e
-            ];;
-        }
+        // } catch (\Exception $e) {
+        //     return [
+        //         'success' => false,
+        //         'message' => $e
+        //     ];;
+        // }
 
     }
 

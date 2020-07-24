@@ -141,12 +141,13 @@
 
             },
             uploadFtp() {
-                this.loading_upload = true
+                // this.loading_upload = true
                 this.sendFtp()
             },
             sendFtp() {
                 this.$http.post(`${this.resource}/upload`, this.form)
                     .then(response => {
+                        console.log(response)
                         if (response.data.success) {
                             this.$message.success(response.data.message)
                             this.$eventHub.$emit('reloadData')
