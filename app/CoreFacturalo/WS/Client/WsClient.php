@@ -25,7 +25,7 @@ class WsClient
                             DIRECTORY_SEPARATOR.'wsdl'.
                             DIRECTORY_SEPARATOR.'billConsultService.wsdl';
         }
-        $this->client = new SoapClient($wsdl, $parameters);
+        $this->client = new SoapClient($wsdl, $this->getParameters($parameters));
     }
 
     /**
@@ -57,4 +57,19 @@ class WsClient
     {
         return $this->client->__soapCall($function, $arguments);
     }
+
+
+    private function getParameters($parameters){
+        
+        $additional_parameters = [
+            'stream_context' => stream_context_create([
+                'ssl' => [
+                    'ciphers'=>'AES256-SHA',
+                ],
+            ]),
+        ];
+
+        return array_merge($parameters, $additional_parameters);
+    }
+
 }
