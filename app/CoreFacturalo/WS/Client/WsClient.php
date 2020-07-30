@@ -64,7 +64,7 @@ class WsClient
         $additional_parameters = [
             'stream_context' => stream_context_create([
                 'ssl' => [
-                    'ciphers'=>'AES256-SHA',
+                    'crypto_method'=> STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT,
                 ],
             ]),
         ];
