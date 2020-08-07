@@ -211,6 +211,14 @@ Vue.component('tenant-dispatchers-index', require('@viewsModuleOrder/dispatchers
 Vue.component('tenant-order-forms-index', require('@viewsModuleOrder/order_forms/index.vue'));
 Vue.component('tenant-order-forms-form', require('@viewsModuleOrder/order_forms/form.vue'));
 
+//Transport 
+Vue.component('tenant-transport-vehicle-brands-index', require('@viewsModuleTransport/vehicle-brands/index.vue'));
+Vue.component('tenant-transport-vehicle-types-index', require('@viewsModuleTransport/vehicle-types/index.vue'));
+Vue.component('tenant-transport-fuel-types-index', require('@viewsModuleTransport/fuel-types/index.vue'));
+Vue.component('tenant-transport-fuels-index', require('@viewsModuleTransport/fuels/index.vue'));
+Vue.component('tenant-transport-colors-index', require('@viewsModuleTransport/colors/index.vue'));
+Vue.component('tenant-transport-insurance-index', require('@viewsModuleTransport/insurance/index.vue'));
+
 
 // System
 Vue.component('system-clients-index', require('./views/system/clients/index.vue'));

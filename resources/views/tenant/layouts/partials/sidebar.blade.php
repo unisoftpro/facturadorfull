@@ -793,6 +793,67 @@
                     </li>
                     @endif
 
+                    
+                    @if(in_array('transport', $vc_modules))
+
+                    <li class="nav-parent {{$path[0] === 'transport' && in_array($path[1], [
+                                                'vehicle-brands', 'vehicle-types', 'colors', 'insurance', 'fuel-types', 'fuels'
+                                            ])
+                                            ? 'nav-active nav-expanded' : ''}}">
+
+                        <a class="nav-link" href="#">
+                            <span class="float-right badge badge-red badge-danger mr-3">Nuevo</span>
+                            <i class="fas fa-shuttle-van" aria-hidden="true"></i>
+                            <span>Transporte</span>
+                        </a>
+                        <ul class="nav nav-children" style="">
+                            
+                            <li class="nav-parent {{  ($path[0] === 'transport' &&
+                                    in_array($path[1], ['vehicle-brands', 'vehicle-types', 'colors', 'insurance', 'fuel-types', 'fuels'])) ? 'nav-active nav-expanded' : ''}}">
+
+                                <a class="nav-link" href="#">
+                                    Vehículos
+                                </a>
+                                <ul class="nav nav-children">
+
+                                    <li class="{{(($path[1] === 'vehicle-brands')) ? 'nav-active' : ''}}">
+                                        <a class="nav-link" href="{{route('tenant.transport.vehicle-brands.index')}}">
+                                            Marcas
+                                        </a>
+                                    </li> 
+                                    <li class="{{(($path[1] === 'vehicle-types')) ? 'nav-active' : ''}}">
+                                        <a class="nav-link" href="{{route('tenant.transport.vehicle-types.index')}}">
+                                            Tipos de vehículo
+                                        </a>
+                                    </li> 
+                                    <li class="{{(($path[1] === 'colors')) ? 'nav-active' : ''}}">
+                                        <a class="nav-link" href="{{route('tenant.transport.colors.index')}}">
+                                            Colores
+                                        </a>
+                                    </li>
+                                    <li class="{{(($path[1] === 'insurance')) ? 'nav-active' : ''}}">
+                                        <a class="nav-link" href="{{route('tenant.transport.insurance.index')}}">
+                                            Seguros
+                                        </a>
+                                    </li>
+                                    <li class="{{(($path[1] === 'fuel-types')) ? 'nav-active' : ''}}">
+                                        <a class="nav-link" href="{{route('tenant.transport.fuel-types.index')}}">
+                                            Tipo de combustible
+                                        </a>
+                                    </li>
+                                    <li class="{{(($path[1] === 'fuels')) ? 'nav-active' : ''}}">
+                                        <a class="nav-link" href="{{route('tenant.transport.fuels.index')}}">
+                                            Combustibles
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+
+                        </ul>
+                    </li>
+                    @endif
+
+
                     @if(in_array('configuration', $vc_modules))
                     <li class="nav-parent {{in_array($path[0], ['companies', 'catalogs', 'advanced', 'tasks', 'inventories','company_accounts','bussiness_turns','offline-configurations','series-configurations','configurations']) ? 'nav-active nav-expanded' : ''}}">
                         <a class="nav-link" href="#">
