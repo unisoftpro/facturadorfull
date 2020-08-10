@@ -16,7 +16,6 @@ class TenantVehiclesTable extends Migration
         Schema::create('vehicles', function (Blueprint $table) {
 
             $table->increments('id');
-
             $table->string('license_plate')->index();
             $table->string('old_license_plate')->index()->nullable();
             $table->string('registration_starting');
@@ -42,6 +41,7 @@ class TenantVehiclesTable extends Migration
             $table->string('vin');
             $table->string('serie');
             $table->string('manufacturing_year');
+            $table->string('model');
             $table->string('model_year');
             $table->string('version');
 
@@ -62,13 +62,16 @@ class TenantVehiclesTable extends Migration
             $table->decimal('height', 12, 3);
             $table->decimal('width', 12, 3);
             $table->unsignedInteger('vehicle_type_id');
+            $table->date('insurance_date_of_due');
             $table->unsignedInteger('insurance_id');
+            $table->unsignedInteger('customer_id');
 
             $table->foreign('insurance_id')->references('id')->on('insurance');
             $table->foreign('vehicle_type_id')->references('id')->on('vehicle_types');
             $table->foreign('vehicle_brand_id')->references('id')->on('vehicle_brands');
             $table->foreign('color_id')->references('id')->on('colors');
             $table->foreign('fuel_id')->references('id')->on('fuels');
+            $table->foreign('customer_id')->references('id')->on('persons');
 
             $table->timestamps();
         });

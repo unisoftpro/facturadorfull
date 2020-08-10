@@ -797,7 +797,8 @@
                     @if(in_array('transport', $vc_modules))
 
                     <li class="nav-parent {{$path[0] === 'transport' && in_array($path[1], [
-                                                'vehicle-brands', 'vehicle-types', 'colors', 'insurance', 'fuel-types', 'fuels'
+                                                'vehicle-brands', 'vehicle-types', 'colors', 'insurance', 'fuel-types', 'fuels', 'vehicles',
+                                                'mechanics', 'service-types'
                                             ])
                                             ? 'nav-active nav-expanded' : ''}}">
 
@@ -809,7 +810,7 @@
                         <ul class="nav nav-children" style="">
                             
                             <li class="nav-parent {{  ($path[0] === 'transport' &&
-                                    in_array($path[1], ['vehicle-brands', 'vehicle-types', 'colors', 'insurance', 'fuel-types', 'fuels'])) ? 'nav-active nav-expanded' : ''}}">
+                                    in_array($path[1], ['vehicle-brands', 'vehicle-types', 'colors', 'insurance', 'fuel-types', 'fuels', 'vehicles'])) ? 'nav-active nav-expanded' : ''}}">
 
                                 <a class="nav-link" href="#">
                                     Vehículos
@@ -846,9 +847,34 @@
                                             Combustibles
                                         </a>
                                     </li>
+                                    <li class="{{(($path[1] === 'vehicles')) ? 'nav-active' : ''}}">
+                                        <a class="nav-link" href="{{route('tenant.transport.vehicles.index')}}">
+                                            Vehículos
+                                        </a>
+                                    </li>
                                 </ul>
                             </li>
 
+                            <li class="nav-parent {{  ($path[0] === 'transport' &&
+                                    in_array($path[1], ['mechanics', 'service-types'])) ? 'nav-active nav-expanded' : ''}}">
+
+                                <a class="nav-link" href="#">
+                                    Actividades
+                                </a>
+                                <ul class="nav nav-children">
+
+                                    <li class="{{(($path[1] === 'mechanics')) ? 'nav-active' : ''}}">
+                                        <a class="nav-link" href="{{route('tenant.transport.mechanics.index')}}">
+                                            Mecánicos
+                                        </a>
+                                    </li>   
+                                    <li class="{{(($path[1] === 'service-types')) ? 'nav-active' : ''}}">
+                                        <a class="nav-link" href="{{route('tenant.transport.service-types.index')}}">
+                                            Tipos de servicio
+                                        </a>
+                                    </li>   
+                                </ul>
+                            </li>
                         </ul>
                     </li>
                     @endif

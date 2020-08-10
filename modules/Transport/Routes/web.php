@@ -65,6 +65,37 @@ if($hostname) {
                     Route::delete('{record}', 'FuelController@destroy');
                 });
 
+                Route::prefix('vehicles')->group(function () {
+                    Route::get('', 'VehicleController@index')->name('tenant.transport.vehicles.index');
+                    Route::get('columns', 'VehicleController@columns');
+                    Route::get('tables', 'VehicleController@tables');
+                    Route::post('', 'VehicleController@store');
+                    Route::get('records', 'VehicleController@records');
+                    Route::get('record/{record}', 'VehicleController@record');
+                    Route::get('search/customers', 'VehicleController@searchCustomers');
+                    Route::get('search/customer/{id}', 'VehicleController@searchCustomerById');
+                    Route::delete('{record}', 'VehicleController@destroy');
+                });
+
+                Route::prefix('mechanics')->group(function () {
+                    Route::get('', 'MechanicController@index')->name('tenant.transport.mechanics.index');
+                    Route::get('columns', 'MechanicController@columns');
+                    Route::get('tables', 'MechanicController@tables');
+                    Route::post('', 'MechanicController@store');
+                    Route::get('records', 'MechanicController@records');
+                    Route::get('record/{record}', 'MechanicController@record');
+                    Route::delete('{record}', 'MechanicController@destroy');
+                });
+
+                Route::prefix('service-types')->group(function () {
+                    Route::get('', 'ServiceTypeController@index')->name('tenant.transport.service-types.index');
+                    Route::get('columns', 'ServiceTypeController@columns');
+                    Route::post('', 'ServiceTypeController@store');
+                    Route::get('records', 'ServiceTypeController@records');
+                    Route::get('record/{record}', 'ServiceTypeController@record');
+                    Route::delete('{record}', 'ServiceTypeController@destroy');
+                });
+
             });
  
         });

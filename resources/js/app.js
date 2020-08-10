@@ -218,6 +218,9 @@ Vue.component('tenant-transport-fuel-types-index', require('@viewsModuleTranspor
 Vue.component('tenant-transport-fuels-index', require('@viewsModuleTransport/fuels/index.vue'));
 Vue.component('tenant-transport-colors-index', require('@viewsModuleTransport/colors/index.vue'));
 Vue.component('tenant-transport-insurance-index', require('@viewsModuleTransport/insurance/index.vue'));
+Vue.component('tenant-transport-vehicles-index', require('@viewsModuleTransport/vehicles/index.vue'));
+Vue.component('tenant-transport-mechanics-index', require('@viewsModuleTransport/mechanics/index.vue'));
+Vue.component('tenant-transport-service-types-index', require('@viewsModuleTransport/service-types/index.vue'));
 
 
 // System
