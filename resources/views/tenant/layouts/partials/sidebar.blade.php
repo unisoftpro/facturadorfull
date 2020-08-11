@@ -798,7 +798,7 @@
 
                     <li class="nav-parent {{$path[0] === 'transport' && in_array($path[1], [
                                                 'vehicle-brands', 'vehicle-types', 'colors', 'insurance', 'fuel-types', 'fuels', 'vehicles',
-                                                'mechanics', 'service-types'
+                                                'mechanics', 'service-types', 'activity-types', 'processes', 'work-orders'
                                             ])
                                             ? 'nav-active nav-expanded' : ''}}">
 
@@ -856,13 +856,18 @@
                             </li>
 
                             <li class="nav-parent {{  ($path[0] === 'transport' &&
-                                    in_array($path[1], ['mechanics', 'service-types'])) ? 'nav-active nav-expanded' : ''}}">
+                                    in_array($path[1], ['mechanics', 'service-types', 'activity-types', 'processes', 'work-orders'])) ? 'nav-active nav-expanded' : ''}}">
 
                                 <a class="nav-link" href="#">
-                                    Actividades
+                                    Órdenes de trabajo
                                 </a>
                                 <ul class="nav nav-children">
 
+                                    <li class="{{(($path[1] === 'work-orders')) ? 'nav-active' : ''}}">
+                                        <a class="nav-link" href="{{route('tenant.transport.work-orders.index')}}">
+                                            Listado
+                                        </a>
+                                    </li>  
                                     <li class="{{(($path[1] === 'mechanics')) ? 'nav-active' : ''}}">
                                         <a class="nav-link" href="{{route('tenant.transport.mechanics.index')}}">
                                             Mecánicos
@@ -873,6 +878,16 @@
                                             Tipos de servicio
                                         </a>
                                     </li>   
+                                    <li class="{{(($path[1] === 'activity-types')) ? 'nav-active' : ''}}">
+                                        <a class="nav-link" href="{{route('tenant.transport.activity-types.index')}}">
+                                            Tipos de actividad
+                                        </a>
+                                    </li>  
+                                    <li class="{{(($path[1] === 'processes')) ? 'nav-active' : ''}}">
+                                        <a class="nav-link" href="{{route('tenant.transport.processes.index')}}">
+                                            Procesos
+                                        </a>
+                                    </li> 
                                 </ul>
                             </li>
                         </ul>

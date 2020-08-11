@@ -96,6 +96,40 @@ if($hostname) {
                     Route::delete('{record}', 'ServiceTypeController@destroy');
                 });
 
+                Route::prefix('activity-types')->group(function () {
+                    Route::get('', 'ActivityTypeController@index')->name('tenant.transport.activity-types.index');
+                    Route::get('columns', 'ActivityTypeController@columns');
+                    Route::post('', 'ActivityTypeController@store');
+                    Route::get('records', 'ActivityTypeController@records');
+                    Route::get('record/{record}', 'ActivityTypeController@record');
+                    Route::delete('{record}', 'ActivityTypeController@destroy');
+                });
+
+                Route::prefix('processes')->group(function () {
+                    Route::get('', 'ProcessController@index')->name('tenant.transport.processes.index');
+                    Route::get('columns', 'ProcessController@columns');
+                    Route::post('', 'ProcessController@store');
+                    Route::get('records', 'ProcessController@records');
+                    Route::get('record/{record}', 'ProcessController@record');
+                    Route::delete('{record}', 'ProcessController@destroy');
+                });
+
+                Route::prefix('work-orders')->group(function () {
+
+                    Route::get('/', 'WorkOrderController@index')->name('tenant.transport.work-orders.index');
+                    Route::get('columns', 'WorkOrderController@columns');
+                    Route::get('records', 'WorkOrderController@records');
+                    Route::get('create/{id?}', 'WorkOrderController@create')->name('tenant.transport.work-orders.create');
+                    Route::get('tables', 'WorkOrderController@tables');
+                    Route::get('table/{table}', 'WorkOrderController@table');
+                    Route::post('/', 'WorkOrderController@store');
+                    Route::get('record/{id}', 'WorkOrderController@record');
+                    Route::get('search/customers', 'WorkOrderController@searchCustomers');
+                    Route::get('search/customer/{id}', 'WorkOrderController@searchCustomerById');
+                    Route::get('download/{external_id}/{format?}', 'WorkOrderController@download');
+    
+                });
+
             });
  
         });

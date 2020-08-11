@@ -221,6 +221,10 @@ Vue.component('tenant-transport-insurance-index', require('@viewsModuleTransport
 Vue.component('tenant-transport-vehicles-index', require('@viewsModuleTransport/vehicles/index.vue'));
 Vue.component('tenant-transport-mechanics-index', require('@viewsModuleTransport/mechanics/index.vue'));
 Vue.component('tenant-transport-service-types-index', require('@viewsModuleTransport/service-types/index.vue'));
+Vue.component('tenant-transport-activity-types-index', require('@viewsModuleTransport/activity-types/index.vue'));
+Vue.component('tenant-transport-processes-index', require('@viewsModuleTransport/processes/index.vue'));
+Vue.component('tenant-transport-work-orders-index', require('@viewsModuleTransport/work-orders/index.vue'));
+Vue.component('tenant-transport-work-orders-form', require('@viewsModuleTransport/work-orders/form.vue'));
 
 
 // System
