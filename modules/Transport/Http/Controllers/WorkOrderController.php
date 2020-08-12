@@ -20,10 +20,18 @@ use Modules\Transport\Models\ActivityType;
 use Modules\Transport\Http\Resources\WorkOrderCollection;
 use Modules\Transport\Http\Resources\WorkOrderResource;
 use Modules\Transport\Http\Requests\WorkOrderRequest;
+use App\CoreFacturalo\Helpers\Storage\StorageDocument;
+use App\CoreFacturalo\Template;
+use Mpdf\Mpdf;
+use Mpdf\HTMLParserMode;
+use Mpdf\Config\ConfigVariables;
+use Mpdf\Config\FontVariables;
 
 
 class WorkOrderController extends Controller
 {
+
+    use StorageDocument;
 
     protected $work_order;
     protected $company;
@@ -108,7 +116,7 @@ class WorkOrderController extends Controller
             $this->work_order =  WorkOrder::updateOrCreate(['id' => $request->input('id')], $data);
 
             $this->setFilename();
-            // $this->createPdf($this->work_order,"a4", $this->work_order->filename);
+            $this->createPdf($this->work_order,"a4", $this->work_order->filename);
 
         });
 
@@ -121,6 +129,14 @@ class WorkOrderController extends Controller
 
     }
 
+    private function setFilename(){
+
+        $name = [$this->work_order->prefix,$this->work_order->number,date('Ymd')];
+        $this->work_order->filename = join('-', $name);
+        $this->work_order->save();
+
+    }
+
 
     public function mergeData($inputs)
     {
@@ -129,11 +145,11 @@ class WorkOrderController extends Controller
 
         $values = [
             'user_id' => auth()->id(),
-            'external_id' => Str::uuid()->toString(),
+            'external_id' => $inputs['id'] ? $inputs['external_id'] : Str::uuid()->toString(),
             'customer' => PersonInput::set($inputs['customer_id']),
             'establishment' => EstablishmentInput::set($inputs['establishment_id']),
             'soap_type_id' => $this->company->soap_type_id,
-            'work_state_id' => '01',
+            'work_order_state_id' => '01',
             'control_number' => $inputs['id'] ? $inputs['control_number'] : self::newNumber('control_number', $this->company->soap_type_id),
             'number' => $inputs['id'] ? $inputs['number'] : self::newNumber('number', $this->company->soap_type_id),
         ];
@@ -155,20 +171,16 @@ class WorkOrderController extends Controller
     }
 
     
-    public function voided($id)
+    public function close($id)
     {
 
-        DB::connection('tenant')->transaction(function () use ($id) {
-
-            $obj =  WorkOrder::find($id);
-            $obj->state_type_id = '11';
-            $obj->update();
-
-        });
+        $obj = WorkOrder::find($id);
+        $obj->work_order_state_id = '03';
+        $obj->update();
 
         return [
             'success' => true,
-            'message' => 'Pedido anulado con éxito'
+            'message' => 'Órden de trabajo terminada con éxito'
         ];
     }
  
@@ -219,7 +231,7 @@ class WorkOrderController extends Controller
     }
 
 
-    public function download($external_id, $format) {
+    public function download($external_id, $format = "a4") {
 
         $work_order = WorkOrder::where('external_id', $external_id)->first();
 
@@ -256,9 +268,9 @@ class WorkOrderController extends Controller
         $template = new Template();
         $pdf = new Mpdf();
 
-        $document = ($work_order != null) ? $work_order : $this->order_note;
+        $document = ($work_order != null) ? $work_order : $this->work_order;
         $company = ($this->company != null) ? $this->company : Company::active();
-        $filename = ($filename != null) ? $filename : $this->order_note->filename;
+        $filename = ($filename != null) ? $filename : $this->work_order->filename;
 
         $base_template = Configuration::first()->formats;
 

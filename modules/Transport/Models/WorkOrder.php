@@ -91,7 +91,7 @@ class WorkOrder extends ModelTenant
         return ($user->type == 'seller') ? $query->where('user_id', $user->id) : null;
     }
 
-    public function state() 
+    public function work_order_state() 
     {
         return $this->belongsTo(WorkOrderState::class, 'work_order_state_id');
     }

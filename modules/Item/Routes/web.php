@@ -32,6 +32,24 @@ if($hostname) {
 
             Route::post('items/import/item-price-lists', 'ItemController@importItemPriceLists');
 
+            Route::prefix('lines')->group(function() {
+                Route::get('', 'LineController@index')->name('tenant.lines.index');
+                Route::get('records', 'LineController@records');
+                Route::get('columns', 'LineController@columns');
+                Route::get('record/{id}', 'LineController@record');
+                Route::post('', 'LineController@store');
+                Route::delete('{id}', 'LineController@destroy');
+            });
+
+            Route::prefix('families')->group(function() {
+                Route::get('', 'FamilyController@index')->name('tenant.families.index');
+                Route::get('records', 'FamilyController@records');
+                Route::get('columns', 'FamilyController@columns');
+                Route::get('record/{id}', 'FamilyController@record');
+                Route::post('', 'FamilyController@store');
+                Route::delete('{id}', 'FamilyController@destroy');
+            });
+
         });
     });
 }

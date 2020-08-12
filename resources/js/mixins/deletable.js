@@ -196,6 +196,32 @@ export const deletable = {
                 });
             })
         },
+        closeWorkOrder(url) {
+            return new Promise((resolve) => {
+                this.$confirm('¿Desea terminar la O. Trabajo?', 'Terminar', {
+                    confirmButtonText: 'Terminar',
+                    cancelButtonText: 'Cancelar',
+                    type: 'warning'
+                }).then(() => {
+                    this.$http.get(url)
+                        .then(res => {
+                            if (res.data.success) {
+                                this.$message.success(res.data.message)
+                                resolve()
+                            }
+                        })
+                        .catch(error => {
+                            if (error.response.status === 500) {
+                                this.$message.error('Error al intentar terminar');
+                            } else {
+                                console.log(error.response.data.message)
+                            }
+                        })
+                }).catch(error => {
+                    console.log(error)
+                });
+            })
+        },
 
     }
 }

@@ -126,7 +126,9 @@ if($hostname) {
                     Route::get('record/{id}', 'WorkOrderController@record');
                     Route::get('search/customers', 'WorkOrderController@searchCustomers');
                     Route::get('search/customer/{id}', 'WorkOrderController@searchCustomerById');
+                    Route::get('print/{external_id}/{format?}', 'WorkOrderController@toPrint');
                     Route::get('download/{external_id}/{format?}', 'WorkOrderController@download');
+                    Route::get('close/{record}', 'WorkOrderController@close');
     
                 });
 

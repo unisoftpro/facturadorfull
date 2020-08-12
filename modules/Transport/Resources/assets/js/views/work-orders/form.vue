@@ -42,11 +42,11 @@
                             </div> 
                              <div class="col-lg-5 pb-2">
                                 <div class="form-group" :class="{'has-danger': errors.customer_id}">
-                                    <label class="control-label font-weight-bold text-info">
+                                    <label class="control-label">
                                         Cliente
                                         <a href="#" @click.prevent="showDialogNewPerson = true">[+ Nuevo]</a>
                                     </label>
-                                    <el-select v-model="form.customer_id" filterable remote class="border-left rounded-left border-info" popper-class="el-select-customers"
+                                    <el-select v-model="form.customer_id" filterable remote 
                                         dusk="customer_id"
                                         placeholder="Escriba el nombre o número de documento del cliente"
                                         :remote-method="searchRemoteCustomers"
@@ -153,7 +153,7 @@
                             <div class="col-lg-2 col-md-2" >
                                 <div class="form-group" :class="{'has-danger': errors.end_date}">
                                     <label class="control-label">Fec. Término</label>
-                                    <el-date-picker v-model="form.end_date" type="date" value-format="yyyy-MM-dd" :clearable="false" ></el-date-picker>
+                                    <el-date-picker v-model="form.end_date" type="date" value-format="yyyy-MM-dd" :clearable="true" ></el-date-picker>
                                     <small class="form-control-feedback" v-if="errors.end_date" v-text="errors.end_date[0]"></small>
                                 </div>
                             </div>
@@ -161,7 +161,7 @@
                             <div class="col-lg-2 col-md-2" >
                                 <div class="form-group" :class="{'has-danger': errors.end_time}">
                                     <label class="control-label">Hora Término</label>
-                                    <el-time-picker v-model="form.end_time" format="HH:mm" value-format="HH:mm" :clearable="false" ></el-time-picker>
+                                    <el-time-picker v-model="form.end_time" format="HH:mm" value-format="HH:mm" :clearable="true" ></el-time-picker>
                                     <small class="form-control-feedback" v-if="errors.end_time" v-text="errors.end_time[0]"></small>
                                 </div>
                             </div>
@@ -239,6 +239,7 @@
 
         <work-order-options :showDialog.sync="showDialogOptions"
                           :recordId="recordId"
+                          :isUpdate="(id) ? true : false"
                           :showClose="false"></work-order-options>
     </div>
 </template>
@@ -294,7 +295,7 @@
                 this.reloadDataCustomers(customer_id)
             })
 
-            this.isUpdate()
+            await this.isUpdate()
 
         },
         methods: {  
@@ -303,11 +304,17 @@
                 if (this.id) {
                     await this.$http.get(`/${this.resource}/record/${this.id}`)
                         .then(response => {
-                            this.form = response.data.data;
+                            this.form = response.data.data
+                            this.getCustomer(this.form.customer_id)
                         })
                 }
 
             }, 
+            getCustomer(customer_id) { 
+                this.$http.get(`/${this.resource}/search/customer/${customer_id}`).then((response) => {
+                    this.customers = response.data.customers
+                })                  
+            },
             searchRemoteCustomers(input) {
 
                 if (input.length > 0) {
@@ -346,8 +353,8 @@
                     lot_number: null,
                     start_date: moment().format('YYYY-MM-DD'),
                     start_time: moment().format('HH:mm:ss'),
-                    end_date: moment().format('YYYY-MM-DD'),
-                    end_time: moment().format('HH:mm:ss'),
+                    end_date: null,
+                    end_time: null,
                     hours: 0,
                     license_plate: null,
                     mileage: 0,
@@ -376,7 +383,6 @@
                 this.$http.post(`/${this.resource}`, this.form).then(response => {
                     if (response.data.success) {
 
-                        this.form_payment.sale_note_id = response.data.data.id;
                         this.resetForm();
                         this.recordId = response.data.data.id;
                         this.showDialogOptions = true;
@@ -398,7 +404,7 @@
                 });
             },
             close() {
-                location.href = '/sale-notes'
+                location.href = `/${this.resource}`
             },
             reloadDataCustomers(customer_id) {
                 this.$http.get(`/${this.resource}/search/customer/${customer_id}`).then((response) => {

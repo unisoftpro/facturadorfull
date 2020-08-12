@@ -18,6 +18,8 @@ class WorkOrderCollection extends ResourceCollection
 
             return [
                 'id' => $row->id,
+                'number_full' => $row->number_full,
+                'external_id' => $row->external_id,
                 'user_id' => $row->user_id,
                 'user_name' => $row->user->name,
                 'customer_id' => $row->customer_id,

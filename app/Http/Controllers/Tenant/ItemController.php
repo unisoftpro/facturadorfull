@@ -37,6 +37,8 @@ use Carbon\Carbon;
 use App\Exports\ItemExport;
 use App\Exports\ItemExportWp;
 use Modules\Finance\Helpers\UploadFileHelper;
+use Modules\Item\Models\Line;
+use Modules\Item\Models\Family;
 
 
 class ItemController extends Controller
@@ -129,8 +131,10 @@ class ItemController extends Controller
         $categories = Category::all();
         $brands = Brand::all();
         $configuration = Configuration::select('affectation_igv_type_id')->firstOrFail();
+        $lines = Line::all();
+        $families = Family::all();
 
-        return compact('unit_types', 'currency_types', 'attribute_types', 'system_isc_types',
+        return compact('unit_types', 'currency_types', 'attribute_types', 'system_isc_types', 'lines', 'families',
                         'affectation_igv_types','warehouses', 'accounts', 'tags', 'categories', 'brands', 'configuration');
     }
 

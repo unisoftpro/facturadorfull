@@ -143,6 +143,8 @@ Vue.component('tenant-report-user-commissions-index', require('../../modules/Rep
 Vue.component('tenant-categories-index', require('../../modules/Item/Resources/assets/js/views/categories/index.vue'));
 Vue.component('tenant-brands-index', require('../../modules/Item/Resources/assets/js/views/brands/index.vue'));
 Vue.component('tenant-incentives-index', require('../../modules/Item/Resources/assets/js/views/incentives/index.vue'));
+Vue.component('tenant-lines-index', require('../../modules/Item/Resources/assets/js/views/lines/index.vue'));
+Vue.component('tenant-families-index', require('../../modules/Item/Resources/assets/js/views/families/index.vue'));
 
 Vue.component('tenant-ecommerce-configuration-info', require('../../modules/Ecommerce/Resources/assets/js/views/configuration/index.vue'));
 Vue.component('tenant-ecommerce-configuration-culqi', require('../../modules/Ecommerce/Resources/assets/js/views/configuration_culqi/index.vue'));

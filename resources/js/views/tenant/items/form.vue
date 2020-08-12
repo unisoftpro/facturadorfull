@@ -241,19 +241,42 @@
                         </div>
                     </div>
 
-                    <div class="col-md-3" >
-                        <div class="form-group" :class="{'has-danger': errors.line}">
+
+                    <div class="col-md-3">
+                        <div class="form-group" :class="{'has-danger': errors.line_id}">
                             <label class="control-label">
                                Línea de producto
                                 <el-tooltip class="item" effect="dark" content="Grupo de productos que tienen una relación directa entre sí" placement="top">
                                     <i class="fa fa-info-circle"></i>
                                 </el-tooltip>
                             </label>
+                            <el-select v-model="form.line_id" filterable clearable>
+                                <el-option v-for="option in lines" :key="option.id" :value="option.id" :label="option.name"></el-option>
+                            </el-select>
+                            <small class="form-control-feedback" v-if="errors.line_id" v-text="errors.line_id[0]"></small>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="form-group" :class="{'has-danger': errors.family_id}">
+                            <label class="control-label">
+                                Familia
+                            </label>
+ 
+                            <el-select v-model="form.family_id" filterable clearable >
+                                <el-option v-for="option in families" :key="option.id" :value="option.id" :label="option.name"></el-option>
+                            </el-select>
+                            <small class="form-control-feedback" v-if="errors.family_id" v-text="errors.family_id[0]"></small>
+                        </div>
+                    </div>
+                    <!-- <div class="col-md-3" >
+                        <div class="form-group" :class="{'has-danger': errors.line}">
+                            
                             <el-input v-model="form.line" >
                             </el-input>
                             <small class="form-control-feedback" v-if="errors.line" v-text="errors.line[0]"></small>
                         </div>
-                    </div>
+                    </div> -->
 
                     <!-- <div class="col-md-3 center-el-checkbox">
                         <div class="form-group" >
@@ -563,13 +586,17 @@
                         price_default:2,
 
                 },
-                attribute_types:  []
+                attribute_types:  [],
+                lines:  [],
+                families:  [],
             }
         },
         async created() {
             await this.initForm()
             await this.$http.get(`/${this.resource}/tables`)
                 .then(response => {
+                    this.families = response.data.families
+                    this.lines = response.data.lines
                     this.unit_types = response.data.unit_types
                     this.accounts = response.data.accounts
                     this.currency_types = response.data.currency_types
@@ -743,6 +770,8 @@
                     attributes: [],
                     series_enabled: false,
                     purchase_has_igv: true,
+                    line_id: null,
+                    family_id: null,
                 }
                 this.show_has_igv = true
                 this.purchase_show_has_igv = true

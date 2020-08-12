@@ -11,6 +11,8 @@ use Modules\Item\Models\Category;
 use Modules\Item\Models\Brand;
 use Modules\Item\Models\ItemLot;
 use Modules\Item\Models\ItemLotsGroup;
+use Modules\Item\Models\Line;
+use Modules\Item\Models\Family;
 
 
 class Item extends ModelTenant
@@ -65,6 +67,8 @@ class Item extends ModelTenant
         'line',
         'series_enabled',
         'purchase_has_igv',
+        'line_id',
+        'family_id',
         // 'warehouse_id'
     ];
 
@@ -303,4 +307,14 @@ class Item extends ModelTenant
         return $query->where('internal_id','!=', null);
     }
     
+    public function line()
+    {
+        return $this->belongsTo(Line::class);
+    }
+
+    public function family()
+    {
+        return $this->belongsTo(Family::class);
+    }
+
 }

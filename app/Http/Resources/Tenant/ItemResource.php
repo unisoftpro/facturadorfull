@@ -77,6 +77,8 @@ class ItemResource extends JsonResource
             'attributes' => $this->attributes ? $this->attributes : [],
             'series_enabled' => (bool)$this->series_enabled,
             'lots_enabled' => (bool)$this->lots_enabled,
+            'line_id' => $this->line_id,
+            'family_id' => $this->family_id,
 
             // 'warehouses' => collect($this->warehouses)->transform(function($row) {
             //     return [

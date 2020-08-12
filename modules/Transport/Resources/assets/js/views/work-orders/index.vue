@@ -17,19 +17,19 @@
                         <th class="text-center">O. Trabajo</th>
                         <th class="text-center">Responsable</th>
                         <th>Cliente</th>
-                        <th>Fecha apertura</th>
-                        <th>Estado</th>
-                        <th class="text-center">Proceso</th> 
+                        <th class="text-center">Fecha apertura</th>
+                        <th class="text-center">Estado</th>
+                        <th >Proceso</th> 
                         <th class="text-center">Descarga</th>
                         <th class="text-right">Acciones</th>
                     <tr>
                     <tr slot-scope="{ index, row }">
                         <td>{{ index }}</td>
                         <td class="text-center">{{ row.number_full }}</td>
-                        <td>{{ row.user_name }}</td>
+                        <td class="text-center">{{ row.user_name }}</td>
                         <td>{{ row.customer_name }}<br/><small v-text="row.customer_number"></small></td>
-                        <td>{{ row.opening_date }}</td>
-                        <td>{{ row.work_order_state_description }}</td>
+                        <td class="text-center">{{ row.opening_date }}</td>
+                        <td class="text-center">{{ row.work_order_state_description }}</td>
                         <td>{{ row.process_description }}</td>
                       
                         <td class="text-right">
@@ -39,12 +39,12 @@
 
                         <td class="text-right">
 
-                            <button v-if="row.state_type_id != '11'" type="button" class="btn waves-effect waves-light btn-xs btn-danger"  @click.prevent="clickVoided(row.id)">Anular</button>
+                            <button v-if="row.work_order_state_id != '03'" type="button" class="btn waves-effect waves-light btn-xs btn-danger"  @click.prevent="clickCloseWorkOrder(row.id)">Terminar OT</button>
 
                             <button type="button" class="btn waves-effect waves-light btn-xs btn-info"
-                                    @click.prevent="clickCreate(row.id)" v-if="row.btn_generate && row.state_type_id != '11'">Editar</button>
+                                    @click.prevent="clickCreate(row.id)" v-if="row.work_order_state_id == '01'">Editar</button>
 
-                            <button  v-if="row.state_type_id != '11'"  type="button" class="btn waves-effect waves-light btn-xs btn-info"
+                            <button   type="button" class="btn waves-effect waves-light btn-xs btn-info"
                                     @click.prevent="clickOptions(row.id)">Opciones</button>
                           
                         </td>
@@ -57,7 +57,7 @@
  
 
         <work-order-options :showDialog.sync="showDialogOptions"
-                          :recordId="saleNotesNewId"
+                          :recordId="recordId"
                           :showClose="true"></work-order-options>
  
 
@@ -77,7 +77,7 @@
             return {
                 resource: 'transport/work-orders',
                 showDialogOptions: false,
-                saleNotesNewId: null,
+                recordId: null,
                 recordId: null,
             }
         },
@@ -85,17 +85,17 @@
         }, 
         methods: {
             clickDownload(external_id) {
-                window.open(`/sale-notes/downloadExternal/${external_id}`, '_blank');
+                window.open(`/${this.resource}/download/${external_id}`, '_blank');
             },
             clickOptions(recordId) {
-                this.saleNotesNewId = recordId
+                this.recordId = recordId
                 this.showDialogOptions = true
             }, 
             clickCreate(id = '') {
                 location.href = `/${this.resource}/create/${id}`
             },
-            clickVoided(id) {
-                 this.anular(`/${this.resource}/anulate/${id}`).then(() =>
+            clickCloseWorkOrder(id) {
+                 this.closeWorkOrder(`/${this.resource}/close/${id}`).then(() =>
                     this.$eventHub.$emit('reloadData')
                 )
             },

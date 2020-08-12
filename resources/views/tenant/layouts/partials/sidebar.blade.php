@@ -52,6 +52,8 @@
                         {{ ($path[0] === 'production-orders')?'nav-active nav-expanded':'' }}
                         {{ ($path[0] === 'technical-services')?'nav-active nav-expanded':'' }}
                         {{ ($path[0] === 'user-commissions')?'nav-active nav-expanded':'' }}
+                        {{ ($path[0] === 'lines')?'nav-active nav-expanded':'' }}
+                        {{ ($path[0] === 'families')?'nav-active nav-expanded':'' }}
 
                         ">
                         <a class="nav-link" href="#">
@@ -117,6 +119,8 @@
                                         {{ ($path[0] === 'brands')?'nav-active nav-expanded':'' }}
                                         {{ ($path[0] === 'person-types')?'nav-active nav-expanded':'' }}
                                         {{ ($path[0] === 'persons' && $path[1] === 'customers')?'nav-active nav-expanded':'' }}
+                                        {{ ($path[0] === 'lines')?'nav-active nav-expanded':'' }}
+                                        {{ ($path[0] === 'families')?'nav-active nav-expanded':'' }}
                                         ">
                                         <a class="nav-link" href="#">
                                             Catálogos
@@ -141,6 +145,16 @@
                                             <li class="{{ ($path[0] === 'persons' && $path[1] === 'customers')?'nav-active':'' }}">
                                                 <a class="nav-link" href="{{route('tenant.persons.index', ['type' => 'customers'])}}">
                                                     Clientes
+                                                </a>
+                                            </li>
+                                            <li class="{{ ($path[0] === 'families')?'nav-active':'' }}">
+                                                <a class="nav-link" href="{{route('tenant.families.index')}}">
+                                                    Familias
+                                                </a>
+                                            </li>
+                                            <li class="{{ ($path[0] === 'lines')?'nav-active':'' }}">
+                                                <a class="nav-link" href="{{route('tenant.lines.index')}}">
+                                                    Líneas
                                                 </a>
                                             </li>
                                             <!-- <li class="{{ ($path[0] === 'person-types')?'nav-active':'' }}">
