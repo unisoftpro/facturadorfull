@@ -38,6 +38,13 @@ use App\Http\Requests\Tenant\PurchaseOrderRequest;
 use App\CoreFacturalo\Requests\Inputs\Common\PersonInput;
 use Modules\Sale\Models\SaleOpportunity;
 use Modules\Finance\Helpers\UploadFileHelper;
+use Modules\Item\Models\Line;
+use Modules\Item\Models\Family;
+use Modules\Purchase\Models\PurchaseOrderState;
+use Modules\Purchase\Models\PurchaseOrderType;
+use Modules\Transport\Models\WorkOrder;
+use Modules\Purchase\Models\PurchaseOrderItem;
+
 
 class PurchaseOrderController extends Controller
 {
@@ -100,7 +107,14 @@ class PurchaseOrderController extends Controller
         $company = Company::active();
         $payment_method_types = PaymentMethodType::all();
 
-        return compact('suppliers', 'establishment','company','currency_types','payment_method_types');
+        $lines = Line::get();
+        $families = Family::get();
+        $purchase_order_states = PurchaseOrderState::get();
+        $purchase_order_types = PurchaseOrderType::get();
+        $work_orders = WorkOrder::where('work_order_state_id', '01')->get(['id', 'prefix', 'number']);
+
+        return compact('suppliers', 'establishment','company','currency_types','payment_method_types',
+                        'lines', 'families', 'purchase_order_states', 'purchase_order_types', 'work_orders');
     }
 
 
@@ -120,6 +134,24 @@ class PurchaseOrderController extends Controller
                         'discount_types', 'charge_types', 'attribute_types','warehouses');
     }
 
+    public function previousCost($item_id)
+    {
+
+        $purchase_order_item = PurchaseOrderItem::where('item_id', $item_id)->latest('id')->first();
+         
+        if($purchase_order_item){
+            return [
+                'previous_cost' => $purchase_order_item->unit_price,
+                'previous_currency_type_id' => $purchase_order_item->purchase_order->currency_type_id,
+            ];
+        }
+        
+        return [
+            'previous_cost' => 0,
+            'previous_currency_type_id' => null,
+        ];
+
+    }
 
     public function record($id)
     {

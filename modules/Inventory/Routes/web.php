@@ -110,6 +110,20 @@ if($hostname) {
 
             });
 
+
+            Route::prefix('purchase-order-income')->group(function () {
+
+                Route::get('/', 'PurchaseOrderIncomeController@index')->name('tenant.purchase-order-income.index');
+                Route::get('records', 'PurchaseOrderIncomeController@records');
+                Route::get('columns', 'PurchaseOrderIncomeController@columns');
+                Route::get('tables', 'PurchaseOrderIncomeController@tables');
+                Route::get('record/{inventory}', 'PurchaseOrderIncomeController@record');
+                Route::post('/', 'PurchaseOrderIncomeController@store');
+                // Route::get('create', 'PurchaseOrderIncomeController@create')->name('transfer.create');
+                // Route::get('stock/{item_id}/{warehouse_id}', 'PurchaseOrderIncomeController@stock');
+                // Route::get('items/{warehouse_id}', 'PurchaseOrderIncomeController@items');
+
+            });
         });
     });
 }

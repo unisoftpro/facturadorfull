@@ -12,6 +12,9 @@ use App\Models\Tenant\ModelTenant;
 use App\Models\Tenant\Catalogs\CurrencyType;
 use App\Models\Tenant\Catalogs\DocumentType;
 use Modules\Sale\Models\SaleOpportunity;
+use Modules\Item\Models\Line;
+use Modules\Item\Models\Family;
+use Modules\Transport\Models\WorkOrder;
 
 class PurchaseOrder extends ModelTenant
 {
@@ -51,6 +54,15 @@ class PurchaseOrder extends ModelTenant
         'purchase_quotation_id',
         'payment_method_type_id',
         'sale_opportunity_id',
+
+        'purchase_order_state_id',
+        'purchase_order_type_id',
+        'line_id',
+        'family_id',
+        'observation',
+        'reference',
+        'place_of_delivery',
+        'work_order_id',
 
     ];
 
@@ -134,4 +146,30 @@ class PurchaseOrder extends ModelTenant
     {
         return $this->belongsTo(SaleOpportunity::class);
     }
+
+    public function purchase_order_state()
+    {
+        return $this->belongsTo(PurchaseOrderState::class);
+    }
+
+    public function purchase_order_type()
+    {
+        return $this->belongsTo(PurchaseOrderType::class);
+    }
+
+    public function line()
+    {
+        return $this->belongsTo(Line::class);
+    }
+
+    public function family()
+    {
+        return $this->belongsTo(Family::class);
+    }
+
+    public function work_order()
+    {
+        return $this->belongsTo(WorkOrder::class);
+    }
+
 }

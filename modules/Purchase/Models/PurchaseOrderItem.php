@@ -43,7 +43,12 @@ class PurchaseOrderItem extends ModelTenant
         'attributes',
         'charges',
         // 'warehouse_id',
-        'discounts'
+        'discounts',
+
+        'previous_cost',
+        'previous_currency_type_id',
+        'observation',
+        'attended_quantity',
     ];
 
     public function getItemAttribute($value)
@@ -110,4 +115,10 @@ class PurchaseOrderItem extends ModelTenant
     {
         return $this->belongsTo(Item::class);
     }
+    
+    public function purchase_order()
+    {
+        return $this->belongsTo(PurchaseOrder::class);
+    }
+
 }

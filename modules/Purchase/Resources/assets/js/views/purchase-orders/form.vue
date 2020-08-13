@@ -94,17 +94,7 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-lg-4">
-                                <div class="form-group" :class="{'has-danger': errors.payment_method_type_id}">
-                                    <label class="control-label">
-                                        Forma de pago
-                                    </label>
-                                    <el-select v-model="form.payment_method_type_id" filterable @change="changePaymentMethodType">
-                                        <el-option v-for="option in payment_method_types" :key="option.id" :value="option.id" :label="option.description"></el-option>
-                                    </el-select>
-                                    <small class="form-control-feedback" v-if="errors.payment_method_type_id" v-text="errors.payment_method_type_id[0]"></small>
-                                </div>
-                            </div> 
+                            
                             <div class="col-lg-2">
                                 <div class="form-group" :class="{'has-danger': errors.exchange_rate_sale}">
                                     <label class="control-label">Tipo de cambio
@@ -116,6 +106,115 @@
                                     <small class="form-control-feedback" v-if="errors.exchange_rate_sale" v-text="errors.exchange_rate_sale[0]"></small>
                                 </div>
                             </div>
+                            <div class="col-lg-2">
+                                <div class="form-group" :class="{'has-danger': errors.purchase_order_type_id}">
+                                    <label class="control-label">
+                                        Tipo compra
+                                    </label>
+                                    <el-select v-model="form.purchase_order_type_id" filterable>
+                                        <el-option v-for="option in purchase_order_types" :key="option.id" :value="option.id" :label="option.description"></el-option>
+                                    </el-select>
+                                    <small class="form-control-feedback" v-if="errors.purchase_order_type_id" v-text="errors.purchase_order_type_id[0]"></small>
+                                </div>
+                            </div> 
+                            
+                            <div class="col-md-2">
+                                <div class="form-group" :class="{'has-danger': errors.work_order_id}">
+                                    <label class="control-label">
+                                        Órden de trabajo
+                                    </label>
+        
+                                    <el-select v-model="form.work_order_id" filterable  >
+                                        <el-option v-for="option in work_orders" :key="option.id" :value="option.id" :label="option.number"></el-option>
+                                    </el-select>
+                                    <small class="form-control-feedback" v-if="errors.work_order_id" v-text="errors.work_order_id[0]"></small>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-3">
+                                <div class="form-group" :class="{'has-danger': errors.payment_method_type_id}">
+                                    <label class="control-label">
+                                        Forma de pago
+                                    </label>
+                                    <el-select v-model="form.payment_method_type_id" filterable @change="changePaymentMethodType">
+                                        <el-option v-for="option in payment_method_types" :key="option.id" :value="option.id" :label="option.description"></el-option>
+                                    </el-select>
+                                    <small class="form-control-feedback" v-if="errors.payment_method_type_id" v-text="errors.payment_method_type_id[0]"></small>
+                                </div>
+                            </div> 
+                            <div class="col-lg-3">
+                                <div class="form-group" :class="{'has-danger': errors.purchase_order_state_id}">
+                                    <label class="control-label">
+                                        Estados de compra
+                                    </label>
+                                    <el-select v-model="form.purchase_order_state_id" filterable>
+                                        <el-option v-for="option in purchase_order_states" :key="option.id" :value="option.id" :label="option.description"></el-option>
+                                    </el-select>
+                                    <small class="form-control-feedback" v-if="errors.purchase_order_state_id" v-text="errors.purchase_order_state_id[0]"></small>
+                                </div>
+                            </div> 
+
+                            <div class="col-md-3">
+                                <div class="form-group" :class="{'has-danger': errors.line_id}">
+                                    <label class="control-label">
+                                    Línea de producto 
+                                    </label>
+                                    <el-select v-model="form.line_id" filterable clearable>
+                                        <el-option v-for="option in lines" :key="option.id" :value="option.id" :label="option.name"></el-option>
+                                    </el-select>
+                                    <small class="form-control-feedback" v-if="errors.line_id" v-text="errors.line_id[0]"></small>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="form-group" :class="{'has-danger': errors.family_id}">
+                                    <label class="control-label">
+                                        Familia
+                                    </label>
+        
+                                    <el-select v-model="form.family_id" filterable clearable >
+                                        <el-option v-for="option in families" :key="option.id" :value="option.id" :label="option.name"></el-option>
+                                    </el-select>
+                                    <small class="form-control-feedback" v-if="errors.family_id" v-text="errors.family_id[0]"></small>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-6">
+                                <div class="form-group" :class="{'has-danger': errors.place_of_delivery}">
+                                    <label class="control-label">Lugar de entrega 
+                                    </label>
+                                    <el-input v-model="form.place_of_delivery"></el-input>
+                                    <small class="form-control-feedback" v-if="errors.place_of_delivery" v-text="errors.place_of_delivery[0]"></small>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-4">
+                                <div class="form-group" :class="{'has-danger': errors.observation}">
+                                    <label class="control-label">Observación 
+                                    </label>
+                                    <el-input v-model="form.observation" type="textarea" autosize></el-input>
+                                    <small class="form-control-feedback" v-if="errors.observation" v-text="errors.observation[0]"></small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-lg-2">
+                                <div>
+                                    <label class="control-label">Usuario compra 
+                                    </label>
+                                    <el-input v-model="userName" readonly></el-input>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-3">
+                                <div class="form-group" :class="{'has-danger': errors.reference}">
+                                    <label class="control-label">Referencia 
+                                    </label>
+                                    <el-input v-model="form.reference"></el-input>
+                                    <small class="form-control-feedback" v-if="errors.reference" v-text="errors.reference[0]"></small>
+                                </div>
+                            </div>
+
+
                             
                             <div class="col-lg-3" style="margin-top:29px;">
                                 <div class="form-group" :class="{'has-danger': errors.file}">
@@ -270,7 +369,7 @@
     import PersonForm from '../../../../../../../resources/js/views/tenant/persons/form.vue'
 
     export default {
-        props: ['id', 'saleOpportunity'],
+        props: ['id', 'saleOpportunity', 'userName'],
         components: {PurchaseFormItem, PersonForm, PurchaseOptions, Logo},
         mixins: [functions, exchangeRate],
         data() {
@@ -304,7 +403,12 @@
                 propIsUpdate:false,
                 fileList: [],
                 currency_type: {},
-                purchaseNewId: null
+                purchaseNewId: null,
+                lines: [],
+                families: [],
+                purchase_order_states: [],
+                purchase_order_types: [],
+                work_orders: [],
             }
         },
         async created() {
@@ -318,6 +422,12 @@
                     this.suppliers = response.data.suppliers
                     this.payment_method_types = response.data.payment_method_types
                     this.company = response.data.company 
+
+                    this.lines = response.data.lines 
+                    this.families = response.data.families 
+                    this.purchase_order_states = response.data.purchase_order_states 
+                    this.purchase_order_types = response.data.purchase_order_types 
+                    this.work_orders = response.data.work_orders 
 
                     this.form.currency_type_id = (this.currency_types.length > 0)?this.currency_types[0].id:null
                     this.form.establishment_id = (this.establishment.id) ? this.establishment.id:null
@@ -551,6 +661,15 @@
                     attached_temp_path: null,
                     attached: null,
                     sale_opportunity_id: null,
+                    
+                    purchase_order_state_id: null,
+                    purchase_order_type_id: '01',
+                    line_id: null,
+                    family_id: null,
+                    observation: null,
+                    reference: null,
+                    place_of_delivery: null,
+                    work_order_id: null,
                 }
 
                 this.initInputPerson()

@@ -30,6 +30,7 @@ mix.webpackConfig({
             '@viewsModuleOrder': path.resolve(__dirname, 'modules/Order/Resources/assets/js/views'),
             '@viewsModuleAccount': path.resolve(__dirname, 'modules/Account/Resources/assets/js/views'),
             '@viewsModuleTransport': path.resolve(__dirname, 'modules/Transport/Resources/assets/js/views'),
+            '@viewsModuleInventory': path.resolve(__dirname, 'modules/Inventory/Resources/assets/js'),
 
         }
     }

@@ -100,12 +100,58 @@
     @endif
     @if ($document->payment_method_type)
     <tr>
-        <td class="align-top">T. Pago:</td>
+        <td class="align-top">F. Pago:</td>
         <td colspan="3">
             {{ $document->payment_method_type->description }}
         </td>
     </tr>
     @endif
+
+
+    <tr>
+        @if($document->purchase_order_state_id)
+        <td width="15%">Estado compra:</td>
+        <td width="45%">{{ $document->purchase_order_state->description }}</td>
+        @endif
+        @if($document->purchase_order_type_id)
+        <td width="15%">Tipo compra:</td>
+        <td width="15%">{{ $document->purchase_order_type->description }}</td>
+        @endif
+    </tr>
+
+    <tr>
+        @if($document->line_id)
+        <td width="15%">Línea:</td>
+        <td width="45%">{{ $document->line->name }}</td>
+        @endif
+        @if($document->family_id)
+        <td width="15%">Familia:</td>
+        <td width="15%">{{ $document->family->name }}</td>
+        @endif
+    </tr>
+
+    <tr>
+        @if($document->observation)
+        <td width="15%">Observación:</td>
+        <td width="45%">{{ $document->observation }}</td>
+        @endif
+        @if($document->reference)
+        <td width="15%">Referencia:</td>
+        <td width="45%">{{ $document->reference }}</td>
+        @endif
+    </tr>
+
+    <tr>
+        @if($document->place_of_delivery)
+        <td width="15%">Lugar entrega:</td>
+        <td width="45%">{{ $document->place_of_delivery }}</td>
+        @endif
+        @if($document->work_order_id)
+        <td width="15%">O. Trabajo:</td>
+        <td width="45%">{{ $document->work_order->number }}</td>
+        @endif
+    </tr>
+
     <tr>
         <td class="align-top">Vendedor:</td>
         <td colspan="3">

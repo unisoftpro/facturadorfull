@@ -20,7 +20,8 @@ class Inventory extends ModelTenant
         'inventory_transaction_id',
         'lot_code',
         'detail',
-        'inventories_transfer_id'
+        'inventories_transfer_id',
+        'purchase_order_income_id',
     ];
 
     public function warehouse()
@@ -52,4 +53,10 @@ class Inventory extends ModelTenant
     {
         return $this->morphMany(ItemLot::class, 'item_loteable');
     }
+    
+    public function purchase_order_income()
+    {
+        return $this->belongsTo(PurchaseOrderIncome::class);
+    }
+    
 }

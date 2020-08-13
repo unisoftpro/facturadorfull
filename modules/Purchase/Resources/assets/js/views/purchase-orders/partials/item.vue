@@ -42,6 +42,7 @@
                         </div>
                     </div>
 
+
                     <!-- <div class="col-md-3" v-show="form.item_id">  <br>
                         <div class="form-group" :class="{'has-danger': errors.lot_code}" v-if="form.item.series_enabled">
                             <label class="control-label">
@@ -63,6 +64,35 @@
                             <small class="form-control-feedback" v-if="errors.warehouse_id" v-text="errors.warehouse_id[0]"></small>
                         </div>
                     </div>
+                    
+
+                    <div class="col-md-3">
+                        <div class="form-group" :class="{'has-danger': errors.previous_cost}">
+                            <label class="control-label">Costo anterior</label>
+                            <el-input v-model="form.previous_cost" readonly>
+                                <template slot="prepend" v-if="form.previous_currency_type_id">{{ form.previous_currency_type_id }}</template>
+                            </el-input>
+                            <small class="form-control-feedback" v-if="errors.previous_cost" v-text="errors.previous_cost[0]"></small>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="form-group" :class="{'has-danger': errors.attended_quantity}">
+                            <label class="control-label">Cantidad Atendida</label>
+                            <el-input-number v-model="form.attended_quantity" :min="0" :max="form.quantity"></el-input-number>
+                            <small class="form-control-feedback" v-if="errors.attended_quantity" v-text="errors.attended_quantity[0]"></small>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group" :class="{'has-danger': errors.observation}">
+                            <label class="control-label">Observación</label>
+                            <el-input v-model="form.observation">
+                            </el-input>
+                            <small class="form-control-feedback" v-if="errors.observation" v-text="errors.observation[0]"></small>
+                        </div>
+                    </div>
+
                     <div class="col-md-12"  v-if="form.item_unit_types.length > 0">
                         <div style="margin:3px" class="table-responsive">
                             <h3>Lista de Precios</h3>
@@ -77,7 +107,7 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr v-for="(row, index) in form.item_unit_types">
+                            <tr v-for="(row, index) in form.item_unit_types" :key="index">
 
                                     <td class="text-center">{{row.unit_type_id}}</td>
                                     <td class="text-center">{{row.description}}</td>
@@ -301,7 +331,12 @@
                     charges: [],
                     discounts: [],
                     attributes: [],
-                    item_unit_types: []
+                    item_unit_types: [],
+                    
+                    previous_cost: 0,
+                    previous_currency_type_id: null,
+                    observation: null,
+                    attended_quantity: 0,
                 }
 
                 this.item_unit_type = {};
@@ -380,6 +415,7 @@
                 this.form.item.unit_type_id = row.unit_type_id
             },
             changeItem() {
+                this.getPreviousCost()
                 this.form.item = _.find(this.items, {'id': this.form.item_id})
                 this.form.unit_price = this.form.item.purchase_unit_price
                 this.form.affectation_igv_type_id = this.form.item.purchase_affectation_igv_type_id
@@ -387,6 +423,15 @@
                 this.form.item_unit_types = _.find(this.items, {'id': this.form.item_id}).item_unit_types
 
                 this.lots = []
+
+            },
+            getPreviousCost(){
+
+                this.$http.get(`/${this.resource}/item/previous-cost/${this.form.item_id}`).then(response => {
+                    this.form.previous_cost = response.data.previous_cost
+                    this.form.previous_currency_type_id = response.data.previous_currency_type_id
+                })
+
             },
             clickAddItem() {
                 this.form.item.unit_price = this.form.unit_price
@@ -395,9 +440,18 @@
                 this.row = calculateRowItem(this.form, this.currencyTypeIdActive, this.exchangeRateSale)
                 this.row = this.changeWarehouse(this.row)
 
+                this.setAdditionalData()
                 this.initForm()
                 // this.initializeFields()
                 this.$emit('add', this.row)
+            },
+            setAdditionalData(){
+
+                this.row.previous_cost = this.form.previous_cost
+                this.row.attended_quantity = this.form.attended_quantity
+                this.row.observation = this.form.observation
+                this.row.previous_currency_type_id = this.form.previous_currency_type_id
+
             },
             changeWarehouse(row){
                 let warehouse = _.find(this.warehouses,{'id':this.form.warehouse_id})
