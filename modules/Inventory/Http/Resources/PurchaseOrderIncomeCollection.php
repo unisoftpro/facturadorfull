@@ -20,8 +20,9 @@ class PurchaseOrderIncomeCollection extends ResourceCollection
                 'date_of_issue' => $row->date_of_issue,
                 'number' => $row->number,
                 'invoice_description' => $row->invoice_description,
-                'warehouse_destination_id' => $row->warehouse_destination_id,
-                'warehouse_destination_description' => $row->warehouse_destination->description,
+                'warehouse_id' => $row->warehouse_id,
+                'warehouse_description' => $row->warehouse->description,
+                'purchase_order_number' => $row->purchase_order->id,
             ];
         });
     }

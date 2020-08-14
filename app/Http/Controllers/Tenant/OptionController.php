@@ -27,6 +27,7 @@ use Modules\Inventory\Models\{
 use Modules\Sale\Models\SaleOpportunity; 
 use Modules\Sale\Models\Contract; 
 use Modules\Purchase\Models\FixedAssetPurchase;
+use Modules\Inventory\Models\PurchaseOrderIncome;
 
 class OptionController extends Controller
 {
@@ -51,6 +52,7 @@ class OptionController extends Controller
 
         Purchase::where('soap_type_id', '01')->delete();
         
+        PurchaseOrderIncome::where('soap_type_id', '01')->delete();
         PurchaseOrder::where('soap_type_id', '01')->delete();
         PurchaseQuotation::where('soap_type_id', '01')->delete();
 

@@ -15,7 +15,6 @@ class TenantAddPurchaseOrderIncomeIdToInventories extends Migration
     {
         Schema::table('inventories', function (Blueprint $table) {
             $table->unsignedInteger('purchase_order_income_id')->nullable()->after('lot_code');
-            $table->foreign('purchase_order_income_id')->references('id')->on('purchase_order_income');
         });
     }
 
@@ -27,7 +26,6 @@ class TenantAddPurchaseOrderIncomeIdToInventories extends Migration
     public function down()
     {
         Schema::table('inventories', function (Blueprint $table) {
-            $table->dropForeign(['purchase_order_income_id']);
             $table->dropColumn(['purchase_order_income_id']);
         });
     }

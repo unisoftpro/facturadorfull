@@ -32,6 +32,7 @@ class TenantPurchaseOrderStatesTable extends Migration
             ['id' => '10', 'description' => 'ORDEN DE COMPRA EXTERIOR'],
             ['id' => '11', 'description' => 'ORDEN DE SERVICIO'],
             ['id' => '12', 'description' => 'ORDEN DE SERV. ADMINISTRATIVOS'],
+            ['id' => '13', 'description' => 'ORDEN DE COMPRA CERRADA'],
         ]);
 
     }

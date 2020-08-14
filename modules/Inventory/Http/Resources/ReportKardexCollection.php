@@ -90,31 +90,44 @@ class ReportKardexCollection extends ResourceCollection
                 $input = '';
                 $output = '';
 
-                if(!$row->inventory_kardexable->type){
-                    $transaction = InventoryTransaction::findOrFail($row->inventory_kardexable->inventory_transaction_id);
-                }
+                if($row->inventory_kardexable->purchase_order_income_id){
+                    
+                    $input = $row->quantity;
+                    $output = "-";
+                    $number = optional($row->inventory_kardexable->purchase_order_income)->number;
+                    $date_of_issue = optional($row->inventory_kardexable->purchase_order_income)->date_of_issue;
 
-                if($row->inventory_kardexable->type != null){
-                    $input = ($row->inventory_kardexable->type == 1) ? $row->quantity : "-";
-                }
-                else{
-                    $input = ($transaction->type == 'input') ? $row->quantity : "-" ;
-                }
+                }else{
 
-                if($row->inventory_kardexable->type != null){
-                    $output = ($row->inventory_kardexable->type == 2 || $row->inventory_kardexable->type == 3) ? $row->quantity : "-";
-                }
-                else{
-                    $output = ($transaction->type == 'output') ? $row->quantity : "-";
+                    if(!$row->inventory_kardexable->type){
+                        $transaction = InventoryTransaction::findOrFail($row->inventory_kardexable->inventory_transaction_id);
+                    }
+
+                    if($row->inventory_kardexable->type != null){
+                        $input = ($row->inventory_kardexable->type == 1) ? $row->quantity : "-";
+                    }
+                    else{
+                        $input = ($transaction->type == 'input') ? $row->quantity : "-" ;
+                    }
+
+                    if($row->inventory_kardexable->type != null){
+                        $output = ($row->inventory_kardexable->type == 2 || $row->inventory_kardexable->type == 3) ? $row->quantity : "-";
+                    }
+                    else{
+                        $output = ($transaction->type == 'output') ? $row->quantity : "-";
+                    }
+
+                    $number = "-";
+                    $date_of_issue = "-";
                 }
 
                 return [
                     'id' => $row->id,
                     'item_name' => $row->item->description,
                     'date_time' => $row->created_at->format('Y-m-d H:i:s'),
-                    'date_of_issue' => '-',
+                    'date_of_issue' => $date_of_issue,
                     'type_transaction' => $row->inventory_kardexable->description,
-                    'number' => "-",
+                    'number' => $number,
                     'input' => $input,
                     'output' => $output,
                     'balance' => self::$balance+= $row->quantity,

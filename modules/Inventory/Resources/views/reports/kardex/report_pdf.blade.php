@@ -145,7 +145,11 @@
                                                 @break  
 
                                             @case($models[3])
-                                                {{"-"}}                                                 
+                                                @if($value->inventory_kardexable->purchase_order_income_id)
+                                                    {{ optional($value->inventory_kardexable->purchase_order_income)->number }}
+                                                @else
+                                                    {{"-"}}                                                 
+                                                @endif
                                                 @break  
 
                                             @case($models[4])
@@ -202,7 +206,11 @@
                                                 {{ isset($value->inventory_kardexable->date_of_issue) ? $value->inventory_kardexable->date_of_issue->format('Y-m-d') : '' }}
                                                 @break
                                             @case($models[3])
-                                                {{"-"}}                                                 
+                                                @if($value->inventory_kardexable->purchase_order_income)
+                                                    {{ $value->inventory_kardexable->purchase_order_income->date_of_issue }}
+                                                @else
+                                                    {{"-"}}                                                 
+                                                @endif
                                                 @break  
                                             @case($models[4])
                                                 {{ isset($value->inventory_kardexable->date_of_issue) ? $value->inventory_kardexable->date_of_issue->format('Y-m-d') : '' }}
@@ -213,8 +221,8 @@
 
                                     </td>
                                     @php
-                                        if($value->inventory_kardexable_type == $models[3]){                                             
-                                            if(!$value->inventory_kardexable->type){
+                                        if($value->inventory_kardexable_type == $models[3]){    
+                                            if(!$value->inventory_kardexable->type && !$value->inventory_kardexable->purchase_order_income_id){
                                                 $transaction = Modules\Inventory\Models\InventoryTransaction::findOrFail($value->inventory_kardexable->inventory_transaction_id);
                                             }
                                         }                                           
@@ -239,6 +247,8 @@
 
                                                     {{ ($value->inventory_kardexable->type == 1) ? $value->quantity : "-" }}                                                    
 
+                                                @elseif($value->inventory_kardexable->purchase_order_income_id)
+                                                    {{ $value->quantity }} 
                                                 @else
 
                                                     {{($transaction->type == 'input') ? $value->quantity : "-" }} 
@@ -280,6 +290,8 @@
 
                                                     {{($value->inventory_kardexable->type == 2 || $value->inventory_kardexable->type == 3) ? $value->quantity : "-" }} 
 
+                                                @elseif($value->inventory_kardexable->purchase_order_income_id)
+                                                    {{ "-" }}
                                                 @else
 
                                                     {{($transaction->type == 'output') ? $value->quantity : "-" }}  

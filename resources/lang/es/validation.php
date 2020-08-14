@@ -315,5 +315,6 @@ return [
         'hours' => 'horas',
         'mileage' => 'kilometraje',
         'activity_type_id' => 'tipo actividad',
+        'warehouse_destination_id' => 'almacén destino',
     ],
 ];

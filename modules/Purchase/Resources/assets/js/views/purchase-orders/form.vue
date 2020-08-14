@@ -662,7 +662,7 @@
                     attached: null,
                     sale_opportunity_id: null,
                     
-                    purchase_order_state_id: null,
+                    purchase_order_state_id: '03',
                     purchase_order_type_id: '01',
                     line_id: null,
                     family_id: null,

@@ -230,6 +230,7 @@ Vue.component('tenant-transport-work-orders-form', require('@viewsModuleTranspor
 
 //Inventory
 Vue.component('tenant-inventory-purchase-order-income-index', require('@viewsModuleInventory/purchase-order-income/index.vue'));
+Vue.component('tenant-inventory-purchase-order-income-form', require('@viewsModuleInventory/purchase-order-income/form.vue'));
 
 // System
 Vue.component('system-clients-index', require('./views/system/clients/index.vue'));

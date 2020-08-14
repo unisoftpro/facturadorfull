@@ -49,6 +49,7 @@ class PurchaseOrderItem extends ModelTenant
         'previous_currency_type_id',
         'observation',
         'attended_quantity',
+        'pending_quantity_income',
     ];
 
     public function getItemAttribute($value)

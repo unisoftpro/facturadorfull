@@ -24,18 +24,20 @@
             <div class="card-body">
                 <data-table :resource="resource">
                     <tr slot="heading">
-                        <th>#</th>
-                        <th>Número</th>
+                        <th >#</th>
+                        <th class="text-center">Número</th>
+                        <th class="text-center">O. Compra N°</th>
                         <th>Fecha</th>
-                        <th>Almacen</th>
+                        <th>Almacén</th>
                         <th>Factura</th>
                     </tr>
                     <tr></tr>
                     <tr slot-scope="{ index, row }">
                         <td>{{ index }}</td>
-                        <td>{{ row.number }}</td>
+                        <td class="text-center">{{ row.number }}</td>
+                        <td class="text-center">{{ row.purchase_order_number }}</td>
                         <td>{{ row.date_of_issue }}</td>
-                        <td>{{ row.warehouse_destination_description }}</td>
+                        <td>{{ row.warehouse_description }}</td>
                         <td>{{ row.invoice_description}}</td>
                     </tr>
                 </data-table>

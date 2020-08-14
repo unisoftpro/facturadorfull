@@ -93,42 +93,31 @@
                             >PDF</button>
                         </td>
 
-                        <td class="text-right">
-                            <!-- <el-button
-                @click.prevent="clickOptions(row.id)"
-                size="mini"
-                type="primary"
-                :disabled="row.state_type_id == '03' || row.state_type_id == '11'"
-              >Generar comprobante</el-button>
-              <el-button
-                :disabled="row.state_type_id == '11'  || row.state_type_id == '03' "
-                type="danger"
-                  size="mini"
-                @click.prevent="clickAnulate(row.id)"
-                            >Anular</el-button>-->
+                        <td class="text-right"> 
+                            <template v-if="row.purchase_order_state_id != '13'">
+                                <button
+                                    type="button"
+                                    v-if="!row.has_purchases && row.state_type_id!='11'"
+                                    class="btn waves-effect waves-light btn-xs btn-custom m-1__2"
+                                    @click.prevent="clickCreate(row.id)"
+                                >Editar</button>
 
-                            <button
-                                type="button"
-                                v-if="!row.has_purchases && row.state_type_id!='11'"
-                                class="btn waves-effect waves-light btn-xs btn-custom m-1__2"
-                                @click.prevent="clickCreate(row.id)"
-                            >Editar</button>
+                                <!-- <button type="button" v-if="!row.has_purchases && row.state_type_id!='11'" class="btn waves-effect waves-light btn-xs btn-success m-1__2"
+                                @click.prevent="clickGenerateDocument(row.id)">Generar compra</button>-->
 
-                            <!-- <button type="button" v-if="!row.has_purchases && row.state_type_id!='11'" class="btn waves-effect waves-light btn-xs btn-success m-1__2"
-                            @click.prevent="clickGenerateDocument(row.id)">Generar compra</button>-->
+                                <a
+                                    :href="`/purchases/create/${row.id}`"
+                                    class="btn waves-effect waves-light btn-xs btn-success m-1__2"
+                                    v-if="!row.has_purchases && row.state_type_id!='11'"
+                                >Generar compra</a>
 
-                            <a
-                                :href="`/purchases/create/${row.id}`"
-                                class="btn waves-effect waves-light btn-xs btn-success m-1__2"
-                                v-if="!row.has_purchases && row.state_type_id!='11'"
-                            >Generar compra</a>
-
-                            <button
-                                type="button"
-                                v-if="!row.has_purchases && row.state_type_id!='11'"
-                                class="btn waves-effect waves-light btn-xs btn-danger m-1__2"
-                                @click.prevent="clickAnulate(row.id)"
-                            >Anular</button>
+                                <button
+                                    type="button"
+                                    v-if="!row.has_purchases && row.state_type_id!='11'"
+                                    class="btn waves-effect waves-light btn-xs btn-danger m-1__2"
+                                    @click.prevent="clickAnulate(row.id)"
+                                >Anular</button>
+                            </template>
 
                             <button
                                 type="button"

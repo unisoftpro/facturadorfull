@@ -15,7 +15,7 @@ class PurchaseOrderIncomeRequest extends FormRequest
     public function rules()
     {
         return [
-            'warehouse_destination_id' => [
+            'warehouse_id' => [
                 'required',
             ],
             'date_of_issue' => [

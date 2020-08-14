@@ -119,7 +119,7 @@ if($hostname) {
                 Route::get('tables', 'PurchaseOrderIncomeController@tables');
                 Route::get('record/{inventory}', 'PurchaseOrderIncomeController@record');
                 Route::post('/', 'PurchaseOrderIncomeController@store');
-                // Route::get('create', 'PurchaseOrderIncomeController@create')->name('transfer.create');
+                Route::get('create', 'PurchaseOrderIncomeController@create')->name('tenant.purchase-order-income.create');
                 // Route::get('stock/{item_id}/{warehouse_id}', 'PurchaseOrderIncomeController@stock');
                 // Route::get('items/{warehouse_id}', 'PurchaseOrderIncomeController@items');
 

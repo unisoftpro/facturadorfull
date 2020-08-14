@@ -135,7 +135,8 @@ trait InventoryTrait
 
     public function findInventoryTransaction($id) {
 
-        return InventoryTransaction::findOrFail($id);
+        return InventoryTransaction::find($id);
+        // return InventoryTransaction::findOrFail($id);
 
     }
 

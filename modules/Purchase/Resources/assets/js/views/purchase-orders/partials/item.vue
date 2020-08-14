@@ -337,6 +337,7 @@
                     previous_currency_type_id: null,
                     observation: null,
                     attended_quantity: 0,
+                    pending_quantity_income: 0,
                 }
 
                 this.item_unit_type = {};
@@ -451,6 +452,7 @@
                 this.row.attended_quantity = this.form.attended_quantity
                 this.row.observation = this.form.observation
                 this.row.previous_currency_type_id = this.form.previous_currency_type_id
+                this.row.pending_quantity_income = this.form.quantity
 
             },
             changeWarehouse(row){

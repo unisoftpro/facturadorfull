@@ -15,6 +15,8 @@ use Modules\Sale\Models\SaleOpportunity;
 use Modules\Item\Models\Line;
 use Modules\Item\Models\Family;
 use Modules\Transport\Models\WorkOrder;
+use Modules\Inventory\Models\PurchaseOrderIncome;
+
 
 class PurchaseOrder extends ModelTenant
 {
@@ -172,4 +174,17 @@ class PurchaseOrder extends ModelTenant
         return $this->belongsTo(WorkOrder::class);
     }
 
+    public function scopeWhereConfirmed($query)
+    {
+        return $query->where('purchase_order_state_id', '03')
+                    ->whereHas('work_order')
+                    ->with(['items' => function($q){
+                        $q->where('pending_quantity_income', '>', 0);
+                    }]);
+    }
+
+    public function purchase_order_income()
+    {
+        return $this->hasMany(PurchaseOrderIncome::class);
+    }
 }
