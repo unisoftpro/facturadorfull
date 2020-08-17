@@ -4,6 +4,7 @@ namespace Modules\Purchase\Models;
 
 use App\Models\Tenant\User;
 use App\Models\Tenant\SoapType;
+use App\Models\Tenant\Person;
 use App\Models\Tenant\Establishment;
 use App\Models\Tenant\StateType;
 use App\Models\Tenant\PaymentMethodType;
@@ -115,7 +116,7 @@ class PurchaseOrder extends ModelTenant
     }
 
     public function supplier() {
-        return $this->belongsTo(CurrencyType::class, 'supplier_id');
+        return $this->belongsTo(Person::class, 'supplier_id');
     }
 
     public function items()

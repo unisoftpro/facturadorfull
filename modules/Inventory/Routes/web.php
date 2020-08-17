@@ -124,6 +124,22 @@ if($hostname) {
                 // Route::get('items/{warehouse_id}', 'PurchaseOrderIncomeController@items');
 
             });
+            
+
+            Route::prefix('warehouse-income')->group(function () {
+
+                Route::get('/', 'WarehouseIncomeController@index')->name('tenant.warehouse-income.index');
+                Route::get('records', 'WarehouseIncomeController@records');
+                Route::get('columns', 'WarehouseIncomeController@columns');
+                Route::get('item/tables', 'WarehouseIncomeController@item_tables');
+                Route::get('tables', 'WarehouseIncomeController@tables');
+                Route::get('record/{inventory}', 'WarehouseIncomeController@record');
+                Route::post('/', 'WarehouseIncomeController@store');
+                Route::get('create', 'WarehouseIncomeController@create')->name('tenant.warehouse-income.create');
+                Route::get('item/list-price/{item_id}/{purchase_order_id}', 'WarehouseIncomeController@getListPrice');
+
+            });
+
         });
     });
 }

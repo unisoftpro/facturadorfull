@@ -231,6 +231,8 @@ Vue.component('tenant-transport-work-orders-form', require('@viewsModuleTranspor
 //Inventory
 Vue.component('tenant-inventory-purchase-order-income-index', require('@viewsModuleInventory/purchase-order-income/index.vue'));
 Vue.component('tenant-inventory-purchase-order-income-form', require('@viewsModuleInventory/purchase-order-income/form.vue'));
+Vue.component('tenant-inventory-warehouse-income-index', require('@viewsModuleInventory/warehouse-income/index.vue'));
+Vue.component('tenant-inventory-warehouse-income-form', require('@viewsModuleInventory/warehouse-income/form.vue'));
 
 // System
 Vue.component('system-clients-index', require('./views/system/clients/index.vue'));
