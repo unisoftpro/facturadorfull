@@ -29,14 +29,21 @@ class TenantWarehouseIncomeItemsTable extends Migration
             $table->decimal('unit_value', 16, 6);
             $table->decimal('unit_price', 16, 6);
             
+            $table->decimal('price_fob_alm', 12, 2)->default(0);
+            $table->decimal('price_fob_alm_igv', 12, 2)->default(0);
             $table->decimal('sale_profit_factor', 12, 2)->default(0);
             $table->decimal('last_purchase_price', 12, 2)->default(0);
+            $table->decimal('warehouse_factor', 12, 2)->default(0);
+            $table->decimal('retail_price', 12, 2)->default(0);
             $table->decimal('last_factor', 12, 2)->default(0);
             $table->decimal('num_price', 12, 2)->default(0);
             $table->string('letter_price');
 
             $table->decimal('total_value', 12, 2);
             $table->decimal('total', 12, 2);
+
+            $table->foreign('warehouse_income_id')->references('id')->on('warehouse_income')->onDelete('cascade');
+            $table->foreign('item_id')->references('id')->on('items');
 
         });
 

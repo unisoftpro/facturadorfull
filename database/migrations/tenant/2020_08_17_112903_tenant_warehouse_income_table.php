@@ -29,6 +29,7 @@ class TenantWarehouseIncomeTable extends Migration
             $table->string('observation')->nullable();
             $table->integer('number')->unique();
             $table->date('reference_date');
+            $table->decimal('exchange_rate_sale', 13, 3)->default(0);
 
             $table->unsignedInteger('purchase_order_id')->nullable();
             $table->unsignedInteger('work_order_id')->nullable();

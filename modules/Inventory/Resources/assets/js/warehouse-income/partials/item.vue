@@ -83,11 +83,19 @@
                     </div>  
                     
                     <div class="col-md-3">
+                        <!-- manual -->
+                        <div class="form-group" :class="{'has-danger': errors.warehouse_factor}">
+                            <label class="control-label">Factor Almacén</label>
+                            <el-input-number v-model="form.warehouse_factor" :min="0" @change="changeWarehouseFactor"></el-input-number>
+                            <small class="form-control-feedback" v-if="errors.warehouse_factor" v-text="errors.warehouse_factor[0]"></small>
+                        </div>
+                    </div> 
+
+                    <div class="col-md-3">
+                        <!-- manual -->
                         <div class="form-group" :class="{'has-danger': errors.sale_profit_factor}">
                             <label class="control-label">Factor Venta-Ganancia</label>
-                            <el-input v-model="form.sale_profit_factor">
-                                <template slot="prepend" v-if="form.item.currency_type_symbol">{{ form.item.currency_type_symbol }}</template>
-                            </el-input>
+                            <el-input-number v-model="form.sale_profit_factor" :min="0"  @change="inputSaleProfitFactor"></el-input-number>
                             <small class="form-control-feedback" v-if="errors.sale_profit_factor" v-text="errors.sale_profit_factor[0]"></small>
                         </div>
                     </div> 
@@ -95,7 +103,7 @@
                     <div class="col-md-3">
                         <div class="form-group" :class="{'has-danger': errors.last_purchase_price}">
                             <label class="control-label">Ult. Prec. Compra</label>
-                            <el-input v-model="form.last_purchase_price">
+                            <el-input v-model="form.last_purchase_price" readonly>
                                 <template slot="prepend" v-if="form.item.currency_type_symbol">{{ form.item.currency_type_symbol }}</template>
                             </el-input>
                             <small class="form-control-feedback" v-if="errors.last_purchase_price" v-text="errors.last_purchase_price[0]"></small>
@@ -105,17 +113,49 @@
                     <div class="col-md-3">
                         <div class="form-group" :class="{'has-danger': errors.last_factor}">
                             <label class="control-label">Ult. Factor</label>
-                            <el-input v-model="form.last_factor">
-                                <template slot="prepend" v-if="form.item.currency_type_symbol">{{ form.item.currency_type_symbol }}</template>
+                            <el-input v-model="form.last_factor" readonly>
                             </el-input>
                             <small class="form-control-feedback" v-if="errors.last_factor" v-text="errors.last_factor[0]"></small>
+                        </div>
+                    </div> 
+
+
+                    <div class="col-md-3">
+                        <div class="form-group" :class="{'has-danger': errors.price_fob_alm}">
+                            <label class="control-label">P. FOB/Alm</label>
+                            <el-input v-model="form.price_fob_alm" readonly>
+                                <template slot="prepend" v-if="form.item.currency_type_symbol">{{ form.item.currency_type_symbol }}</template>
+                            </el-input>
+                            <small class="form-control-feedback" v-if="errors.price_fob_alm" v-text="errors.price_fob_alm[0]"></small>
+                        </div>
+                    </div> 
+
+
+                    <div class="col-md-3">
+                        <div class="form-group" :class="{'has-danger': errors.price_fob_alm_igv}">
+                            <label class="control-label">P. FOB/Alm+IGV</label>
+                            <el-input v-model="form.price_fob_alm_igv" readonly>
+                                <template slot="prepend" v-if="form.item.currency_type_symbol">{{ form.item.currency_type_symbol }}</template>
+                            </el-input>
+                            <small class="form-control-feedback" v-if="errors.price_fob_alm_igv" v-text="errors.price_fob_alm_igv[0]"></small>
+                        </div>
+                    </div> 
+
+
+                    <div class="col-md-3">
+                        <div class="form-group" :class="{'has-danger': errors.retail_price}">
+                            <label class="control-label">Precio Venta Público</label>
+                            <el-input v-model="form.retail_price" readonly>
+                                <template slot="prepend" v-if="form.item.currency_type_symbol">{{ form.item.currency_type_symbol }}</template>
+                            </el-input>
+                            <small class="form-control-feedback" v-if="errors.retail_price" v-text="errors.retail_price[0]"></small>
                         </div>
                     </div> 
 
                     <div class="col-md-3">
                         <div class="form-group" :class="{'has-danger': errors.num_price}">
                             <label class="control-label">Prec. Vta. Num</label>
-                            <el-input v-model="form.num_price">
+                            <el-input v-model="form.num_price" readonly>
                                 <template slot="prepend" v-if="form.item.currency_type_symbol">{{ form.item.currency_type_symbol }}</template>
                             </el-input>
                             <small class="form-control-feedback" v-if="errors.num_price" v-text="errors.num_price[0]"></small>
@@ -125,7 +165,7 @@
                     <div class="col-md-3">
                         <div class="form-group" :class="{'has-danger': errors.letter_price}">
                             <label class="control-label">Prec. Vta. Letra</label>
-                            <el-input v-model="form.letter_price">
+                            <el-input v-model="form.letter_price" readonly>
                             </el-input>
                             <small class="form-control-feedback" v-if="errors.letter_price" v-text="errors.letter_price[0]"></small>
                         </div>
@@ -164,27 +204,69 @@
                 form: {},
                 items: [],
                 use_price: 1,
+                letters: {},
+                row: {},
             }
         },
         async created() {
             await this.initForm()
+            await this.initLetters()
             await this.$http.get(`/${this.resource}/item/tables`).then(response => {
                 this.items = response.data.items
             })
  
         },
         methods: { 
+            changeWarehouseFactor(){
+
+                if(this.form.warehouse_factor > 0){
+
+                    this.form.price_fob_alm = _.round(parseFloat(this.form.warehouse_factor) * parseFloat(this.form.unit_value), 2)
+                    this.form.price_fob_alm_igv = _.round(this.form.price_fob_alm * 1.18, 2)
+
+                }
+
+            },
+            inputSaleProfitFactor(){
+
+                if(this.form.sale_profit_factor > 0){
+
+                    this.form.retail_price =  _.round(parseFloat(this.form.unit_price) * parseFloat(this.form.sale_profit_factor) ,2)
+                    this.form.num_price = this.form.retail_price
+    
+                    let letter_price = this.form.num_price.toString()
+    
+                    this.form.letter_price = ''
+    
+                    for (let i = 0; i < letter_price.length; i++) {
+                        this.form.letter_price += this.letters[letter_price.charAt(i)]
+                    }
+
+                }
+
+            },
             inputListPrice(){
 
-                let total_discount_percentage = parseFloat(this.form.discount_one) + parseFloat(this.form.discount_two) + parseFloat(this.form.discount_three) + parseFloat(this.form.discount_four)
+                this.form.unit_value = _.round(parseFloat(this.form.list_price) - (parseFloat(this.form.list_price) * (parseFloat(this.form.discount_one) / 100)), 6)
+
+                this.form.unit_value = _.round(this.form.unit_value - (this.form.unit_value * (parseFloat(this.form.discount_two) / 100)), 6)
+
+                this.form.unit_value = _.round(this.form.unit_value - (this.form.unit_value * (parseFloat(this.form.discount_three) / 100)), 6)
+
+                this.form.unit_value = _.round(this.form.unit_value - (this.form.unit_value * (parseFloat(this.form.discount_four) / 100)), 6)
+
                 let percentage_igv = 18
-                let total_discount = parseFloat(this.form.list_price) * (total_discount_percentage / 100) 
-                this.form.unit_value = parseFloat(this.form.list_price) - total_discount
-                this.form.unit_price = _.round((this.form.list_price * (1 + percentage_igv/100)) - total_discount, 2)
+
+                this.form.unit_price = _.round((this.form.unit_value * (1 + percentage_igv/100)), 6)
+
+                this.inputSaleProfitFactor()
+                this.changeWarehouseFactor()
 
             },
             initForm() {
+
                 this.errors = {}
+
                 this.form = {
 
                     item_id: null,
@@ -199,7 +281,11 @@
                     unit_value: 0,
                     unit_price: 0,
                     sale_profit_factor: 0,
+                    retail_price: 0,
+                    price_fob_alm_igv: 0,
+                    price_fob_alm: 0,
                     last_purchase_price: 0,
+                    warehouse_factor: 0,
                     last_factor: 0,
                     num_price: 0,
                     letter_price: null,
@@ -207,13 +293,14 @@
                     total: 0,
                 }
 
-                this.item_unit_type = {};
+                this.row = {};
+
+
             },
-            // initializeFields() {
-            //     this.form.affectation_igv_type_id = this.affectation_igv_types[0].id
-            // },
+            initLetters(){
+                this.letters = {'1':'B', '2':'X', '3':'C', '4':'Y', '5':'Z', '6':'Q', '7':'E', '8':'H', '9':'G', '0':'W', '.':'.'}
+            },
             create() {
-            //     this.initializeFields()
             }, 
             close() {
                 this.initForm()
@@ -221,11 +308,17 @@
             }, 
             async changeItem() {
 
-
                 this.form.item = await _.find(this.items, {'id': this.form.item_id})
                 await this.getListPrice()
+                await this.getLastPricePurchaseFactor()
 
+            },
+            getLastPricePurchaseFactor(){
 
+                this.$http.get(`/${this.resource}/item/additional-values/${this.form.item_id}`).then(response => {
+                    this.form.last_purchase_price = response.data.last_purchase_price
+                    this.form.last_factor = response.data.last_factor
+                })
 
             },
             getListPrice(){
@@ -239,27 +332,35 @@
                 }
 
             },
-            clickAddItem() {
-                this.form.item.unit_price = this.form.unit_price
-                this.form.item.presentation = this.item_unit_type;
-                this.form.affectation_igv_type = _.find(this.affectation_igv_types, {'id': this.form.affectation_igv_type_id})
-                this.row = calculateRowItem(this.form, this.currencyTypeIdActive, this.exchangeRateSale)
-                this.row = this.changeWarehouse(this.row)
+            async clickAddItem() {
 
-                this.setAdditionalData()
-                this.initForm()
-                // this.initializeFields()
-                this.$emit('add', this.row)
+                await this.calculateRowItem()
+                await this.$emit('add', this.form)
+                await this.initForm()
+                
             },
-            setAdditionalData(){
+            calculateRowItem(){
+                
+                let currency_type_id_old = this.form.item.currency_type_id
+                let currency_type_id_new = this.currencyTypeIdActive
+                let exchange_rate_sale = this.exchangeRateSale
 
-                this.row.previous_cost = this.form.previous_cost
-                this.row.attended_quantity = this.form.attended_quantity
-                this.row.observation = this.form.observation
-                this.row.previous_currency_type_id = this.form.previous_currency_type_id
-                this.row.pending_quantity_income = this.form.quantity
+                if (currency_type_id_old === 'PEN' && currency_type_id_old !== currency_type_id_new)
+                {
+                    this.form.list_price = _.round(parseFloat(this.form.list_price) / exchange_rate_sale, 2);
+                }
 
-            }, 
+                if (currency_type_id_new === 'PEN' && currency_type_id_old !== currency_type_id_new)
+                {
+                    this.form.list_price = _.round(parseFloat(this.form.list_price) * exchange_rate_sale, 2);
+                }
+
+                this.inputListPrice()
+
+                this.form.total_value =  _.round(this.form.unit_value * this.form.quantity, 2)
+                this.form.total =  _.round(this.form.unit_price * this.form.quantity, 2)
+
+            }
         }
     }
 

@@ -25,6 +25,7 @@ class WarehouseIncome extends ModelTenant
         'supplier_id',
         'supplier',
         'currency_type_id',
+        'exchange_rate_sale',
         'observation',
         'number',
         'reference_date',

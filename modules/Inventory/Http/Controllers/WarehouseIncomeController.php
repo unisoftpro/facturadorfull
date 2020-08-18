@@ -8,15 +8,17 @@ use Illuminate\Support\Facades\DB;
 use Modules\Inventory\Http\Resources\WarehouseIncomeCollection;
 use Modules\Inventory\Traits\InventoryTrait;
 use Modules\Inventory\Models\WarehouseIncome;
+use Modules\Inventory\Models\WarehouseIncomeItem;
 use Modules\Inventory\Models\WarehouseIncomeReason;
 use Modules\Purchase\Models\PurchaseOrder;
 use Modules\Purchase\Models\PurchaseOrderItem;
-use Modules\Inventory\Http\Requests\WarehouseIncomeIncomeRequest;
+use Modules\Inventory\Http\Requests\WarehouseIncomeRequest;
 use App\Models\Tenant\Company;
 use Modules\Transport\Models\WorkOrder;
 use App\Models\Tenant\Catalogs\CurrencyType;
 use App\CoreFacturalo\Requests\Inputs\Common\PersonInput;
 use App\Models\Tenant\Person;
+use App\Http\Controllers\Tenant\Api\ServiceController;
 use App\Models\Tenant\Item;
 
 
@@ -88,6 +90,55 @@ class WarehouseIncomeController extends Controller
         ];
     }
 
+
+    public function getExchangeRate($date_reference, $supplier_id)
+    {
+
+        $record = PurchaseOrder::where([['date_of_issue', $date_reference], ['supplier_id', $supplier_id]])->first();
+
+        if($record){
+            return [
+                'success' => true,
+                'message' => '',
+                'exchange_rate_sale' => $record->exchange_rate_sale
+            ];
+        }
+        
+        $exchange_rate = app(ServiceController::class)->exchangeRateTest(date('Y-m-d'));
+        
+        return [
+            'success' => false,
+            'message' => 'No se encontró una O. Compra asociada al proveedor, se obtendra el T/C del día',
+            'exchange_rate_sale' => (array_key_exists('sale', $exchange_rate)) ? $exchange_rate['sale'] : 1
+        ];
+
+    }
+
+ 
+    public function getAdditionalValues($item_id)
+    {
+
+        $record = WarehouseIncomeItem::where('item_id', $item_id)
+                                    ->whereHas('warehouse_income', function($q){
+                                        $q->whereIn('warehouse_income_reason_id', ["103", "104"]);
+                                    })
+                                    ->latest('id')
+                                    ->first();
+
+        if($record){
+            return [
+                'last_purchase_price' => $record->list_price,
+                'last_factor' => $record->sale_profit_factor,
+            ];
+        }
+        
+        return [
+            'last_purchase_price' => 0,
+            'last_factor' => 0,
+        ];
+
+    }
+ 
 
     public function table($table)
     {
