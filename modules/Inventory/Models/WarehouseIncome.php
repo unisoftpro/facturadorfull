@@ -33,6 +33,8 @@ class WarehouseIncome extends ModelTenant
         'work_order_id',
         'original_total',
         'national_total',
+        'total_value',
+        'total',
         'filename',
     ];
 
@@ -86,4 +88,14 @@ class WarehouseIncome extends ModelTenant
         return $this->belongsTo(WarehouseIncomeReason::class);
     }
     
+    public function items()
+    {
+        return $this->hasMany(WarehouseIncomeItem::class);
+    }
+    
+    public function inventory_kardex()
+    {
+        return $this->morphMany(InventoryKardex::class, 'inventory_kardexable');
+    }
+
 }

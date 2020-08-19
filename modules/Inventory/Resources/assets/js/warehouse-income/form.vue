@@ -21,7 +21,7 @@
                          <div class="col-lg-4">
                             <div class="form-group" :class="{'has-danger': errors.warehouse_income_reason_id}">
                                 <label class="control-label">Motivo</label>
-                                <el-select v-model="form.warehouse_income_reason_id" filterable>
+                                <el-select v-model="form.warehouse_income_reason_id" filterable @change="changeWarehouseIncomeReason">
                                     <el-option v-for="option in warehouse_income_reasons" :key="option.id" :value="option.id" :label="option.description"></el-option>
                                 </el-select>
                                 <small class="form-control-feedback" v-if="errors.warehouse_income_reason_id" v-text="errors.warehouse_income_reason_id[0]"></small>
@@ -93,6 +93,17 @@
                             </div>
                         </div>
 
+                        <div class="col-lg-2" v-if="form.currency_type_id == 'USD'">
+                            <div class="form-group" :class="{'has-danger': errors.exchange_rate_sale}">
+                                <label class="control-label">Tipo de cambio
+                                    <el-tooltip class="item" effect="dark" content="Tipo de cambio del día, extraído de SUNAT" placement="top-end">
+                                        <i class="fa fa-info-circle"></i>
+                                    </el-tooltip>
+                                </label>
+                                <el-input v-model="form.exchange_rate_sale" readonly></el-input>
+                                <small class="form-control-feedback" v-if="errors.exchange_rate_sale" v-text="errors.exchange_rate_sale[0]"></small>
+                            </div>
+                        </div>
                         <div class="col-lg-12 col-md-6 d-flex align-items-end mt-4">
                             <div class="form-group">
                                 <button type="button" class="btn waves-effect waves-light btn-primary" @click.prevent="showDialogAddItem = true">+ Agregar Producto</button>
@@ -135,7 +146,9 @@
                         </div>
 
                         <div class="col-md-12">
-                            <p class="text-right" v-if="form.total_value > 0">Sub-Total: {{ currency_type.symbol }} {{ form.total_value }}</p>
+                            <p class="text-right" v-if="form.total_value > 0">Sub Total: {{ currency_type.symbol }} {{ form.total_value }}</p>
+                            <p class="text-right" v-if="form.original_total > 0">Total Original: {{ currency_type.symbol }} {{ form.original_total }}</p>
+                            <p class="text-right" v-if="form.national_total > 0">Total Nacional: S/ {{ form.national_total }}</p>
                             <p class="text-right" v-if="form.total > 0">Total: {{ currency_type.symbol }} {{ form.total }}</p>
                         </div>
                     </div>
@@ -151,7 +164,9 @@
                            :currency-type-id-active="form.currency_type_id"
                            :exchange-rate-sale="form.exchange_rate_sale"
                            :purchase-order-id="form.purchase_order_id"
-                           @add="addRow"></item-form>
+                           :warehouse-income-reason-id="form.warehouse_income_reason_id"
+                           @add="addRow"
+                           ref="item_form"></item-form>
  
 
     </div>
@@ -194,7 +209,10 @@
             changeDateReference(){
                 this.getExchangeRatePurchaseOrder()
             },
-            changeCurrencyType(){
+            changeWarehouseIncomeReason(){
+                // this.renewCalculate()
+            },
+            async changeCurrencyType(){
 
                 if(this.form.currency_type_id == 'USD'){
 
@@ -203,10 +221,22 @@
                         return this.$message.error('Debe seleccionar un proveedor para buscar el tipo de cambio')
                     }
     
-                    this.getExchangeRatePurchaseOrder()
+                    await this.getExchangeRatePurchaseOrder()
                 }
 
-                this.currency_type = _.find(this.currency_types, {'id': this.form.currency_type_id})
+                this.currency_type = await _.find(this.currency_types, {'id': this.form.currency_type_id})
+                await this.renewCalculate()
+
+            },
+            async renewCalculate(){
+
+                let items = []
+                await this.form.items.forEach((row) => {
+                    items.push(this.$refs.item_form.calculateRowItem(row, this.form.currency_type_id, this.form.exchange_rate_sale))
+                })
+
+                this.form.items = items
+                this.calculateTotal()
 
             },
             async getExchangeRatePurchaseOrder(){
@@ -237,17 +267,18 @@
                         this.currency_types = response.data.currency_types 
                         this.work_orders = response.data.work_orders 
                         this.currency_type = _.find(this.currency_types, {'id': this.form.currency_type_id})
+                        this.form.warehouse_income_reason_id = this.warehouse_income_reasons.length > 0 ? this.warehouse_income_reasons[0].id : null
                     })
 
             }, 
             async validates(){
  
-                if(!this.form.purchase_order){
-                    return  {
-                        success : false,
-                        message : 'Debe seleccionar 1 orden de compra'
-                    }
-                }
+                // if(!this.form.purchase_order){
+                //     return  {
+                //         success : false,
+                //         message : 'Debe seleccionar 1 orden de compra'
+                //     }
+                // }
 
                 return  {
                     success : true,
@@ -273,6 +304,8 @@
  
                 this.form.total_value = _.round(total_value, 2)
                 this.form.total = _.round(total, 2)
+                this.form.original_total = this.form.total
+                this.form.national_total = (this.form.currency_type_id == 'USD') ? _.round(this.form.total * this.form.exchange_rate_sale, 2) : this.form.total
 
             },
             initForm() {
@@ -292,6 +325,8 @@
                     original_total: 0,
                     exchange_rate_sale: 1,
                     national_total: 0,
+                    total_value: 0,
+                    total: 0,
                     items: [],
 
                 }
@@ -303,12 +338,12 @@
             }, 
             async submit() { 
 
-                let validate = await this.validates()
-                if(!validate.success) {
-                    return this.$message.error(validate.message);
-                }
+                // let validate = await this.validates()
+                // if(!validate.success) {
+                //     return this.$message.error(validate.message);
+                // }
 
-                this.loading_submit = true
+                // this.loading_submit = true
                 await this.$http.post(`/${this.resource}`, this.form)
                     .then(response => {
 

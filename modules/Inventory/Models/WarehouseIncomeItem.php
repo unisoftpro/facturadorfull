@@ -8,6 +8,8 @@ use App\Models\Tenant\Item;
 class WarehouseIncomeItem extends ModelTenant
 {
 
+    public $timestamps = false;
+    
     protected $fillable = [
         'warehouse_income_id',
         'item_id',

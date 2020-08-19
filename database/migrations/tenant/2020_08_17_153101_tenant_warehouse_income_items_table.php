@@ -37,7 +37,7 @@ class TenantWarehouseIncomeItemsTable extends Migration
             $table->decimal('retail_price', 12, 2)->default(0);
             $table->decimal('last_factor', 12, 2)->default(0);
             $table->decimal('num_price', 12, 2)->default(0);
-            $table->string('letter_price');
+            $table->string('letter_price')->nullable();
 
             $table->decimal('total_value', 12, 2);
             $table->decimal('total', 12, 2);

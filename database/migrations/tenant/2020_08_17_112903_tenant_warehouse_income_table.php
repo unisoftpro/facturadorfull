@@ -36,6 +36,8 @@ class TenantWarehouseIncomeTable extends Migration
  
             $table->decimal('original_total', 12, 2);
             $table->decimal('national_total', 12, 2);
+            $table->decimal('total_value', 12, 2);
+            $table->decimal('total', 12, 2);
             $table->string('filename')->nullable();
 
             $table->foreign('user_id')->references('id')->on('users');

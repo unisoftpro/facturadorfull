@@ -31,152 +31,155 @@
                             <small class="form-control-feedback" v-if="errors.list_price" v-text="errors.list_price[0]"></small>
                         </div>
                     </div> 
+
+                    <template v-if="enabled_calc_prices">
                     
-                    <div class="col-md-3">
-                        <div class="form-group" :class="{'has-danger': errors.discount_one}">
-                            <label class="control-label">Descuento % 1</label>
-                            <el-input-number v-model="form.discount_one" @change="inputListPrice" :min="0"></el-input-number>
-                            <small class="form-control-feedback" v-if="errors.discount_one" v-text="errors.discount_one[0]"></small>
+                        <div class="col-md-3">
+                            <div class="form-group" :class="{'has-danger': errors.discount_one}">
+                                <label class="control-label">Descuento % 1</label>
+                                <el-input-number v-model="form.discount_one" @change="inputListPrice" :min="0"></el-input-number>
+                                <small class="form-control-feedback" v-if="errors.discount_one" v-text="errors.discount_one[0]"></small>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="col-md-3">
-                        <div class="form-group" :class="{'has-danger': errors.discount_two}">
-                            <label class="control-label">Descuento % 2</label>
-                            <el-input-number v-model="form.discount_two" @change="inputListPrice" :min="0"></el-input-number>
-                            <small class="form-control-feedback" v-if="errors.discount_two" v-text="errors.discount_two[0]"></small>
+                        
+                        <div class="col-md-3">
+                            <div class="form-group" :class="{'has-danger': errors.discount_two}">
+                                <label class="control-label">Descuento % 2</label>
+                                <el-input-number v-model="form.discount_two" @change="inputListPrice" :min="0"></el-input-number>
+                                <small class="form-control-feedback" v-if="errors.discount_two" v-text="errors.discount_two[0]"></small>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="form-group" :class="{'has-danger': errors.discount_three}">
-                            <label class="control-label">Descuento % 3</label>
-                            <el-input-number v-model="form.discount_three" @change="inputListPrice" :min="0"></el-input-number>
-                            <small class="form-control-feedback" v-if="errors.discount_three" v-text="errors.discount_three[0]"></small>
+                        <div class="col-md-3">
+                            <div class="form-group" :class="{'has-danger': errors.discount_three}">
+                                <label class="control-label">Descuento % 3</label>
+                                <el-input-number v-model="form.discount_three" @change="inputListPrice" :min="0"></el-input-number>
+                                <small class="form-control-feedback" v-if="errors.discount_three" v-text="errors.discount_three[0]"></small>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="form-group" :class="{'has-danger': errors.discount_four}">
-                            <label class="control-label">Descuento % 4</label>
-                            <el-input-number v-model="form.discount_four" @change="inputListPrice" :min="0"></el-input-number>
-                            <small class="form-control-feedback" v-if="errors.discount_four" v-text="errors.discount_four[0]"></small>
+                        <div class="col-md-3">
+                            <div class="form-group" :class="{'has-danger': errors.discount_four}">
+                                <label class="control-label">Descuento % 4</label>
+                                <el-input-number v-model="form.discount_four" @change="inputListPrice" :min="0"></el-input-number>
+                                <small class="form-control-feedback" v-if="errors.discount_four" v-text="errors.discount_four[0]"></small>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="col-md-3">
-                        <div class="form-group" :class="{'has-danger': errors.unit_value}">
-                            <label class="control-label">Costo sin IGV</label>
-                            <el-input readonly v-model="form.unit_value">
-                                <template slot="prepend" v-if="form.item.currency_type_symbol">{{ form.item.currency_type_symbol }}</template>
-                            </el-input>
-                            <small class="form-control-feedback" v-if="errors.unit_value" v-text="errors.unit_value[0]"></small>
-                        </div>
-                    </div> 
-                    
-                    <div class="col-md-3">
-                        <div class="form-group" :class="{'has-danger': errors.unit_price}">
-                            <label class="control-label">Costo con IGV</label>
-                            <el-input readonly v-model="form.unit_price">
-                                <template slot="prepend" v-if="form.item.currency_type_symbol">{{ form.item.currency_type_symbol }}</template>
-                            </el-input>
-                            <small class="form-control-feedback" v-if="errors.unit_price" v-text="errors.unit_price[0]"></small>
-                        </div>
-                    </div>  
-                    
-                    <div class="col-md-3">
-                        <!-- manual -->
-                        <div class="form-group" :class="{'has-danger': errors.warehouse_factor}">
-                            <label class="control-label">Factor Almacén</label>
-                            <el-input-number v-model="form.warehouse_factor" :min="0" @change="changeWarehouseFactor"></el-input-number>
-                            <small class="form-control-feedback" v-if="errors.warehouse_factor" v-text="errors.warehouse_factor[0]"></small>
-                        </div>
-                    </div> 
+                        <div class="col-md-3">
+                            <div class="form-group" :class="{'has-danger': errors.unit_value}">
+                                <label class="control-label">Costo sin IGV</label>
+                                <el-input readonly v-model="form.unit_value">
+                                    <template slot="prepend" v-if="form.item.currency_type_symbol">{{ form.item.currency_type_symbol }}</template>
+                                </el-input>
+                                <small class="form-control-feedback" v-if="errors.unit_value" v-text="errors.unit_value[0]"></small>
+                            </div>
+                        </div> 
+                        
+                        <div class="col-md-3">
+                            <div class="form-group" :class="{'has-danger': errors.unit_price}">
+                                <label class="control-label">Costo con IGV</label>
+                                <el-input readonly v-model="form.unit_price">
+                                    <template slot="prepend" v-if="form.item.currency_type_symbol">{{ form.item.currency_type_symbol }}</template>
+                                </el-input>
+                                <small class="form-control-feedback" v-if="errors.unit_price" v-text="errors.unit_price[0]"></small>
+                            </div>
+                        </div>  
+                        
+                        <div class="col-md-3">
+                            <!-- manual -->
+                            <div class="form-group" :class="{'has-danger': errors.warehouse_factor}">
+                                <label class="control-label">Factor Almacén</label>
+                                <el-input-number v-model="form.warehouse_factor" :min="0" @change="changeWarehouseFactor"></el-input-number>
+                                <small class="form-control-feedback" v-if="errors.warehouse_factor" v-text="errors.warehouse_factor[0]"></small>
+                            </div>
+                        </div> 
 
-                    <div class="col-md-3">
-                        <!-- manual -->
-                        <div class="form-group" :class="{'has-danger': errors.sale_profit_factor}">
-                            <label class="control-label">Factor Venta-Ganancia</label>
-                            <el-input-number v-model="form.sale_profit_factor" :min="0"  @change="inputSaleProfitFactor"></el-input-number>
-                            <small class="form-control-feedback" v-if="errors.sale_profit_factor" v-text="errors.sale_profit_factor[0]"></small>
-                        </div>
-                    </div> 
+                        <div class="col-md-3">
+                            <!-- manual -->
+                            <div class="form-group" :class="{'has-danger': errors.sale_profit_factor}">
+                                <label class="control-label">Factor Venta-Ganancia</label>
+                                <el-input-number v-model="form.sale_profit_factor" :min="0"  @change="inputSaleProfitFactor"></el-input-number>
+                                <small class="form-control-feedback" v-if="errors.sale_profit_factor" v-text="errors.sale_profit_factor[0]"></small>
+                            </div>
+                        </div> 
 
-                    <div class="col-md-3">
-                        <div class="form-group" :class="{'has-danger': errors.last_purchase_price}">
-                            <label class="control-label">Ult. Prec. Compra</label>
-                            <el-input v-model="form.last_purchase_price" readonly>
-                                <template slot="prepend" v-if="form.item.currency_type_symbol">{{ form.item.currency_type_symbol }}</template>
-                            </el-input>
-                            <small class="form-control-feedback" v-if="errors.last_purchase_price" v-text="errors.last_purchase_price[0]"></small>
-                        </div>
-                    </div> 
+                        <div class="col-md-3">
+                            <div class="form-group" :class="{'has-danger': errors.last_purchase_price}">
+                                <label class="control-label">Ult. Prec. Compra</label>
+                                <el-input v-model="form.last_purchase_price" readonly>
+                                    <template slot="prepend" v-if="form.item.currency_type_symbol">{{ form.item.currency_type_symbol }}</template>
+                                </el-input>
+                                <small class="form-control-feedback" v-if="errors.last_purchase_price" v-text="errors.last_purchase_price[0]"></small>
+                            </div>
+                        </div> 
 
-                    <div class="col-md-3">
-                        <div class="form-group" :class="{'has-danger': errors.last_factor}">
-                            <label class="control-label">Ult. Factor</label>
-                            <el-input v-model="form.last_factor" readonly>
-                            </el-input>
-                            <small class="form-control-feedback" v-if="errors.last_factor" v-text="errors.last_factor[0]"></small>
-                        </div>
-                    </div> 
-
-
-                    <div class="col-md-3">
-                        <div class="form-group" :class="{'has-danger': errors.price_fob_alm}">
-                            <label class="control-label">P. FOB/Alm</label>
-                            <el-input v-model="form.price_fob_alm" readonly>
-                                <template slot="prepend" v-if="form.item.currency_type_symbol">{{ form.item.currency_type_symbol }}</template>
-                            </el-input>
-                            <small class="form-control-feedback" v-if="errors.price_fob_alm" v-text="errors.price_fob_alm[0]"></small>
-                        </div>
-                    </div> 
+                        <div class="col-md-3">
+                            <div class="form-group" :class="{'has-danger': errors.last_factor}">
+                                <label class="control-label">Ult. Factor</label>
+                                <el-input v-model="form.last_factor" readonly>
+                                </el-input>
+                                <small class="form-control-feedback" v-if="errors.last_factor" v-text="errors.last_factor[0]"></small>
+                            </div>
+                        </div> 
 
 
-                    <div class="col-md-3">
-                        <div class="form-group" :class="{'has-danger': errors.price_fob_alm_igv}">
-                            <label class="control-label">P. FOB/Alm+IGV</label>
-                            <el-input v-model="form.price_fob_alm_igv" readonly>
-                                <template slot="prepend" v-if="form.item.currency_type_symbol">{{ form.item.currency_type_symbol }}</template>
-                            </el-input>
-                            <small class="form-control-feedback" v-if="errors.price_fob_alm_igv" v-text="errors.price_fob_alm_igv[0]"></small>
-                        </div>
-                    </div> 
+                        <div class="col-md-3">
+                            <div class="form-group" :class="{'has-danger': errors.price_fob_alm}">
+                                <label class="control-label">P. FOB/Alm</label>
+                                <el-input v-model="form.price_fob_alm" readonly>
+                                    <template slot="prepend" v-if="form.item.currency_type_symbol">{{ form.item.currency_type_symbol }}</template>
+                                </el-input>
+                                <small class="form-control-feedback" v-if="errors.price_fob_alm" v-text="errors.price_fob_alm[0]"></small>
+                            </div>
+                        </div> 
 
 
-                    <div class="col-md-3">
-                        <div class="form-group" :class="{'has-danger': errors.retail_price}">
-                            <label class="control-label">Precio Venta Público</label>
-                            <el-input v-model="form.retail_price" readonly>
-                                <template slot="prepend" v-if="form.item.currency_type_symbol">{{ form.item.currency_type_symbol }}</template>
-                            </el-input>
-                            <small class="form-control-feedback" v-if="errors.retail_price" v-text="errors.retail_price[0]"></small>
-                        </div>
-                    </div> 
+                        <div class="col-md-3">
+                            <div class="form-group" :class="{'has-danger': errors.price_fob_alm_igv}">
+                                <label class="control-label">P. FOB/Alm+IGV</label>
+                                <el-input v-model="form.price_fob_alm_igv" readonly>
+                                    <template slot="prepend" v-if="form.item.currency_type_symbol">{{ form.item.currency_type_symbol }}</template>
+                                </el-input>
+                                <small class="form-control-feedback" v-if="errors.price_fob_alm_igv" v-text="errors.price_fob_alm_igv[0]"></small>
+                            </div>
+                        </div> 
 
-                    <div class="col-md-3">
-                        <div class="form-group" :class="{'has-danger': errors.num_price}">
-                            <label class="control-label">Prec. Vta. Num</label>
-                            <el-input v-model="form.num_price" readonly>
-                                <template slot="prepend" v-if="form.item.currency_type_symbol">{{ form.item.currency_type_symbol }}</template>
-                            </el-input>
-                            <small class="form-control-feedback" v-if="errors.num_price" v-text="errors.num_price[0]"></small>
-                        </div>
-                    </div> 
-                     
-                    <div class="col-md-3">
-                        <div class="form-group" :class="{'has-danger': errors.letter_price}">
-                            <label class="control-label">Prec. Vta. Letra</label>
-                            <el-input v-model="form.letter_price" readonly>
-                            </el-input>
-                            <small class="form-control-feedback" v-if="errors.letter_price" v-text="errors.letter_price[0]"></small>
-                        </div>
-                    </div> 
+
+                        <div class="col-md-3">
+                            <div class="form-group" :class="{'has-danger': errors.retail_price}">
+                                <label class="control-label">Precio Venta Público</label>
+                                <el-input v-model="form.retail_price" readonly>
+                                    <template slot="prepend" v-if="form.item.currency_type_symbol">{{ form.item.currency_type_symbol }}</template>
+                                </el-input>
+                                <small class="form-control-feedback" v-if="errors.retail_price" v-text="errors.retail_price[0]"></small>
+                            </div>
+                        </div> 
+
+                        <div class="col-md-3">
+                            <div class="form-group" :class="{'has-danger': errors.num_price}">
+                                <label class="control-label">Prec. Vta. Num</label>
+                                <el-input v-model="form.num_price" readonly>
+                                    <template slot="prepend" v-if="form.item.currency_type_symbol">{{ form.item.currency_type_symbol }}</template>
+                                </el-input>
+                                <small class="form-control-feedback" v-if="errors.num_price" v-text="errors.num_price[0]"></small>
+                            </div>
+                        </div> 
+                        
+                        <div class="col-md-3">
+                            <div class="form-group" :class="{'has-danger': errors.letter_price}">
+                                <label class="control-label">Prec. Vta. Letra</label>
+                                <el-input v-model="form.letter_price" readonly>
+                                </el-input>
+                                <small class="form-control-feedback" v-if="errors.letter_price" v-text="errors.letter_price[0]"></small>
+                            </div>
+                        </div> 
+                    </template>
                      
   
                 </div>
             </div>
             <div class="form-actions text-right pt-2">
                 <el-button @click.prevent="close()">Cerrar</el-button>
-                <el-button type="primary" native-type="submit" v-if="form.item_id" >Agregar</el-button>
+                <el-button type="primary" native-type="submit" v-if="form.item_id && form.unit_value > 0" >Agregar</el-button>
             </div>
         </form> 
 
@@ -190,11 +193,9 @@
 </style>
 <script>
 
-    import {calculateRowItem} from '@helpers/functions'
-
 
     export default {
-        props: ['showDialog', 'currencyTypeIdActive', 'exchangeRateSale', 'purchaseOrderId'],
+        props: ['showDialog', 'currencyTypeIdActive', 'exchangeRateSale', 'purchaseOrderId', 'warehouseIncomeReasonId'],
         data() {
             return {
                 titleDialog: 'Agregar Producto',
@@ -206,6 +207,7 @@
                 use_price: 1,
                 letters: {},
                 row: {},
+                enabled_calc_prices: false,
             }
         },
         async created() {
@@ -301,7 +303,12 @@
                 this.letters = {'1':'B', '2':'X', '3':'C', '4':'Y', '5':'Z', '6':'Q', '7':'E', '8':'H', '9':'G', '0':'W', '.':'.'}
             },
             create() {
+                this.initForm()
+                this.verifyCalcPrices()
             }, 
+            verifyCalcPrices(){
+                this.enabled_calc_prices = (['103', '104'].includes(this.warehouseIncomeReasonId)) ? true : false
+            },
             close() {
                 this.initForm()
                 this.$emit('update:showDialog', false)
@@ -334,23 +341,21 @@
             },
             async clickAddItem() {
 
-                await this.calculateRowItem()
+                await this.calculateRowItem(null, this.currencyTypeIdActive, this.exchangeRateSale)
                 await this.$emit('add', this.form)
                 await this.initForm()
                 
             },
-            calculateRowItem(){
+            calculateRowItem(row = null, currency_type_id_new, exchange_rate_sale){
                 
+                if(row) this.form = row 
+
                 let currency_type_id_old = this.form.item.currency_type_id
-                let currency_type_id_new = this.currencyTypeIdActive
-                let exchange_rate_sale = this.exchangeRateSale
 
                 if (currency_type_id_old === 'PEN' && currency_type_id_old !== currency_type_id_new)
                 {
                     this.form.list_price = _.round(parseFloat(this.form.list_price) / exchange_rate_sale, 2);
-                }
-
-                if (currency_type_id_new === 'PEN' && currency_type_id_old !== currency_type_id_new)
+                }else
                 {
                     this.form.list_price = _.round(parseFloat(this.form.list_price) * exchange_rate_sale, 2);
                 }
@@ -360,6 +365,7 @@
                 this.form.total_value =  _.round(this.form.unit_value * this.form.quantity, 2)
                 this.form.total =  _.round(this.form.unit_price * this.form.quantity, 2)
 
+                return this.form
             }
         }
     }

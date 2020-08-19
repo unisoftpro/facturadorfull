@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Modules\Inventory\Http\Resources\WarehouseIncomeCollection;
-use Modules\Inventory\Traits\InventoryTrait;
 use Modules\Inventory\Models\WarehouseIncome;
 use Modules\Inventory\Models\WarehouseIncomeItem;
 use Modules\Inventory\Models\WarehouseIncomeReason;
@@ -19,13 +18,21 @@ use App\Models\Tenant\Catalogs\CurrencyType;
 use App\CoreFacturalo\Requests\Inputs\Common\PersonInput;
 use App\Models\Tenant\Person;
 use App\Http\Controllers\Tenant\Api\ServiceController;
+use Illuminate\Support\Str;
 use App\Models\Tenant\Item;
+use Modules\Inventory\Traits\{
+    InventoryTrait,
+    UtilityTrait,
+};
 
 
 class WarehouseIncomeController extends Controller
 {
 
-    use InventoryTrait;
+    use InventoryTrait, UtilityTrait;
+
+    protected $warehouse_income;
+
 
     public function index()
     {
@@ -206,60 +213,17 @@ class WarehouseIncomeController extends Controller
     public function store(WarehouseIncomeRequest $request)
     {
 
+        // dd($request->all());
         $record = DB::connection('tenant')->transaction(function () use ($request) {
 
-            $purchase_order = $request->purchase_order;
-            $company = Company::active();
+            $data = $this->mergeData($request);
+            $this->warehouse_income = WarehouseIncome::create($data);
 
-            $purchase_order_income = WarehouseIncome::create([
-                'soap_type_id' => $company->soap_type_id,
-                'date_of_issue' => $request->date_of_issue,
-                'warehouse_id' => $request->warehouse_id,
-                'invoice_description' => $request->invoice_description,
-                'number' =>  self::newNumber(),
-                'purchase_order_id' => $purchase_order['id']
-            ]);
-
-            //income
-            foreach ($purchase_order['items'] as $item)
-            {
-
-                if($item['attended_quantity'] > 0){
-
-                    $purchase_order_income->inventories()->create([
-                        'type' => null,
-                        'description' => 'Ingreso desde O. Compra',
-                        'item_id' => $item['item_id'],
-                        'warehouse_id' => $request->warehouse_id,
-                        'warehouse_destination_id' => null,
-                        'inventory_transaction_id' => null,
-                        'quantity' => $item['attended_quantity'],
-                    ]); 
-
-                    $p_order_item = PurchaseOrderItem::find($item['id']);
-
-                    if($p_order_item->pending_quantity_income != $p_order_item->quantity){
-                        $p_order_item->attended_quantity += $item['attended_quantity'];
-                    }else{
-                        $p_order_item->attended_quantity = $item['attended_quantity'];
-                    }
-                    
-                    $p_order_item->pending_quantity_income -= $item['attended_quantity'];
-                    $p_order_item->save();
-                }
-
+            foreach ($data['items'] as $row) {
+                $this->warehouse_income->items()->create($row);
             }
-            
-            $pending_quantity_po = PurchaseOrderItem::where([['purchase_order_id', $purchase_order['id']], ['pending_quantity_income', '>', 0]])->count();
-            
-            if($pending_quantity_po == 0){
-                
-                $find_purchase_order = PurchaseOrder::find($purchase_order['id']);
-                $find_purchase_order->purchase_order_state_id = '13';
-                $find_purchase_order->save();
-
-            }
-
+             
+            $this->setFilename($this->warehouse_income);
 
             return  [
                 'success' => true,
@@ -270,14 +234,26 @@ class WarehouseIncomeController extends Controller
 
         return $record;
 
-
     }
 
-    private static function newNumber(){
 
-        $number = WarehouseIncome::select('number')->max('number');
-        return ($number) ? (int)$number + 1 : 1;
+    public function mergeData($inputs)
+    {
 
+        $company = Company::active();
+
+        $values = [
+            'user_id' => auth()->id(),
+            'soap_type_id' => $company->soap_type_id,
+            'supplier' => PersonInput::set($inputs['supplier_id']),
+            'external_id' => Str::uuid()->toString(),
+            'number' =>  $this->newNumber(WarehouseIncome::class),
+        ];
+
+        $inputs->merge($values);
+
+        return $inputs->all();
     }
+
 
 }

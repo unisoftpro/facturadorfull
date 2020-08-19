@@ -5,7 +5,7 @@ namespace Modules\Inventory\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class PurchaseOrderIncomeRequest extends FormRequest
+class WarehouseIncomeRequest  extends FormRequest
 {
     public function authorize()
     {

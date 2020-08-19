@@ -14,6 +14,8 @@ use Modules\Order\Models\OrderNoteItem;
 use Modules\Item\Models\ItemLotsGroup;
 use Modules\Item\Models\ItemLot;
 
+use Modules\Inventory\Models\WarehouseIncomeItem;
+
 class InventoryKardexServiceProvider extends ServiceProvider
 {
     use InventoryTrait;
@@ -33,6 +35,7 @@ class InventoryKardexServiceProvider extends ServiceProvider
         $this->purchase_item_delete();
         $this->item_lot_delete();
 
+        $this->warehouse_income();
 
     }
 
@@ -347,6 +350,18 @@ class InventoryKardexServiceProvider extends ServiceProvider
     }
 
 
+    private function warehouse_income() {
+
+        WarehouseIncomeItem::created(function ($warehouse_income_item) {
+
+            $warehouse = $this->findWarehouseById($warehouse_income_item->warehouse_income->warehouse_id);
+
+            $this->createInventoryKardex($warehouse_income_item->warehouse_income, $warehouse_income_item->item_id, $warehouse_income_item->quantity, $warehouse->id);
+            $this->updateStock($warehouse_income_item->item_id, $warehouse_income_item->quantity, $warehouse->id);
+
+        });
+
+    }
 
 
 
