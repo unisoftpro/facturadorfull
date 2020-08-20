@@ -133,7 +133,7 @@ if($hostname) {
                 Route::get('columns', 'WarehouseIncomeController@columns');
                 Route::get('item/tables', 'WarehouseIncomeController@item_tables');
                 Route::get('tables', 'WarehouseIncomeController@tables');
-                Route::get('record/{inventory}', 'WarehouseIncomeController@record');
+                Route::get('record/{record}', 'WarehouseIncomeController@record');
                 Route::post('/', 'WarehouseIncomeController@store');
                 Route::get('create', 'WarehouseIncomeController@create')->name('tenant.warehouse-income.create');
                 Route::get('item/list-price/{item_id}/{purchase_order_id}', 'WarehouseIncomeController@getListPrice');

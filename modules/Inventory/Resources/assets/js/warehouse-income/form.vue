@@ -168,6 +168,9 @@
                            @add="addRow"
                            ref="item_form"></item-form>
  
+        <warehouse-income-options :showDialog.sync="showDialogOptions"
+                          :recordId="recordId"
+                          :showClose="false"></warehouse-income-options>
 
     </div>
 </template>
@@ -175,11 +178,13 @@
 <script>
  
     import ItemForm from './partials/item.vue'
+    import WarehouseIncomeOptions from './partials/options.vue'
 
     export default {
-        components: {ItemForm},
+        components: {ItemForm, WarehouseIncomeOptions},
         data() {
             return {
+                showDialogOptions: false,
                 resource: 'warehouse-income',
                 errors: {},
                 form: {},
@@ -191,6 +196,7 @@
                 work_orders: [],
                 company: null,
                 number: null,
+                recordId: null,
                 currentRow: {},
                 showDialogAddItem: false,
                 loading_submit: false,
@@ -334,7 +340,7 @@
             },
             resetForm() {
                 this.initForm()
-                this.getTables()
+                // this.getTables()
             }, 
             async submit() { 
 
@@ -343,14 +349,16 @@
                 //     return this.$message.error(validate.message);
                 // }
 
-                // this.loading_submit = true
+                this.loading_submit = true
                 await this.$http.post(`/${this.resource}`, this.form)
                     .then(response => {
 
                         if (response.data.success) {
 
-                            this.$message.success(response.data.message)
+                            // this.$message.success(response.data.message)
                             this.resetForm()
+                            this.recordId = response.data.data.id
+                            this.showDialogOptions = true
  
                         } else {
                             this.$message.error(response.data.message)

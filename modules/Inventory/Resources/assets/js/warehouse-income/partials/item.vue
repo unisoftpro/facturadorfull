@@ -274,6 +274,8 @@
                     item_id: null,
                     item: {},
                     item_id: null,
+                    category_id: null,
+                    family_id: null,
                     quantity: 1,
                     list_price: 0,
                     discount_one: 0,
@@ -316,6 +318,8 @@
             async changeItem() {
 
                 this.form.item = await _.find(this.items, {'id': this.form.item_id})
+                this.form.category_id = this.form.item.category_id
+                this.form.family_id = this.form.item.family_id
                 await this.getListPrice()
                 await this.getLastPricePurchaseFactor()
 

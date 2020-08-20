@@ -5,6 +5,7 @@ namespace Modules\Inventory\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Modules\Inventory\Http\Resources\WarehouseIncomeResource;
 use Modules\Inventory\Http\Resources\WarehouseIncomeCollection;
 use Modules\Inventory\Models\WarehouseIncome;
 use Modules\Inventory\Models\WarehouseIncomeItem;
@@ -56,6 +57,14 @@ class WarehouseIncomeController extends Controller
         $records = WarehouseIncome::where($request->column, 'like', "%{$request->value}%")->latest();
 
         return new WarehouseIncomeCollection($records->paginate(config('tenant.items_per_page')));
+    }
+
+
+    public function record($id)
+    {
+        $record = WarehouseIncome::findOrFail($id);
+
+        return new WarehouseIncomeResource($record);
     }
 
 
@@ -198,6 +207,8 @@ class WarehouseIncomeController extends Controller
                                             'sale_unit_price' => $row->sale_unit_price,
                                             'purchase_unit_price' => $row->purchase_unit_price,
                                             'unit_type_id' => $row->unit_type_id, 
+                                            'category_id' => $row->category_id, 
+                                            'family_id' => $row->family_id, 
                                     ];
 
                                 });
@@ -224,6 +235,7 @@ class WarehouseIncomeController extends Controller
             }
              
             $this->setFilename($this->warehouse_income);
+            $this->createPdf($this->warehouse_income, "a4", 'warehouse_income');
 
             return  [
                 'success' => true,

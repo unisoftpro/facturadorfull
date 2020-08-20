@@ -33,6 +33,7 @@
                         <th>Moneda</th>
                         <th>Total original</th>
                         <th>Total nacional</th>
+                        <th class="text-right">Acciones</th>
                     </tr>
                     <tr></tr>
                     <tr slot-scope="{ index, row }">
@@ -45,42 +46,56 @@
                         <td>{{ row.currency_type_id}}</td>
                         <td>{{ row.original_total}}</td>
                         <td>{{ row.national_total}}</td>
+                        <td class="text-right">
+                            <button  type="button" class="btn waves-effect waves-light btn-xs btn-primary" @click.prevent="clickOptions(row.id)">Opciones</button>
+                        </td>
+
                     </tr>
                 </data-table>
             </div>
 
+            <warehouse-income-options :showDialog.sync="showDialogOptions"
+                            :recordId="recordId"
+                            :showClose="true"></warehouse-income-options>
         </div>
     </div>
 </template>
 
 <script>
-import DataTable from "@components/DataTable.vue";
-import {deletable} from "@mixins/deletable";
 
-export default {
-    components: {DataTable},
-    mixins: [deletable],
-    data() {
-        return {
-            title: null,
-            showDialog: false,
-            resource: 'warehouse-income',
-            recordId: null,
-            typeTransaction: null,
-        };
-    },
-    created() {
-        this.title = "Ingresos almacén";
-    },
-    methods: {
-        clickCreate(recordId = null) {
-            location.href = `/${this.resource}/create`;
+    import DataTable from "@components/DataTable.vue";
+    import {deletable} from "@mixins/deletable";
+    import WarehouseIncomeOptions from './partials/options.vue'
+
+    export default {
+        components: {DataTable, WarehouseIncomeOptions},
+        mixins: [deletable],
+        data() {
+            return {
+                title: null,
+                showDialog: false,
+                showDialogOptions: false,
+                resource: 'warehouse-income',
+                recordId: null,
+                typeTransaction: null,
+            };
         },
-        clickDelete(id) {
-            this.destroy(`/${this.resource}/${id}`).then(() =>
-                this.$eventHub.$emit("reloadData")
-            );
+        created() {
+            this.title = "Ingresos almacén";
         },
-    },
-};
+        methods: {
+            clickOptions(recordId = null) {
+                this.recordId = recordId
+                this.showDialogOptions = true
+            },
+            clickCreate(recordId = null) {
+                location.href = `/${this.resource}/create`;
+            },
+            clickDelete(id) {
+                this.destroy(`/${this.resource}/${id}`).then(() =>
+                    this.$eventHub.$emit("reloadData")
+                );
+            },
+        },
+    };
 </script>

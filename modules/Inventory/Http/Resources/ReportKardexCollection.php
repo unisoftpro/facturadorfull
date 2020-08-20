@@ -8,6 +8,7 @@ use Modules\Inventory\Models\InventoryKardex;
 use Modules\Inventory\Models\Warehouse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
+use Modules\Inventory\Models\WarehouseIncome;
 
 class ReportKardexCollection extends ResourceCollection
 {
@@ -33,7 +34,8 @@ class ReportKardexCollection extends ResourceCollection
             "App\Models\Tenant\Purchase",
             "App\Models\Tenant\SaleNote",
             "Modules\Inventory\Models\Inventory",
-            "Modules\Order\Models\OrderNote"
+            "Modules\Order\Models\OrderNote",
+            WarehouseIncome::class
         ];
 
         switch ($row->inventory_kardexable_type) {
@@ -152,6 +154,20 @@ class ReportKardexCollection extends ResourceCollection
                     'doc_asoc' => '-'
                 ];
 
+            case $models[5]:
+                return [
+                    'id' => $row->id,
+                    'item_name' => $row->item->description,
+                    'date_time' => $row->created_at->format('Y-m-d H:i:s'),
+                    'date_of_issue' => optional($row->inventory_kardexable)->date_of_issue,
+                    'type_transaction' => 'Ingreso a almacén',
+                    'number' => optional($row->inventory_kardexable)->number,
+                    'input' => $row->quantity,
+                    'output' => "-",
+                    'balance' => self::$balance+= $row->quantity,
+                    'sale_note_asoc' => '-',
+                    'doc_asoc' => '-'
+                ];
         }
 
 

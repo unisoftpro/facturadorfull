@@ -3,6 +3,8 @@
 namespace Modules\Inventory\Models;
 
 use App\Models\Tenant\ModelTenant;
+use Modules\Item\Models\Category;
+use Modules\Item\Models\Family;
 use App\Models\Tenant\Item; 
 
 class WarehouseIncomeItem extends ModelTenant
@@ -13,6 +15,8 @@ class WarehouseIncomeItem extends ModelTenant
     protected $fillable = [
         'warehouse_income_id',
         'item_id',
+        'category_id',
+        'family_id',
         'item',
         'quantity',
         'list_price',
@@ -55,5 +59,14 @@ class WarehouseIncomeItem extends ModelTenant
     {
         return $this->belongsTo(WarehouseIncome::class);
     }
-    
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function family()
+    {
+        return $this->belongsTo(Family::class);
+    }
 }

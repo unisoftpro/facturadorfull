@@ -74,6 +74,8 @@ trait StorageDocument
                 break;
             case 'work_order':
                 $extension = 'pdf';
+            case 'warehouse_income':
+                $extension = 'pdf';
                 break;
         }
         $this->_filename = $filename.'.'.$extension;
