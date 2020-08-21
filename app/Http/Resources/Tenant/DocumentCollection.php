@@ -23,6 +23,7 @@ class DocumentCollection extends ResourceCollection
             $btn_consult_cdr = false;
             $btn_delete_doc_type_03 = false;
             $btn_constancy_detraction = false;
+            $btn_edit = false;
 
             $affected_document = null;
 
@@ -65,6 +66,8 @@ class DocumentCollection extends ResourceCollection
 
             if (in_array($row->document_type_id, ['01', '03'])) {
                 $btn_constancy_detraction = ($row->detraction) ? true:false;
+
+                $btn_edit = ($row->state_type_id == '01') ? true : false;
             }
 
             $btn_recreate_document = config('tenant.recreate_document');
@@ -112,6 +115,7 @@ class DocumentCollection extends ResourceCollection
 //                'btn_ticket' => $btn_ticket,
                 'btn_resend' => $btn_resend,
                 'btn_consult_cdr' => $btn_consult_cdr,
+                'btn_edit' => $btn_edit,
                 'btn_constancy_detraction' => $btn_constancy_detraction,
                 'btn_recreate_document' => $btn_recreate_document,
                 'btn_change_to_registered_status' => $btn_change_to_registered_status,

@@ -142,6 +142,11 @@
                         <!--</td>-->
 
                         <td class="text-right" v-if="typeUser != 'integrator'">
+                            
+                            <a  class="btn waves-effect waves-light btn-xs btn-primary m-1__2"
+                                    :href="`/${resource}/edit/${row.id}`" 
+                                    v-if="row.btn_edit">Editar</a>
+
                             <button type="button" class="btn waves-effect waves-light btn-xs btn-danger m-1__2"
                                     @click.prevent="clickDeleteDocument(row.id)"
                                     v-if="row.btn_delete_doc_type_03">Eliminar</button>

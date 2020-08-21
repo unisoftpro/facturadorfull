@@ -15,6 +15,11 @@ if($current_hostname) {
             });
 
             Route::prefix('documents')->group(function() {
+
+                Route::post('update', 'DocumentController@update');
+                Route::get('edit/{document}', 'DocumentController@edit');
+                Route::get('edit/record/{document}', 'DocumentController@record');
+
                 Route::post('pay-constancy/upload', 'DocumentController@upload');
                 Route::post('pay-constancy/save', 'DocumentController@savePayConstancy');
                 Route::get('detraction/tables', 'DocumentController@detractionTables');

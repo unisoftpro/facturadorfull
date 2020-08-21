@@ -83,7 +83,7 @@
                             <div class="col-lg-2">
                                 <div class="form-group" :class="{'has-danger': errors.series_id}">
                                     <label class="control-label">Serie</label>
-                                    <el-select v-model="form.series_id">
+                                    <el-select v-model="form.series_id" :disabled="document_id ? true : false">
                                         <el-option v-for="option in series" :key="option.id" :value="option.id" :label="option.number"></el-option>
                                     </el-select>
                                     <small class="form-control-feedback" v-if="errors.series_id" v-text="errors.series_id[0]"></small>
@@ -591,7 +591,12 @@
 
                     <div class="form-actions text-right mt-4">
                         <el-button @click.prevent="close()">Cancelar</el-button>
-                        <el-button class="submit" type="primary" native-type="submit" :loading="loading_submit" v-if="form.items.length > 0 && this.dateValid">Generar</el-button>
+                        <template v-if="document_id">
+                            <el-button class="submit" type="primary" native-type="submit" :loading="loading_submit" v-if="form.items.length > 0 && this.dateValid">Actualizar</el-button>
+                        </template>
+                        <template v-else>
+                            <el-button class="submit" type="primary" native-type="submit" :loading="loading_submit" v-if="form.items.length > 0 && this.dateValid">Generar</el-button>
+                        </template>
                     </div>
                 </form>
             </div>
@@ -664,10 +669,10 @@
     import DocumentHotelForm from '../../../../../modules/BusinessTurn/Resources/assets/js/views/hotels/form.vue'
     import DocumentTransportForm from '../../../../../modules/BusinessTurn/Resources/assets/js/views/transports/form.vue'
     import DocumentDetraction from './partials/detraction.vue'
-import moment from 'moment'
+    import moment from 'moment'
 
     export default {
-        props: ['typeUser', 'configuration'],
+        props: ['typeUser', 'configuration', 'document_id'],
         components: {DocumentFormItem, PersonForm, DocumentOptions, Logo, DocumentHotelForm, DocumentDetraction, DocumentTransportForm},
         mixins: [functions, exchangeRate],
         data() {
@@ -748,7 +753,7 @@ import moment from 'moment'
                     this.all_customers = response.data.customers
                     this.discount_types = response.data.discount_types
                     this.charges_types = response.data.charges_types
-                   this.payment_method_types = response.data.payment_method_types
+                    this.payment_method_types = response.data.payment_method_types
                     this.enabled_discount_global = response.data.enabled_discount_global
                     this.company = response.data.company;
                     this.user = response.data.user;
@@ -778,8 +783,86 @@ import moment from 'moment'
             this.$eventHub.$on('initInputPerson', () => {
                 this.initInputPerson()
             })
+
+            await this.isUpdate()
+
         },
         methods: {
+            async isUpdate(){
+
+                if (this.document_id) {
+                    await this.$http.get(`/${this.resource}/edit/record/${this.document_id}`)
+                        .then(response => {
+                            this.setDataForm(response.data.data)
+                        })
+                }
+
+            }, 
+            setDataForm(document){
+
+                this.reloadDataCustomers(document.customer_id)
+                
+                let series = _.find(this.series, {'establishment_id': this.form.establishment_id,
+                                                         'document_type_id': this.form.document_type_id,
+                                                         'contingency': this.is_contingency,
+                                                         'number': document.series});
+
+                this.form = {
+                    id: this.document_id,
+                    establishment_id: document.establishment_id,
+                    document_type_id: document.document_type_id,
+                    series: document.series,
+                    series_id: series.id,
+                    number: document.number,
+                    date_of_issue: document.date_of_issue,
+                    time_of_issue: document.time_of_issue,
+                    customer_id: document.customer_id,
+                    currency_type_id: document.currency_type_id,
+                    purchase_order: document.purchase_order,
+                    exchange_rate_sale: document.exchange_rate_sale,
+                    total_prepayment: document.total_prepayment,
+                    total_charge: document.total_charge,
+                    total_discount: document.total_discount,
+                    total_exportation: document.total_exportation,
+                    total_free: document.total_free,
+                    total_taxed: document.total_taxed,
+                    total_unaffected: document.total_unaffected,
+                    total_exonerated: document.total_exonerated,
+                    total_igv: document.total_igv,
+                    total_base_isc: document.total_base_isc,
+                    total_isc: document.total_isc,
+                    total_base_other_taxes: document.total_base_other_taxes,
+                    total_other_taxes: document.total_other_taxes,
+                    total_plastic_bag_taxes: document.total_plastic_bag_taxes,
+                    total_taxes: document.total_taxes,
+                    total_value: document.total_value,
+                    total: document.total,
+                    operation_type_id: document.invoice.operation_type_id,
+                    date_of_due: document.invoice.date_of_due,
+                    items: document.items,
+                    charges: document.charges ? document.charges : [],
+                    discounts: document.discounts ? document.discounts : [],
+                    attributes: document.attributes ? document.attributes : [],
+                    guides: document.guides ? document.guides : [],
+                    payments: document.payments ? document.payments : [],
+                    prepayments: document.prepayments ? document.prepayments : [],
+                    legends: document.legends ? document.legends : [],
+                    detraction: document.detraction ? document.detraction : {},
+                    additional_information: document.additional_information,
+                    plate_number: document.plate_number,
+                    has_prepayment: document.has_prepayment,
+                    affectation_type_prepayment: document.affectation_type_prepayment,
+                    actions: {
+                        format_pdf:'a4',
+                    },
+                    hotel: document.hotel ? document.hotel : {},
+                    transport: document.transport ? document.transport : {},
+                    customer_address_id: document.customer_address_id,
+                    pending_amount_prepayment: document.pending_amount_prepayment,
+                    payment_method_type_id: document.payment_method_type_id,
+                }
+
+            },
             getPrepayment(index){
                 return _.find(this.prepayment_documents, {id: this.form.prepayments[index].document_id})
             },
@@ -1607,7 +1690,9 @@ import moment from 'moment'
                 }
 
                 this.loading_submit = true
-                this.$http.post(`/${this.resource}`, this.form).then(response => {
+                let resource = (this.document_id) ? `${this.resource}/update` : this.resource
+
+                this.$http.post(`/${resource}`, this.form).then(response => {
                     if (response.data.success) {
                         this.$eventHub.$emit('reloadDataItems', null)
                         this.resetForm();

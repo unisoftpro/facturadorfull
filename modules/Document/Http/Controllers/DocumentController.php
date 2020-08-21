@@ -7,6 +7,7 @@ use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use App\Models\Tenant\Document;
 use Modules\Document\Http\Resources\DocumentNotSentCollection;
+use Modules\Document\Http\Resources\DocumentResource;
 use App\Models\Tenant\Catalogs\DocumentType;
 use App\Models\Tenant\Establishment;
 use App\Models\Tenant\Series;
@@ -19,10 +20,12 @@ use App\Models\Tenant\Catalogs\PaymentMethodType as CatPaymentMethodType;
 use App\Traits\OfflineTrait;
 use Modules\Inventory\Models\Warehouse as ModuleWarehouse;
 use App\Models\Tenant\Item;
+use App\Models\Tenant\Configuration;
 use Modules\Document\Traits\SearchTrait;
 use Modules\Finance\Helpers\UploadFileHelper;
+use App\Http\Requests\Tenant\DocumentRequest;
 use Modules\Document\Helpers\ConsultCdr;
-
+use Exception;
 
 class DocumentController extends Controller
 {
@@ -34,6 +37,65 @@ class DocumentController extends Controller
         $is_client = $this->getIsClient();
 
         return view('document::documents.not_sent', compact('is_client'));
+    }
+    
+
+    public function edit($document_id)
+    {
+        if(auth()->user()->type == 'integrator')
+            return redirect('/documents');
+
+        $configuration = Configuration::first();
+        $is_contingency = 0;
+
+        //validate state
+        $document = Document::select('state_type_id')->findOrFail($document_id);
+
+        if($document->state_type_id !== '01' || in_array($document->document_type_id, ['07', '08'])){
+            throw new Exception('Acción no permitida');
+        }
+
+        return view('tenant.documents.form', compact('is_contingency', 'configuration', 'document_id'));
+    }
+    
+
+    public function record($id)
+    {
+        $record = new DocumentResource(Document::findOrFail($id));
+
+        return $record;
+    }
+
+    
+    public function update(DocumentRequest $request)
+    {
+
+        return $request->all();
+
+        $fact = DB::connection('tenant')->transaction(function () use ($request) {
+            $facturalo = new Facturalo();
+            $facturalo->save($request->all());
+            $facturalo->createXmlUnsigned();
+            $facturalo->signXmlUnsigned();
+            $facturalo->updateHash();
+            $facturalo->updateQr();
+            $facturalo->createPdf();
+            $facturalo->senderXmlSignedBill();
+
+            return $facturalo;
+        });
+
+        $document = $fact->getDocument();
+        $response = $fact->getResponse();
+
+        return [
+            'success' => true,
+            'data' => [
+                'id' => $document->id,
+                'response' =>$response
+
+            ],
+        ];
     }
 
     public function records(Request $request)
