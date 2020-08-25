@@ -95,7 +95,7 @@
             </template>
             <template v-else>
                 <el-button class="list" @click="clickFinalize">Ir al listado</el-button>
-                <el-button type="primary" @click="clickNewDocument">Nuevo comprobante</el-button>
+                <el-button type="primary" @click="clickNewDocument">{{ titleButton }}</el-button>
             </template>
         </span>
     </el-dialog>
@@ -103,10 +103,11 @@
 
 <script>
     export default {
-        props: ['showDialog', 'recordId', 'showClose','isContingency','generatDispatch','dispatchId'],
+        props: ['showDialog', 'recordId', 'showClose','isContingency','generatDispatch','dispatchId', 'updateDocument'],
         data() {
             return {
                 titleDialog: null,
+                titleButton: null,
                 loading: false,
                 resource: 'documents',
                 errors: {},
@@ -153,6 +154,7 @@
             },
             async create() {
                 
+                this.titleButton = (this.updateDocument) ? 'Continuar' : 'Nuevo comprobante'
                 await this.getCompany()
                 await this.getRecord()
 

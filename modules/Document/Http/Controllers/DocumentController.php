@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use App\Models\Tenant\Document;
+use App\Models\Tenant\DocumentItem;
 use Modules\Document\Http\Resources\DocumentNotSentCollection;
 use Modules\Document\Http\Resources\DocumentResource;
 use App\Models\Tenant\Catalogs\DocumentType;
@@ -25,11 +26,16 @@ use Modules\Document\Traits\SearchTrait;
 use Modules\Finance\Helpers\UploadFileHelper;
 use App\Http\Requests\Tenant\DocumentRequest;
 use Modules\Document\Helpers\ConsultCdr;
+use Modules\Finance\Traits\FinanceTrait;
+use Illuminate\Support\Facades\DB;
+use App\CoreFacturalo\Facturalo;
 use Exception;
+use Modules\Document\Helpers\DocumentHelper;
+
 
 class DocumentController extends Controller
 {
-    use OfflineTrait, SearchTrait;
+    use OfflineTrait, FinanceTrait, SearchTrait;
 
     public function index()
     {
@@ -70,21 +76,41 @@ class DocumentController extends Controller
     public function update(DocumentRequest $request)
     {
 
-        return $request->all();
-
         $fact = DB::connection('tenant')->transaction(function () use ($request) {
+
+            $data = DocumentHelper::set($request->all());
+            dd($data);
+            $document = Document::findOrFail($request->id);
+            $document->fill($data);
+            $document->update();
+
+            //voided items in provider
+            foreach ($document->items as $item) {
+                $item->delete();
+            }
+
+            foreach($data['items'] as $row) {
+                $document->items()->create($row);
+            }
+
             $facturalo = new Facturalo();
-            $facturalo->save($request->all());
+
+            $this->deleteAllPayments($document->payments);
+            $facturalo->savePayments($document, $data['payments']);
+
+
+            $type = 'invoice';
+            $facturalo->setDocument($document);
+            $facturalo->setType($type);
             $facturalo->createXmlUnsigned();
             $facturalo->signXmlUnsigned();
             $facturalo->updateHash();
             $facturalo->updateQr();
-            $facturalo->createPdf();
-            $facturalo->senderXmlSignedBill();
+            $facturalo->createPdf($document, $type, 'a4');
 
             return $facturalo;
         });
-
+         
         $document = $fact->getDocument();
         $response = $fact->getResponse();
 
@@ -93,10 +119,24 @@ class DocumentController extends Controller
             'data' => [
                 'id' => $document->id,
                 'response' =>$response
-
             ],
         ];
     }
+    
+
+    public function deleteItem($id)
+    {
+
+        $record = DocumentItem::findOrFail($id);
+        $record->delete();
+
+        return [
+            'success' => true,
+            'message' => 'Item eliminado con éxito'
+        ];
+
+    }
+    
 
     public function records(Request $request)
     {

@@ -88,7 +88,49 @@ class DocumentResource extends JsonResource
             'pending_amount_prepayment' => $this->pending_amount_prepayment,
             'payment_method_type_id' => $this->payment_method_type_id,
 
-            'items' => $this->items,
+            'items' => $this->items->transform(function($row, $key){
+
+                $item_additional_information = implode('|', $row->additional_information);
+
+                return [
+                    'id' => $row->id,
+                    'document_id' => $row->document_id,
+                    'item_id' => $row->item_id,
+                    'item' => $row->item,
+                    'quantity' => $row->quantity,
+                    'unit_value' => $row->unit_value,
+                    'affectation_igv_type_id' => $row->affectation_igv_type_id,
+                    'affectation_igv_type' => $row->affectation_igv_type,
+                    'total_base_igv' => $row->total_base_igv,
+                    'percentage_igv' => $row->percentage_igv,
+                    'total_igv' => $row->total_igv,
+                    'system_isc_type_id' => $row->system_isc_type_id,
+                    'total_base_isc' => $row->total_base_isc,
+                    'percentage_isc' => $row->percentage_isc,
+                    'total_isc' => $row->total_isc,
+                    'total_base_other_taxes' => $row->total_base_other_taxes,
+                    'percentage_other_taxes' => $row->percentage_other_taxes,
+                    'total_other_taxes' => $row->total_other_taxes,
+                    'total_plastic_bag_taxes' => $row->total_plastic_bag_taxes,
+                    'total_taxes' => $row->total_taxes,
+                    'price_type_id' => $row->price_type_id,
+                    'unit_price' => $row->unit_price,
+                    'input_unit_price_value' => $row->unit_price,
+                    'total_value' => $row->total_value,
+                    'total_charge' => $row->total_charge,
+                    'total_discount' => $row->total_discount,
+                    'total' => $row->total,
+                    'attributes' => $row->attributes ? $row->attributes : [],
+                    'discounts' => $row->discounts ? $row->discounts : [],
+                    'charges' => $row->charges ? $row->charges : [],
+                    'additional_information' => $item_additional_information == "" ? null : $item_additional_information,
+                    'warehouse_id' => $row->warehouse_id,
+                    'name_product_pdf' => $row->name_product_pdf,
+                    
+                ];
+            }),
+
+
             'invoice' => [
                 'id' => $this->invoice->id,
                 'document_id' => $this->invoice->document_id,

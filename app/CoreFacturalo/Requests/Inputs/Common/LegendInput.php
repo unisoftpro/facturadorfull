@@ -48,4 +48,32 @@ class LegendInput
 
         return $legends;
     }
+
+    
+    public static function updateSet($inputs)
+    {
+
+        $legends = [];
+        if(array_key_exists('legends', $inputs)) {
+            if($inputs['legends']) {
+                foreach ($inputs['legends'] as $row)
+                {
+                    $code = $row['code'];
+                    $value = $row['value'];
+
+                    if($code === 1000){
+                        $value = NumberLetter::convertToLetter($inputs['total']);
+                    }
+
+                    $legends[] = [
+                        'code' => $code,
+                        'value' => $value
+                    ];
+                }
+            }
+        } 
+ 
+        return $legends;
+
+    }
 }

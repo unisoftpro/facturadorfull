@@ -64,7 +64,7 @@
 
                                     </el-select>
                                     <el-tooltip slot="append" class="item" effect="dark" content="Ver Stock del Producto" placement="bottom" :disabled="recordItem != null">
-                                        <el-button :disabled="isEditItemNote"  @click.prevent="clickWarehouseDetail()"><i class="fa fa-search"></i></el-button>
+                                        <el-button :disabled="isEditItemNote || updateDocument"  @click.prevent="clickWarehouseDetail()"><i class="fa fa-search"></i></el-button>
                                     </el-tooltip>
                                 </el-input>
                             </template>
@@ -198,7 +198,7 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                <tr v-for="(row, index) in form.item_unit_types">
+                                <tr v-for="(row, index) in form.item_unit_types" :key="index">
 
                                         <td class="text-center">{{row.unit_type_id}}</td>
                                         <td class="text-center">{{row.description}}</td>
@@ -281,7 +281,7 @@
                                                 </tr>
                                                 </thead>
                                                 <tbody>
-                                                <tr v-for="(row, index) in form.discounts">
+                                                <tr v-for="(row, index) in form.discounts" :key="index">
                                                     <td>
                                                         <el-select v-model="row.discount_type_id" @change="changeDiscountType(index)">
                                                             <el-option v-for="option in discount_types" :key="option.id" :value="option.id" :label="option.description"></el-option>
@@ -316,7 +316,7 @@
                                                 </tr>
                                                 </thead>
                                                 <tbody>
-                                                <tr v-for="(row, index) in form.charges">
+                                                <tr v-for="(row, index) in form.charges" :key="index">
                                                     <td>
                                                         <el-select v-model="row.charge_type_id" @change="changeChargeType(index)">
                                                             <el-option v-for="option in charge_types" :key="option.id" :value="option.id" :label="option.description"></el-option>
@@ -349,7 +349,7 @@
                                                 </tr>
                                                 </thead>
                                                 <tbody>
-                                                <tr v-for="(row, index) in form.attributes">
+                                                <tr v-for="(row, index) in form.attributes" :key="index">
                                                     <td>
                                                         <el-select v-model="row.attribute_type_id" filterable @change="changeAttributeType(index)">
                                                             <el-option v-for="option in attribute_types" :key="option.id" :value="option.id" :label="option.description"></el-option>
@@ -534,7 +534,7 @@
     import VueCkeditor from 'vue-ckeditor5'
 
     export default {
-        props: ['recordItem','showDialog', 'operationTypeId', 'currencyTypeIdActive', 'exchangeRateSale', 'typeUser', 'isEditItemNote', 'configuration'],
+        props: ['recordItem','showDialog', 'operationTypeId', 'currencyTypeIdActive', 'exchangeRateSale', 'typeUser', 'isEditItemNote', 'configuration', 'updateDocument'],
         components: {ItemForm, WarehousesDetail, LotsGroup, SelectLotsForm, 'vue-ckeditor': VueCkeditor.component},
         data() {
             return {
@@ -693,7 +693,7 @@
                     has_plastic_bag_taxes:false,
                     warehouse_id:null,
                     lots_group: [],
-                    IdLoteSelected: null
+                    IdLoteSelected: null,
                 };
 
                 this.activePanel = 0;
@@ -713,6 +713,10 @@
 
 
                 if (this.recordItem) {
+
+                    if(this.updateDocument){
+                        await this.getItemById()
+                    }
                     // console.log(this.recordItem)
                     this.form.item_id = await this.recordItem.item_id
                     await this.changeItem()
@@ -727,13 +731,23 @@
                         this.form.item.currency_type_symbol = (this.currencyTypeIdActive == 'PEN') ? 'S/':'$'
                     }
 
-                    this.form.name_product_pdf = this.recordItem.name_product_pdf
+                    if(this.recordItem.name_product_pdf){
+                        this.form.name_product_pdf = this.recordItem.name_product_pdf
+                    }
 
 
                     this.calculateQuantity()
                 }else{
                     this.isUpdateWarehouseId = null
                 }
+
+            },
+            async getItemById(){
+                
+                await this.$http.get(`/${this.resource}/search/item/${this.recordItem.item_id}`)
+                        .then(response => {
+                            this.items = response.data.items
+                        })
 
             },
             clickAddDiscount() {

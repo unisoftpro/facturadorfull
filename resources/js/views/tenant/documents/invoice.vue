@@ -51,7 +51,7 @@
                                     <!--<label class="control-label font-weight-bold text-info full-text">Tipo de comprobante</label>-->
                                     <!--<label class="control-label font-weight-bold text-info short-text">Tipo comprobante</label>-->
                                     <label class="control-label font-weight-bold text-info">Tipo comprobante</label>
-                                    <el-select v-model="form.document_type_id" @change="changeDocumentType" popper-class="el-select-document_type" dusk="document_type_id" class="border-left rounded-left border-info">
+                                    <el-select v-model="form.document_type_id" @change="changeDocumentType" popper-class="el-select-document_type" dusk="document_type_id" class="border-left rounded-left border-info" :disabled="updateDocument">
                                         <el-option v-for="option in document_types" :key="option.id" :value="option.id" :label="option.description"></el-option>
                                     </el-select>
                                     <small class="form-control-feedback" v-if="errors.document_type_id" v-text="errors.document_type_id[0]"></small>
@@ -483,7 +483,7 @@
                                                 <td class="text-right">{{currency_type.symbol}} {{row.total_value}}</td>
                                                 <!--<td class="text-right">{{ currency_type.symbol }} {{ row.total_charge }}</td>-->
                                                 <td class="text-right">{{currency_type.symbol}} {{row.total}}</td>
-                                                <td class="text-right">
+                                                <td class="text-right"> 
                                                     <button type="button" class="btn waves-effect waves-light btn-xs btn-danger" @click.prevent="clickRemoveItem(index)">x</button>
                                                     <button type="button" class="btn waves-effect waves-light btn-xs btn-info" @click="ediItem(row, index)" ><span style='font-size:10px;'>&#9998;</span> </button>
 
@@ -610,6 +610,7 @@
                            :typeUser="typeUser"
                            :configuration="configuration"
                            :editNameProduct="configuration.edit_name_product"
+                           :updateDocument="updateDocument"
                            @add="addRow"></document-form-item>
 
         <person-form :showDialog.sync="showDialogNewPerson"
@@ -620,6 +621,7 @@
 
         <document-options :showDialog.sync="showDialogOptions"
                           :recordId="documentNewId"
+                          :updateDocument="updateDocument"
                           :isContingency="is_contingency"
                           :showClose="false"></document-options>
 
@@ -737,6 +739,7 @@
                 form_cash_document: {},
                 enabled_payments: true,
                 readonly_date_of_due: false,
+                updateDocument: false,
             }
         },
         async created() {
@@ -787,7 +790,7 @@
             await this.isUpdate()
 
         },
-        methods: {
+        methods: { 
             async isUpdate(){
 
                 if (this.document_id) {
@@ -1322,6 +1325,9 @@
                 
                 this.enabled_payments = true
                 this.readonly_date_of_due = false
+
+                this.updateDocument = (this.document_id) ? true : false
+
             },
             initInputPerson(){
                 this.input_person = {
@@ -1689,7 +1695,7 @@
                     this.form.payments = []
                 }
 
-                this.loading_submit = true
+                // this.loading_submit = true
                 let resource = (this.document_id) ? `${this.resource}/update` : this.resource
 
                 this.$http.post(`/${resource}`, this.form).then(response => {
@@ -1700,6 +1706,7 @@
                         this.showDialogOptions = true;
 
                         this.form_cash_document.document_id = response.data.data.id;
+                        this.isUpdate()
 
                         // this.savePaymentMethod();
                         this.saveCashDocument();

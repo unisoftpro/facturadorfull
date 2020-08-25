@@ -33,6 +33,7 @@ class InventoryKardexServiceProvider extends ServiceProvider
         $this->purchase_item_delete();
         $this->item_lot_delete();
 
+        $this->document_item_delete();
 
     }
 
@@ -346,6 +347,34 @@ class InventoryKardexServiceProvider extends ServiceProvider
         });*/
     }
 
+
+    private function document_item_delete() {
+
+        //use in edit cpe
+        DocumentItem::deleted(function ($document_item) {
+
+            // dd($document_item->document);
+            $document = $document_item->document;
+            $warehouse = $this->findWarehouse($document['establishment_id']);
+
+            if(!$document_item->item->is_set){
+
+                $presentationQuantity = (!empty($document_item['item']->presentation)) ? $document_item['item']->presentation->quantity_unit : 1;
+
+                $this->createInventoryKardex($document, $document_item['item_id'], $document_item['quantity'] * $presentationQuantity, $warehouse->id);
+                $this->updateStock($document_item['item_id'], $document_item['quantity'] * $presentationQuantity, $warehouse->id);
+                $this->updateDataLots($document_item);
+
+            }
+            else{
+                
+                $this->voidedDocumentItemSet($document_item);
+
+            }
+
+        });
+
+    }
 
 
 

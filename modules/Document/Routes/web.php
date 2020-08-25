@@ -19,6 +19,7 @@ if($current_hostname) {
                 Route::post('update', 'DocumentController@update');
                 Route::get('edit/{document}', 'DocumentController@edit');
                 Route::get('edit/record/{document}', 'DocumentController@record');
+                Route::delete('delete-item/{id}', 'DocumentController@deleteItem');
 
                 Route::post('pay-constancy/upload', 'DocumentController@upload');
                 Route::post('pay-constancy/save', 'DocumentController@savePayConstancy');
