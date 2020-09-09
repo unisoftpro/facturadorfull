@@ -124,7 +124,7 @@ if($hostname) {
                 // Route::get('items/{warehouse_id}', 'PurchaseOrderIncomeController@items');
 
             });
-            
+
 
             Route::prefix('warehouse-income')->group(function () {
 
@@ -139,6 +139,8 @@ if($hostname) {
                 Route::get('item/list-price/{item_id}/{purchase_order_id}', 'WarehouseIncomeController@getListPrice');
                 Route::get('exchange-rate/{date_reference}/{supplier_id}', 'WarehouseIncomeController@getExchangeRate');
                 Route::get('item/additional-values/{item_id}', 'WarehouseIncomeController@getAdditionalValues');
+                Route::get('download/{external_id}/{template}', 'WarehouseIncomeController@download');
+
 
             });
 

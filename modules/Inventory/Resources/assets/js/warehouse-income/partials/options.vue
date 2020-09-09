@@ -3,14 +3,20 @@
                :close-on-click-modal="false"
                :close-on-press-escape="false"
                :show-close="false">
-    
+
         <div class="row">
 
-            <div class="col-lg-12 col-md-12 col-sm-12 text-center font-weight-bold mt-3">
-                <button type="button" class="btn btn-lg btn-info waves-effect waves-light" @click="clickPrint('a4')">
+            <div class="col-lg-6 col-md-6 col-sm-6 text-center font-weight-bold mt-3">
+                <button type="button" class="btn btn-lg btn-info waves-effect waves-light" @click="clickDownload('format1')">
                     <i class="fa fa-file-alt"></i>
                 </button>
-                <p>Imprimir A4</p>
+                <p>Formato 1 A4</p>
+            </div>
+            <div class="col-lg-6 col-md-6 col-sm-6 text-center font-weight-bold mt-3">
+                <button type="button" class="btn btn-lg btn-info waves-effect waves-light" @click="clickDownload('format2')">
+                    <i class="fa fa-file-alt"></i>
+                </button>
+                <p>Formato 2 A4</p>
             </div>
 
         </div>
@@ -43,6 +49,10 @@
             this.initForm()
         },
         methods: {
+            clickDownload(template)
+            {
+                window.open(`/${this.resource}/download/${this.form.external_id}/${template}`, '_blank');
+            },
             clickPrint(format){
                 window.open(`/${this.resource}/print/${this.form.external_id}/${format}`, '_blank');
             },
@@ -61,7 +71,7 @@
                         this.titleDialog = `Ingreso registrado: ` +this.form.number
                     })
             },
-          
+
             clickFinalize() {
                 location.href = `/${this.resource}`
             },

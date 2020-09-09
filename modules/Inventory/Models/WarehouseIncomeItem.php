@@ -5,13 +5,13 @@ namespace Modules\Inventory\Models;
 use App\Models\Tenant\ModelTenant;
 use Modules\Item\Models\Category;
 use Modules\Item\Models\Family;
-use App\Models\Tenant\Item; 
+use App\Models\Tenant\Item;
 
 class WarehouseIncomeItem extends ModelTenant
 {
 
     public $timestamps = false;
-    
+
     protected $fillable = [
         'warehouse_income_id',
         'item_id',
@@ -49,12 +49,12 @@ class WarehouseIncomeItem extends ModelTenant
     {
         $this->attributes['item'] = (is_null($value))?null:json_encode($value);
     }
-    
+
     public function relation_item()
     {
-        return $this->belongsTo(Item::class);
+        return $this->belongsTo(Item::class, 'item_id');
     }
-     
+
     public function warehouse_income()
     {
         return $this->belongsTo(WarehouseIncome::class);

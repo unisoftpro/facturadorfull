@@ -25,6 +25,11 @@ use Modules\Inventory\Traits\{
     InventoryTrait,
     UtilityTrait,
 };
+use Barryvdh\DomPDF\Facade as PDF;
+use Modules\Inventory\Models\Warehouse as ModuleWarehouse;
+
+
+
 
 
 class WarehouseIncomeController extends Controller
@@ -80,7 +85,7 @@ class WarehouseIncomeController extends Controller
         ];
     }
 
-    
+
     public function item_tables()
     {
 
@@ -100,7 +105,7 @@ class WarehouseIncomeController extends Controller
                 'list_price' => round($item->unit_value, 2)
             ];
         }
-        
+
         return [
             'list_price' => 0
         ];
@@ -119,9 +124,9 @@ class WarehouseIncomeController extends Controller
                 'exchange_rate_sale' => $record->exchange_rate_sale
             ];
         }
-        
+
         $exchange_rate = app(ServiceController::class)->exchangeRateTest(date('Y-m-d'));
-        
+
         return [
             'success' => false,
             'message' => 'No se encontró una O. Compra asociada al proveedor, se obtendra el T/C del día',
@@ -130,7 +135,7 @@ class WarehouseIncomeController extends Controller
 
     }
 
- 
+
     public function getAdditionalValues($item_id)
     {
 
@@ -147,14 +152,14 @@ class WarehouseIncomeController extends Controller
                 'last_factor' => $record->sale_profit_factor,
             ];
         }
-        
+
         return [
             'last_purchase_price' => 0,
             'last_factor' => 0,
         ];
 
     }
- 
+
 
     public function table($table)
     {
@@ -171,7 +176,7 @@ class WarehouseIncomeController extends Controller
                                         ];
                                     });
 
-                break; 
+                break;
 
             case 'suppliers':
 
@@ -188,7 +193,7 @@ class WarehouseIncomeController extends Controller
 
                 break;
 
-                
+
             case 'items':
 
                 $data = Item::orderBy('description')
@@ -206,9 +211,9 @@ class WarehouseIncomeController extends Controller
                                             'currency_type_symbol' => $row->currency_type->symbol,
                                             'sale_unit_price' => $row->sale_unit_price,
                                             'purchase_unit_price' => $row->purchase_unit_price,
-                                            'unit_type_id' => $row->unit_type_id, 
-                                            'category_id' => $row->category_id, 
-                                            'family_id' => $row->family_id, 
+                                            'unit_type_id' => $row->unit_type_id,
+                                            'category_id' => $row->category_id,
+                                            'family_id' => $row->family_id,
                                     ];
 
                                 });
@@ -219,7 +224,7 @@ class WarehouseIncomeController extends Controller
         return $data;
 
     }
- 
+
 
     public function store(WarehouseIncomeRequest $request)
     {
@@ -233,7 +238,7 @@ class WarehouseIncomeController extends Controller
             foreach ($data['items'] as $row) {
                 $this->warehouse_income->items()->create($row);
             }
-             
+
             $this->setFilename($this->warehouse_income);
             $this->createPdf($this->warehouse_income, "a4", 'warehouse_income');
 
@@ -265,6 +270,23 @@ class WarehouseIncomeController extends Controller
         $inputs->merge($values);
 
         return $inputs->all();
+    }
+
+    public function download($external_id, $template)
+    {
+       // $establishment_id = auth()->user()->establishment_id;
+       // $warehouse = ModuleWarehouse::where('establishment_id', $establishment_id)->first();
+        $company = Company::first();
+
+        $record = WarehouseIncome::where('external_id', $external_id)->first();
+        $view = "inventory::warehouse-income.report.{$template}";
+
+        set_time_limit(0);
+
+        $pdf = PDF::loadView($view, compact("record", "company"));
+        $filename = "Reporte_{$template}";
+
+        return $pdf->download($filename.'.pdf');
     }
 
 
