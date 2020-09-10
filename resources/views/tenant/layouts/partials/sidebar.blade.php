@@ -477,7 +477,7 @@
                                     <a class="nav-link" href="{{route('tenant.purchase-order-income.index')}}">Ingresos - O. Compra</a>
                                 </li>
                                 <li class="{{ ($path[0] === 'warehouse-income')?'nav-active':'' }}">
-                                    <a class="nav-link" href="{{route('tenant.warehouse-income.index')}}">Ingresos almacén</a>
+                                    <a class="nav-link" href="{{route('tenant.warehouse-income.index')}}">Ingresos almacén - OT</a>
                                 </li>
                                 <li class="{{(($path[0] === 'reports') && ($path[1] === 'kardex')) ? 'nav-active' : ''}}">
                                     <a class="nav-link" href="{{route('reports.kardex.index')}}">
