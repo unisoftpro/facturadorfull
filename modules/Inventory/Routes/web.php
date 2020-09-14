@@ -144,6 +144,24 @@ if($hostname) {
 
             });
 
+            Route::prefix('warehouse-expense')->group(function () {
+
+                Route::get('/', 'WarehouseExpenseController@index')->name('tenant.warehouse-expense.index');
+                Route::get('records', 'WarehouseExpenseController@records');
+                Route::get('columns', 'WarehouseExpenseController@columns');
+                Route::get('item/tables', 'WarehouseExpenseController@item_tables');
+                Route::get('tables', 'WarehouseExpenseController@tables');
+                Route::get('record/{record}', 'WarehouseExpenseController@record');
+                Route::post('/', 'WarehouseExpenseController@store');
+                Route::get('create', 'WarehouseExpenseController@create')->name('tenant.warehouse-income.create');
+                Route::get('item/list-price/{item_id}/{purchase_order_id}', 'WarehouseExpenseController@getListPrice');
+                Route::get('exchange-rate/{date_reference}/{supplier_id}', 'WarehouseExpenseController@getExchangeRate');
+                Route::get('item/additional-values/{item_id}', 'WarehouseExpenseController@getAdditionalValues');
+                Route::get('download/{id}', 'WarehouseExpenseController@download');
+
+
+            });
+
         });
     });
 }

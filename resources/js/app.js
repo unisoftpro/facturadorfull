@@ -213,7 +213,7 @@ Vue.component('tenant-dispatchers-index', require('@viewsModuleOrder/dispatchers
 Vue.component('tenant-order-forms-index', require('@viewsModuleOrder/order_forms/index.vue'));
 Vue.component('tenant-order-forms-form', require('@viewsModuleOrder/order_forms/form.vue'));
 
-//Transport 
+//Transport
 Vue.component('tenant-transport-vehicle-brands-index', require('@viewsModuleTransport/vehicle-brands/index.vue'));
 Vue.component('tenant-transport-vehicle-types-index', require('@viewsModuleTransport/vehicle-types/index.vue'));
 Vue.component('tenant-transport-fuel-types-index', require('@viewsModuleTransport/fuel-types/index.vue'));
@@ -233,6 +233,9 @@ Vue.component('tenant-inventory-purchase-order-income-index', require('@viewsMod
 Vue.component('tenant-inventory-purchase-order-income-form', require('@viewsModuleInventory/purchase-order-income/form.vue'));
 Vue.component('tenant-inventory-warehouse-income-index', require('@viewsModuleInventory/warehouse-income/index.vue'));
 Vue.component('tenant-inventory-warehouse-income-form', require('@viewsModuleInventory/warehouse-income/form.vue'));
+
+Vue.component('tenant-inventory-warehouse-expense-index', require('@viewsModuleInventory/warehouse-expense/index.vue'));
+Vue.component('tenant-inventory-warehouse-expense-form', require('@viewsModuleInventory/warehouse-expense/form.vue'));
 
 // System
 Vue.component('system-clients-index', require('./views/system/clients/index.vue'));

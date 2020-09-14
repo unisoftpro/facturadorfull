@@ -76,6 +76,8 @@ trait StorageDocument
                 $extension = 'pdf';
             case 'warehouse_income':
                 $extension = 'pdf';
+            case 'warehouse_expense':
+                $extension = 'pdf';
                 break;
         }
         $this->_filename = $filename.'.'.$extension;
