@@ -62,7 +62,7 @@
 
 <script>
 export default {
-    props: ["showDialog", "lots_group", "stock", "recordId", "quantity"],
+    props: ["showDialog", "lots_group", "stock", "recordId", "quantity", "IdLoteSelected"],
     data() {
         return {
             titleDialog: "Lotes",
@@ -121,9 +121,18 @@ export default {
             this.multipleSelection = [row];
         },
         create() {
-          this.filter()
+            this.filter()
+            this.selectLot()
         },
-
+        selectLot(){
+            
+            this.lots_group_.forEach(lt => {
+                if(lt.id == this.IdLoteSelected){
+                    lt.checked = true
+                    this.idSelected = this.IdLoteSelected
+                }
+            })
+        },
         async submit() {
             await this.$emit("addRowLotGroup", this.idSelected);
             await this.$emit("update:showDialog", false);

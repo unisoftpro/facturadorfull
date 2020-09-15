@@ -503,6 +503,7 @@
             :quantity="form.quantity"
             :showDialog.sync="showDialogLots"
             :lots_group="form.lots_group"
+            :IdLoteSelected="form.IdLoteSelected"
             @addRowLotGroup="addRowLotGroup">
         </lots-group>
 
@@ -510,6 +511,7 @@
             :showDialog.sync="showDialogSelectLots"
             :lots="lots"
             :itemId="form.item_id"
+            :updateDocument="updateDocument"
             @addRowSelectLot="addRowSelectLot">
         </select-lots-form>
 
@@ -716,10 +718,10 @@
 
                 if (this.recordItem) {
 
-                    if(this.updateDocument){
-                        await this.getItemById()
-                    }
-                    // console.log(this.recordItem)
+                    // if(this.updateDocument){
+                    //     await this.getItemById()
+                    // }
+                    console.log(this.recordItem)
                     await this.reloadDataItems(this.recordItem.item_id)
                     this.form.item_id = await this.recordItem.item_id
                     await this.changeItem()
@@ -728,6 +730,9 @@
                     this.form.has_plastic_bag_taxes = (this.recordItem.total_plastic_bag_taxes > 0) ? true : false
                     this.form.warehouse_id = this.recordItem.warehouse_id
                     this.isUpdateWarehouseId = this.recordItem.warehouse_id
+                    this.form.affectation_igv_type_id = this.recordItem.affectation_igv_type_id
+                    this.form.IdLoteSelected = this.recordItem.IdLoteSelected
+                    this.lots = this.recordItem.item.lots
 
                     if(this.isEditItemNote){
                         this.form.item.currency_type_id = this.currencyTypeIdActive
@@ -840,14 +845,21 @@
                     const contex = this
                     this.form.item.attributes.forEach((row)=>{
 
-                        contex.form.attributes.push({
-                            attribute_type_id: row.attribute_type_id,
-                            description: row.description,
-                            value: row.value,
-                            start_date: row.start_date,
-                            end_date: row.end_date,
-                            duration: row.duration ,
-                        })
+                        let exist = _.find(contex.form.attributes, {attribute_type_id : row.attribute_type_id})
+
+                        if(!exist){
+
+                            contex.form.attributes.push({
+                                attribute_type_id: row.attribute_type_id,
+                                description: row.description,
+                                value: row.value,
+                                start_date: row.start_date,
+                                end_date: row.end_date,
+                                duration: row.duration ,
+                            })
+
+                        }
+
                     })
                 }
 
@@ -883,13 +895,11 @@
             },
             async clickAddItem() {
 
-
+                // console.log(this.form)
                 if(this.form.item.lots_enabled){
                     if(!this.form.IdLoteSelected)
                         return this.$message.error('Debe seleccionar un lote.');
                 }
-
-
 
 
                 if (this.validateTotalItem().total_item) return;

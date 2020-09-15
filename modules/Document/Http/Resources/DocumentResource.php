@@ -96,6 +96,7 @@ class DocumentResource extends JsonResource
                     'id' => $row->id,
                     'document_id' => $row->document_id,
                     'item_id' => $row->item_id,
+                    'IdLoteSelected' => optional($row->item)->IdLoteSelected,
                     'item' => $row->item,
                     'quantity' => $row->quantity,
                     'unit_value' => $row->unit_value,

@@ -92,7 +92,7 @@
     import queryString from 'query-string'
 
     export default {
-        props: ['showDialog', 'lots', 'stock','itemId'],
+        props: ['showDialog', 'lots', 'stock','itemId', 'updateDocument'],
         data() {
             return {
                 titleDialog: 'Series',
@@ -107,7 +107,8 @@
                 pagination: {},
                 search: {
                     input: null,
-                    item_id: null
+                    item_id: null,
+                    include_lots: null
                 },
             }
         },
@@ -180,6 +181,10 @@
                 this.loading = true
                 this.search.item_id = this.itemId
 
+                if(this.updateDocument){
+                    this.search.include_lots = JSON.stringify(this.lots)
+                }
+
                 return this.$http.get(`/${this.resource}/item-lots?${this.getQueryParameters()}`).then((response) => {
                                     this.records = response.data.data
                                     this.pagination = response.data.meta
@@ -193,7 +198,7 @@
                                 })
 
             },
-            checkedLot(){
+            checkedLot(){ 
 
                 _.forEach(this.records, row => _.set(row, 'has_sale', this.verifyLot(row)))
 

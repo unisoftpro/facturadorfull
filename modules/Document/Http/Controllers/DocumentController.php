@@ -81,7 +81,7 @@ class DocumentController extends Controller
         $fact = DB::connection('tenant')->transaction(function () use ($request) {
 
             $data = DocumentHelper::set($request->all());
-            dd($data);
+            // dd($data);
             $document = Document::findOrFail($request->id);
             $document->fill($data);
             $document->update();
@@ -101,14 +101,15 @@ class DocumentController extends Controller
             $facturalo->savePayments($document, $data['payments']);
 
 
+            $find_document = Document::findOrFail($document->id);
             $type = 'invoice';
-            $facturalo->setDocument($document);
+            $facturalo->setDocument($find_document);
             $facturalo->setType($type);
             $facturalo->createXmlUnsigned();
             $facturalo->signXmlUnsigned();
             $facturalo->updateHash();
             $facturalo->updateQr();
-            $facturalo->createPdf($document, $type, 'a4');
+            $facturalo->createPdf($find_document, $type, 'a4');
 
             return $facturalo;
         });
@@ -451,7 +452,7 @@ class DocumentController extends Controller
 
     public function searchLots(Request $request)
     {
-
+        // dd($request->all());
         $warehouse = ModuleWarehouse::select('id')->where('establishment_id', auth()->user()->establishment_id)->first();
 
         $records = ItemLot::where('series','like', "%{$request->input}%")
@@ -459,6 +460,21 @@ class DocumentController extends Controller
                                 ->where('has_sale', false)
                                 ->where('warehouse_id', $warehouse->id)
                                 ->latest();
+
+
+        if($request->include_lots){
+
+            $include_lots = collect(json_decode($request->include_lots))->pluck('id')->toArray();
+
+            $records_include_lots = ItemLot::where('series','like', "%{$request->input}%")
+                                            ->where('item_id', $request->item_id)
+                                            ->where('has_sale', true)
+                                            ->where('warehouse_id', $warehouse->id)
+                                            ->whereIn('id', $include_lots)
+                                            ->latest();
+
+            $records = $records->union($records_include_lots);
+        }
 
         return new ItemLotCollection($records->paginate(config('tenant.items_per_page')));
 
@@ -530,17 +546,18 @@ class DocumentController extends Controller
                         'checked'  => false
                     ];
                 }),
-                'lots' => $row->item_lots->where('has_sale', false)->where('warehouse_id', $warehouse->id)->transform(function($row) {
-                    return [
-                        'id' => $row->id,
-                        'series' => $row->series,
-                        'date' => $row->date,
-                        'item_id' => $row->item_id,
-                        'warehouse_id' => $row->warehouse_id,
-                        'has_sale' => (bool)$row->has_sale,
-                        'lot_code' => ($row->item_loteable_type) ? (isset($row->item_loteable->lot_code) ? $row->item_loteable->lot_code:null):null
-                    ];
-                }),
+                'lots' => [],
+                // 'lots' => $row->item_lots->where('has_sale', false)->where('warehouse_id', $warehouse->id)->transform(function($row) {
+                //     return [
+                //         'id' => $row->id,
+                //         'series' => $row->series,
+                //         'date' => $row->date,
+                //         'item_id' => $row->item_id,
+                //         'warehouse_id' => $row->warehouse_id,
+                //         'has_sale' => (bool)$row->has_sale,
+                //         'lot_code' => ($row->item_loteable_type) ? (isset($row->item_loteable->lot_code) ? $row->item_loteable->lot_code:null):null
+                //     ];
+                // }),
                 'lots_enabled' => (bool) $row->lots_enabled,
                 'series_enabled' => (bool) $row->series_enabled,
 

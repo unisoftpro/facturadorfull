@@ -176,7 +176,7 @@
 
                 await this.$http.get(`/${this.resource}/record/${this.recordId}`).then(response => {
                     this.form = response.data.data;
-                    this.titleDialog = 'Comprobante: '+this.form.number;
+                    this.titleDialog = `Comprobante${this.updateDocument ? ' actualizado':''}: `+this.form.number;
                     if(this.generatDispatch) window.open(`/dispatches/create/${this.form.id}/i/${this.dispatchId}`)
                 });
             },
