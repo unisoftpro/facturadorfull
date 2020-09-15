@@ -47,12 +47,13 @@ use Modules\Finance\Traits\FinanceTrait;
 use Modules\Item\Models\ItemLotsGroup;
 use App\Models\Tenant\Configuration;
 use Modules\Inventory\Traits\InventoryTrait;
+use Modules\Document\Traits\SearchTrait;
 
 
 class SaleNoteController extends Controller
 {
 
-    use StorageDocument, FinanceTrait, InventoryTrait;
+    use StorageDocument, FinanceTrait, InventoryTrait, SearchTrait;
 
     protected $sale_note;
     protected $company;
@@ -585,8 +586,14 @@ class SaleNoteController extends Controller
         $pdf->WriteHTML($html, HTMLParserMode::HTML_BODY);
 
         if(config('tenant.pdf_template_footer')) {
-            $html_footer = $template->pdfFooter($base_template,$this->document);
-            $pdf->SetHTMLFooter($html_footer);
+            // if (($format_pdf != 'ticket') AND ($format_pdf != 'ticket_58') AND ($format_pdf != 'ticket_50')) {
+                if ($base_template != 'full_height') {
+                    $html_footer = $template->pdfFooter($base_template,$this->document);
+                } else {
+                    $html_footer = $template->pdfFooter('default',$this->document);
+                }
+                $pdf->SetHTMLFooter($html_footer);
+            // }
         }
 
         $this->uploadFile($this->document->filename, $pdf->output('', 'S'), 'sale_note');
@@ -624,9 +631,9 @@ class SaleNoteController extends Controller
                 $warehouse = Warehouse::where('establishment_id', $establishment_id)->first();
                 $warehouse_id = ($warehouse) ? $warehouse->id:null;
 
-                $items_u = Item::whereWarehouse()->whereIsActive()->whereNotIsSet()->orderBy('description')->get();
+                $items_u = Item::whereWarehouse()->whereIsActive()->whereNotIsSet()->orderBy('description')->take(20)->get();
 
-                $items_s = Item::where('unit_type_id','ZZ')->whereIsActive()->orderBy('description')->get();
+                $items_s = Item::where('unit_type_id','ZZ')->whereIsActive()->orderBy('description')->take(10)->get();
 
                 $items = $items_u->merge($items_s);
 
@@ -650,25 +657,27 @@ class SaleNoteController extends Controller
                         'lots_enabled' => (bool) $row->lots_enabled,
                         'series_enabled' => (bool) $row->series_enabled,
                         'is_set' => (bool) $row->is_set,
-                        'warehouses' => collect($row->warehouses)->transform(function($row) {
+                        'warehouses' => collect($row->warehouses)->transform(function($row) use($warehouse_id){
                             return [
                                 'warehouse_id' => $row->warehouse->id,
                                 'warehouse_description' => $row->warehouse->description,
                                 'stock' => $row->stock,
+                                'checked' => ($row->warehouse_id == $warehouse_id) ? true : false,
                             ];
                         }),
                         'item_unit_types' => $row->item_unit_types,
-                        'lots' => $row->item_lots->where('has_sale', false)->where('warehouse_id', $warehouse_id)->transform(function($row) {
-                            return [
-                                'id' => $row->id,
-                                'series' => $row->series,
-                                'date' => $row->date,
-                                'item_id' => $row->item_id,
-                                'warehouse_id' => $row->warehouse_id,
-                                'has_sale' => (bool)$row->has_sale,
-                                'lot_code' => ($row->item_loteable_type) ? (isset($row->item_loteable->lot_code) ? $row->item_loteable->lot_code:null):null
-                            ];
-                        }),
+                        'lots' => [],
+                        // 'lots' => $row->item_lots->where('has_sale', false)->where('warehouse_id', $warehouse_id)->transform(function($row) {
+                        //     return [
+                        //         'id' => $row->id,
+                        //         'series' => $row->series,
+                        //         'date' => $row->date,
+                        //         'item_id' => $row->item_id,
+                        //         'warehouse_id' => $row->warehouse_id,
+                        //         'has_sale' => (bool)$row->has_sale,
+                        //         'lot_code' => ($row->item_loteable_type) ? (isset($row->item_loteable->lot_code) ? $row->item_loteable->lot_code:null):null
+                        //     ];
+                        // }),
                         'lots_group' => collect($row->lots_group)->transform(function($row){
                             return [
                                 'id'  => $row->id,
@@ -691,6 +700,131 @@ class SaleNoteController extends Controller
 
                 break;
         }
+    }
+
+    
+    public function searchItems(Request $request)
+    {
+
+        // dd($request->all());
+        $establishment_id = auth()->user()->establishment_id;
+        $warehouse = Warehouse::where('establishment_id', $establishment_id)->first();
+        $warehouse_id = ($warehouse) ? $warehouse->id:null;
+
+        $items_not_services = $this->getItemsNotServices($request);
+        $items_services = $this->getItemsServices($request);
+        $all_items = $items_not_services->merge($items_services);
+
+        $items = collect($all_items)->transform(function($row) use($warehouse_id, $warehouse){
+
+            $detail = $this->getFullDescription($row, $warehouse);
+
+            return [
+                'id' => $row->id,
+                'full_description' => $detail['full_description'],
+                'brand' => $detail['brand'],
+                'category' => $detail['category'],
+                'stock' => $detail['stock'],
+                'description' => $row->description,
+                'currency_type_id' => $row->currency_type_id,
+                'currency_type_symbol' => $row->currency_type->symbol,
+                'sale_unit_price' => round($row->sale_unit_price, 2),
+                'purchase_unit_price' => $row->purchase_unit_price,
+                'unit_type_id' => $row->unit_type_id,
+                'sale_affectation_igv_type_id' => $row->sale_affectation_igv_type_id,
+                'purchase_affectation_igv_type_id' => $row->purchase_affectation_igv_type_id,
+                'has_igv' => (bool) $row->has_igv,
+                'lots_enabled' => (bool) $row->lots_enabled,
+                'series_enabled' => (bool) $row->series_enabled,
+                'is_set' => (bool) $row->is_set,
+                'warehouses' => collect($row->warehouses)->transform(function($row) use($warehouse_id){
+                    return [
+                        'warehouse_id' => $row->warehouse->id,
+                        'warehouse_description' => $row->warehouse->description,
+                        'stock' => $row->stock,
+                        'checked' => ($row->warehouse_id == $warehouse_id) ? true : false,
+                    ];
+                }),
+                'item_unit_types' => $row->item_unit_types,
+                'lots' => [], 
+                'lots_group' => collect($row->lots_group)->transform(function($row){
+                    return [
+                        'id'  => $row->id,
+                        'code' => $row->code,
+                        'quantity' => $row->quantity,
+                        'date_of_due' => $row->date_of_due,
+                        'checked'  => false
+                    ];
+                }),
+                'lot_code' => $row->lot_code,
+                'date_of_due' => $row->date_of_due
+            ];
+        });
+
+        return compact('items');
+
+    }
+
+    
+    public function searchItemById($id)
+    {
+
+        $establishment_id = auth()->user()->establishment_id;
+        $warehouse = Warehouse::where('establishment_id', $establishment_id)->first();
+
+        $search_item = $this->getItemsNotServicesById($id);
+
+        if(count($search_item) == 0){
+            $search_item = $this->getItemsServicesById($id);
+        }
+
+        $items = collect($search_item)->transform(function($row) use($warehouse){
+
+            $detail = $this->getFullDescription($row, $warehouse);
+
+            return [
+                'id' => $row->id,
+                'full_description' => $detail['full_description'],
+                'brand' => $detail['brand'],
+                'category' => $detail['category'],
+                'stock' => $detail['stock'],
+                'description' => $row->description,
+                'currency_type_id' => $row->currency_type_id,
+                'currency_type_symbol' => $row->currency_type->symbol,
+                'sale_unit_price' => round($row->sale_unit_price, 2),
+                'purchase_unit_price' => $row->purchase_unit_price,
+                'unit_type_id' => $row->unit_type_id,
+                'sale_affectation_igv_type_id' => $row->sale_affectation_igv_type_id,
+                'purchase_affectation_igv_type_id' => $row->purchase_affectation_igv_type_id,
+                'has_igv' => (bool) $row->has_igv,
+                'lots_enabled' => (bool) $row->lots_enabled,
+                'series_enabled' => (bool) $row->series_enabled,
+                'is_set' => (bool) $row->is_set,
+                'warehouses' => collect($row->warehouses)->transform(function($row) use($warehouse){
+                    return [
+                        'warehouse_id' => $row->warehouse->id,
+                        'warehouse_description' => $row->warehouse->description,
+                        'stock' => $row->stock,
+                        'checked' => ($row->warehouse_id == $warehouse->id) ? true : false,
+                    ];
+                }),
+                'item_unit_types' => $row->item_unit_types,
+                'lots' => [], 
+                'lots_group' => collect($row->lots_group)->transform(function($row){
+                    return [
+                        'id'  => $row->id,
+                        'code' => $row->code,
+                        'quantity' => $row->quantity,
+                        'date_of_due' => $row->date_of_due,
+                        'checked'  => false
+                    ];
+                }),
+                'lot_code' => $row->lot_code,
+                'date_of_due' => $row->date_of_due
+            ];
+        });
+
+        return compact('items');
     }
 
 
@@ -745,8 +879,10 @@ class SaleNoteController extends Controller
         $establishment = Establishment::where('id', auth()->user()->establishment_id)->first();
         $series = Series::where('establishment_id',$establishment->id)->get();
         $document_types_invoice = DocumentType::whereIn('id', ['01', '03'])->get();
+        $payment_method_types = PaymentMethodType::all();
+        $payment_destinations = $this->getPaymentDestinations();
 
-        return compact('series', 'document_types_invoice');
+        return compact('series', 'document_types_invoice', 'payment_method_types', 'payment_destinations');
     }
 
     public function email(Request $request)
@@ -800,8 +936,8 @@ class SaleNoteController extends Controller
             $obj->state_type_id = 11;
             $obj->save();
 
-            $establishment = Establishment::where('id', auth()->user()->establishment_id)->first();
-            $warehouse = Warehouse::where('establishment_id',$establishment->id)->first();
+            // $establishment = Establishment::where('id', auth()->user()->establishment_id)->first();
+            $warehouse = Warehouse::where('establishment_id',$obj->establishment_id)->first();
 
             foreach ($obj->items as $sale_note_item) {
 
@@ -828,16 +964,18 @@ class SaleNoteController extends Controller
     public function voidedSaleNoteItem($sale_note_item, $warehouse)
     {
 
+        $warehouse_id = ($sale_note_item->warehouse_id) ? $sale_note_item->warehouse_id : $warehouse->id;
+
         if(!$sale_note_item->item->is_set){
 
             $sale_note_item->sale_note->inventory_kardex()->create([
                 'date_of_issue' => date('Y-m-d'),
                 'item_id' => $sale_note_item->item_id,
-                'warehouse_id' => $warehouse->id,
+                'warehouse_id' => $warehouse_id,
                 'quantity' => $sale_note_item->quantity,
             ]);
 
-            $wr = ItemWarehouse::where([['item_id', $sale_note_item->item_id],['warehouse_id', $warehouse->id]])->first();
+            $wr = ItemWarehouse::where([['item_id', $sale_note_item->item_id],['warehouse_id', $warehouse_id]])->first();
 
             if($wr)
             {
@@ -852,10 +990,11 @@ class SaleNoteController extends Controller
             foreach ($item->sets as $it) {
 
                 $ind_item  = $it->individual_item;
+                $item_set_quantity  = ($it->quantity) ? $it->quantity : 1;
                 $presentationQuantity = 1;
                 $warehouse = $this->findWarehouse($sale_note_item->sale_note->establishment_id);
-                $this->createInventoryKardexSaleNote($sale_note_item->sale_note, $ind_item->id , (1 * ($sale_note_item->quantity * $presentationQuantity)), $warehouse->id, $sale_note_item->id);
-                if(!$sale_note_item->sale_note->order_note_id) $this->updateStock($ind_item->id , (1 * ($sale_note_item->quantity * $presentationQuantity)), $warehouse->id);
+                $this->createInventoryKardexSaleNote($sale_note_item->sale_note, $ind_item->id , (1 * ($sale_note_item->quantity * $presentationQuantity * $item_set_quantity)), $warehouse->id, $sale_note_item->id);
+                if(!$sale_note_item->sale_note->order_note_id) $this->updateStock($ind_item->id , (1 * ($sale_note_item->quantity * $presentationQuantity * $item_set_quantity)), $warehouse->id);
 
             }
 

@@ -109,5 +109,25 @@ if($current_hostname) {
             Route::delete('/{id}', 'UserCommissionController@destroy');
 
         });
+
+        Route::prefix('quotation_payments')->group(function () {
+
+            Route::get('/records/{quotation}', 'QuotationPaymentController@records');
+            Route::get('/document/{quotation}', 'QuotationPaymentController@document');
+            Route::get('/tables', 'QuotationPaymentController@tables');
+            Route::post('', 'QuotationPaymentController@store');
+            Route::delete('/{quotation_payment}', 'QuotationPaymentController@destroy');
+
+        });
+        
+        Route::prefix('technical-service-payments')->group(function () {
+
+            Route::get('/records/{record}', 'TechnicalServicePaymentController@records');
+            Route::get('/document/{record}', 'TechnicalServicePaymentController@document');
+            Route::get('/tables', 'TechnicalServicePaymentController@tables');
+            Route::post('', 'TechnicalServicePaymentController@store');
+            Route::delete('/{record_payment}', 'TechnicalServicePaymentController@destroy');
+
+        });
     });
 }

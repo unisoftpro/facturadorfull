@@ -31,6 +31,8 @@ use Illuminate\Support\Facades\DB;
 use App\CoreFacturalo\Facturalo;
 use Exception;
 use Modules\Document\Helpers\DocumentHelper;
+use Modules\Item\Models\ItemLot;
+use Modules\Document\Http\Resources\ItemLotCollection;
 
 
 class DocumentController extends Controller
@@ -423,17 +425,18 @@ class DocumentController extends Controller
                             'checked'  => false
                         ];
                     }),
-                    'lots' => $row->item_lots->where('has_sale', false)->where('warehouse_id', $warehouse->id)->transform(function($row) {
-                        return [
-                            'id' => $row->id,
-                            'series' => $row->series,
-                            'date' => $row->date,
-                            'item_id' => $row->item_id,
-                            'warehouse_id' => $row->warehouse_id,
-                            'has_sale' => (bool)$row->has_sale,
-                            'lot_code' => ($row->item_loteable_type) ? (isset($row->item_loteable->lot_code) ? $row->item_loteable->lot_code:null):null
-                        ];
-                    }),
+                    'lots' => [],
+                    // 'lots' => $row->item_lots->where('has_sale', false)->where('warehouse_id', $warehouse->id)->transform(function($row) {
+                    //     return [
+                    //         'id' => $row->id,
+                    //         'series' => $row->series,
+                    //         'date' => $row->date,
+                    //         'item_id' => $row->item_id,
+                    //         'warehouse_id' => $row->warehouse_id,
+                    //         'has_sale' => (bool)$row->has_sale,
+                    //         'lot_code' => ($row->item_loteable_type) ? (isset($row->item_loteable->lot_code) ? $row->item_loteable->lot_code:null):null
+                    //     ];
+                    // }),
                     'lots_enabled' => (bool) $row->lots_enabled,
                     'series_enabled' => (bool) $row->series_enabled,
 
@@ -442,6 +445,22 @@ class DocumentController extends Controller
             });
 
         return compact('items');
+
+    }
+
+
+    public function searchLots(Request $request)
+    {
+
+        $warehouse = ModuleWarehouse::select('id')->where('establishment_id', auth()->user()->establishment_id)->first();
+
+        $records = ItemLot::where('series','like', "%{$request->input}%")
+                                ->where('item_id', $request->item_id)
+                                ->where('has_sale', false)
+                                ->where('warehouse_id', $warehouse->id)
+                                ->latest();
+
+        return new ItemLotCollection($records->paginate(config('tenant.items_per_page')));
 
     }
 

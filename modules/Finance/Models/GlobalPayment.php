@@ -15,6 +15,8 @@ use App\Models\Tenant\{
     User,
 };
 use Modules\Sale\Models\ContractPayment;
+use Modules\Pos\Models\CashTransaction;
+use Modules\Sale\Models\TechnicalServicePayment;
 
 class GlobalPayment extends ModelTenant
 {
@@ -86,9 +88,21 @@ class GlobalPayment extends ModelTenant
                     ->wherePaymentType(IncomePayment::class);
     }  
 
+    public function cas_transaction()
+    {
+        return $this->belongsTo(CashTransaction::class, 'payment_id')
+                    ->wherePaymentType(CashTransaction::class);
+    } 
+
+    public function tec_serv_payment()
+    {
+        return $this->belongsTo(TechnicalServicePayment::class, 'payment_id')
+                    ->wherePaymentType(TechnicalServicePayment::class);
+    }   
+    
     public function getDestinationDescriptionAttribute()
     {
-        return $this->destination_type === Cash::class ? 'CAJA CHICA': "{$this->destination->bank->description} - {$this->destination->currency_type_id} - {$this->destination->description}";
+        return $this->destination_type === Cash::class ? 'CAJA GENERAL': "{$this->destination->bank->description} - {$this->destination->currency_type_id} - {$this->destination->description}";
     }
      
     public function getTypeRecordAttribute()
@@ -106,6 +120,8 @@ class GlobalPayment extends ModelTenant
             QuotationPayment::class => 'quotation',
             ContractPayment::class => 'contract',
             IncomePayment::class => 'income',
+            CashTransaction::class => 'cash_transaction',
+            TechnicalServicePayment::class => 'technical_service',
         ];
 
         return $instance_type[$this->payment_type];
@@ -138,11 +154,44 @@ class GlobalPayment extends ModelTenant
             case 'income':
                 $description = 'INGRESO';
                 break;
-             
+            case 'cash_transaction':
+                $description = 'INGRESO';
+                break;
+            case 'technical_service':
+                $description = 'SERVICIO TÉCNICO';
+                break;
         } 
 
         return $description;
     }
+
+    
+    public function getTypeMovementAttribute()
+    {
+        $type = null;
+        
+        switch ($this->instance_type) {
+
+            case 'document':
+            case 'sale_note':
+            case 'quotation':
+            case 'contract':
+            case 'income':
+            case 'cash_transaction':
+            case 'technical_service':
+                $type = 'input';
+                break;
+            case 'purchase':
+            case 'expense':
+                $type = 'output';
+                break;
+             
+        } 
+
+        return $type;
+        
+    }
+
 
     public function getDataPersonAttribute(){
 
@@ -154,6 +203,7 @@ class GlobalPayment extends ModelTenant
             case 'sale_note':
             case 'quotation':
             case 'contract':
+            case 'technical_service':
                 $person['name'] = $record->customer->name;
                 $person['number'] = $record->customer->number;
                 break;
@@ -164,6 +214,9 @@ class GlobalPayment extends ModelTenant
                 break;
             case 'income':
                 $person['name'] = $record->customer;
+                $person['number'] = '';
+            case 'cash_transaction':
+                $person['name'] = '-';
                 $person['number'] = '';
         } 
 
@@ -225,6 +278,16 @@ class GlobalPayment extends ModelTenant
                             $p->whereStateTypeAccepted()->whereTypeUser();
                         });
 
+                })
+                ->OrWhereHas('cas_transaction', function($q) use($params){
+                    $q->whereBetween('date', [$params->date_start, $params->date_end]);
+                })
+                ->OrWhereHas('tec_serv_payment', function($q) use($params){
+                    $q->whereBetween('date_of_payment', [$params->date_start, $params->date_end])
+                        ->whereHas('associated_record_payment', function($p){
+                            $p->whereTypeUser();
+                        });
+
                 });
 
     }
@@ -234,4 +297,15 @@ class GlobalPayment extends ModelTenant
         return $this->belongsTo(User::class);
     }
 
+    public function scopeWhereDefinePaymentType($query, $payment_type)
+    {
+
+        if($payment_type === IncomePayment::class){
+            return $query->whereIn('payment_type', [CashTransaction::class, $payment_type]);
+        }
+
+        return $query->wherePaymentType($payment_type);
+
+    }
+    
 }

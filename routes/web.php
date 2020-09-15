@@ -205,6 +205,7 @@ if ($hostname) {
             Route::post('documents/import_second_format', 'Tenant\DocumentController@importTwoFormat');
             Route::get('documents/data_table', 'Tenant\DocumentController@data_table');
             Route::get('documents/payments/excel/{month}/{anulled}', 'Tenant\DocumentController@report_payments')->name('tenant.document.payments.excel');
+            Route::get('documents/payments-complete', 'Tenant\DocumentController@report_payments');
 
             Route::delete('documents/delete_document/{document_id}', 'Tenant\DocumentController@destroyDocument');
 
@@ -346,6 +347,8 @@ if ($hostname) {
             Route::get('purchases/delete/{id}', 'Tenant\PurchaseController@delete');
             Route::post('purchases/import', 'Tenant\PurchaseController@import');
             Route::get('purchases/print/{external_id}/{format?}', 'Tenant\PurchaseController@toPrint');
+            Route::get('purchases/search-items', 'Tenant\PurchaseController@searchItems');
+            Route::get('purchases/search/item/{item}', 'Tenant\PurchaseController@searchItemById');
             // Route::get('purchases/item_resource/{id}', 'Tenant\PurchaseController@itemResource');
 
 
@@ -411,6 +414,9 @@ if ($hostname) {
             Route::get('sale-notes/print-a5/{sale_note_id}/{format}', 'Tenant\SaleNotePaymentController@toPrint');
             Route::get('sale-notes/dispatches', 'Tenant\SaleNoteController@dispatches');
             Route::delete('sale-notes/destroy_sale_note_item/{sale_note_item}', 'Tenant\SaleNoteController@destroy_sale_note_item');
+            Route::get('sale-notes/search-items', 'Tenant\SaleNoteController@searchItems');
+            Route::get('sale-notes/search/item/{item}', 'Tenant\SaleNoteController@searchItemById');
+
 
            Route::get('sale_note_payments/records/{sale_note}', 'Tenant\SaleNotePaymentController@records');
            Route::get('sale_note_payments/document/{sale_note}', 'Tenant\SaleNotePaymentController@document');
@@ -460,6 +466,7 @@ if ($hostname) {
            Route::get('cash/search/customer/{id}', 'Tenant\CashController@searchCustomerById');
 
            Route::get('cash/report/products/{cash}', 'Tenant\CashController@report_products');
+           Route::get('cash/report/products-excel/{cash}', 'Tenant\CashController@report_products_excel');
 
            //Tags
            Route::get('tags', 'Tenant\TagController@index')->name('tenant.tags.index');
@@ -491,6 +498,7 @@ if ($hostname) {
            Route::post('item-sets/import', 'Tenant\ItemSetController@import');
            Route::post('item-sets/upload', 'Tenant\ItemSetController@upload');
            Route::post('item-sets/visible_store', 'Tenant\ItemSetController@visibleStore');
+           Route::get('item-sets/item/tables', 'Tenant\ItemSetController@item_tables');
 
            Route::get('person-types/columns', 'Tenant\PersonTypeController@columns');
            Route::get('person-types', 'Tenant\PersonTypeController@index')->name('tenant.person_types.index');

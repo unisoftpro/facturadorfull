@@ -30,6 +30,8 @@ if($current_hostname) {
                 Route::get('search/item/{item}', 'DocumentController@searchItemById');
                 Route::get('consult_cdr/{document}', 'DocumentController@consultCdr');
 
+                Route::get('item-lots', 'DocumentController@searchLots');
+
             });
 
             Route::prefix('series-configurations')->group(function() {
@@ -50,6 +52,12 @@ if($current_hostname) {
 
             });
 
+            Route::prefix('documents/regularize-shipping')->group(function() {
+                Route::get('', 'DocumentRegularizeShippingController@index')->name('tenant.documents.regularize_shipping');
+                Route::get('records', 'DocumentRegularizeShippingController@records');
+                Route::get('data_table', 'DocumentRegularizeShippingController@data_table');
+
+            });
         });
     });
 }

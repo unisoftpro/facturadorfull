@@ -273,7 +273,8 @@ class DocumentController extends Controller
             $establishment_id = auth()->user()->establishment_id;
             $warehouse = ModuleWarehouse::where('establishment_id', $establishment_id)->first();
 
-            $items_u = Item::whereWarehouse()->whereIsActive()->whereNotIsSet()->orderBy('description')->take(20)->get();
+            // $items_u = Item::whereWarehouse()->whereIsActive()->whereNotIsSet()->orderBy('description')->take(20)->get();
+            $items_u = Item::whereWarehouse()->whereIsActive()->orderBy('description')->take(20)->get();
             $items_s = Item::where('unit_type_id','ZZ')->whereIsActive()->orderBy('description')->take(10)->get();
             $items = $items_u->merge($items_s);
 
@@ -328,17 +329,18 @@ class DocumentController extends Controller
                             'checked'  => false
                         ];
                     }),
-                    'lots' => $row->item_lots->where('has_sale', false)->where('warehouse_id', $warehouse->id)->transform(function($row) {
-                        return [
-                            'id' => $row->id,
-                            'series' => $row->series,
-                            'date' => $row->date,
-                            'item_id' => $row->item_id,
-                            'warehouse_id' => $row->warehouse_id,
-                            'has_sale' => (bool)$row->has_sale,
-                            'lot_code' => ($row->item_loteable_type) ? (isset($row->item_loteable->lot_code) ? $row->item_loteable->lot_code:null):null
-                        ];
-                    })->values(),
+                    'lots' => [],
+                    // 'lots' => $row->item_lots->where('has_sale', false)->where('warehouse_id', $warehouse->id)->transform(function($row) {
+                    //     return [
+                    //         'id' => $row->id,
+                    //         'series' => $row->series,
+                    //         'date' => $row->date,
+                    //         'item_id' => $row->item_id,
+                    //         'warehouse_id' => $row->warehouse_id,
+                    //         'has_sale' => (bool)$row->has_sale,
+                    //         'lot_code' => ($row->item_loteable_type) ? (isset($row->item_loteable->lot_code) ? $row->item_loteable->lot_code:null):null
+                    //     ];
+                    // })->values(),
                     'lots_enabled' => (bool) $row->lots_enabled,
                     'series_enabled' => (bool) $row->series_enabled,
 
@@ -854,13 +856,14 @@ class DocumentController extends Controller
         return $records;
     }
 
-    public function report_payments($month, $anulled)
+    public function report_payments(Request $request)
     {
-        $month_format = Carbon::parse($month)->format('m');
-        if($anulled == 'true') {
-           $records = Document::whereMonth('created_at', $month_format)->get();
+        // $month_format = Carbon::parse($month)->format('m');
+
+        if($request->anulled == 'true') {
+           $records = Document::whereBetween('date_of_issue', [$request->date_start, $request->date_end])->get();
         } else {
-            $records = Document::whereMonth('created_at', $month_format)->where('state_type_id', '!=', '11')->get();
+            $records = Document::whereBetween('date_of_issue', [$request->date_start, $request->date_end])->where('state_type_id', '!=', '11')->get();
         }
 
         $source =  $this->transformReportPayment( $records );

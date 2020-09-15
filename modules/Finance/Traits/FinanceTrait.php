@@ -15,6 +15,8 @@ use App\Models\Tenant\{
 use Modules\Sale\Models\QuotationPayment;
 use Modules\Sale\Models\ContractPayment;
 use Modules\Finance\Models\IncomePayment;
+use Modules\Pos\Models\CashTransaction;
+use Modules\Sale\Models\TechnicalServicePayment;
 
 
 trait FinanceTrait
@@ -54,7 +56,7 @@ trait FinanceTrait
             return [
                 'id' => 'cash',
                 'cash_id' => $cash->id,
-                'description' => ($cash->reference_number) ? "CAJA CHICA - {$cash->reference_number}" : "CAJA CHICA",
+                'description' => ($cash->reference_number) ? "CAJA GENERAL - {$cash->reference_number}" : "CAJA GENERAL",
             ];
 
         }else{
@@ -75,7 +77,7 @@ trait FinanceTrait
             return [
                 'id' => 'cash',
                 'cash_id' => $cash_create->id,
-                'description' => "CAJA CHICA"
+                'description' => "CAJA GENERAL"
             ];
 
         }
@@ -133,15 +135,17 @@ trait FinanceTrait
             ['id'=> PurchasePayment::class, 'description' => 'COMPRAS'],
             ['id'=> ExpensePayment::class, 'description' => 'GASTOS'],
             ['id'=> QuotationPayment::class, 'description' => 'COTIZACIÓN'],
-            ['id'=> ContractPayment::class, 'description' => 'CONTRATO'],
+            // ['id'=> ContractPayment::class, 'description' => 'CONTRATO'],
             ['id'=> IncomePayment::class, 'description' => 'INGRESO'],
+            // ['id'=> CashTransaction::class, 'description' => 'CAJA CHICA POS'],
+            ['id'=> TechnicalServicePayment::class, 'description' => 'SERVICIO TÉCNICO'],
         ];
     }
 
     public function getCollectionDestinationTypes(){
 
         return [
-            ['id'=> Cash::class, 'description' => 'CAJA CHICA'],
+            ['id'=> Cash::class, 'description' => 'CAJA GENERAL'],
             ['id'=> BankAccount::class, 'description' => 'CUENTA BANCARIA'],
         ];
     }
@@ -190,10 +194,12 @@ trait FinanceTrait
         $sale_note_payment = $this->getSumPayment($cash, SaleNotePayment::class);
         $purchase_payment = $this->getSumPayment($cash, PurchasePayment::class); 
         $quotation_payment = $this->getSumPayment($cash, QuotationPayment::class); 
-        $contract_payment = $this->getSumPayment($cash, ContractPayment::class); 
+        $contract_payment = 0; //$this->getSumPayment($cash, ContractPayment::class); 
         $income_payment = $this->getSumPayment($cash, IncomePayment::class); 
+        $cash_pos = $this->getSumPaymentCashPos($cash, CashTransaction::class); 
+        $technical_service_payment = $this->getSumPayment($cash, TechnicalServicePayment::class); 
 
-        $entry = $document_payment + $sale_note_payment + $quotation_payment + $contract_payment + $income_payment;
+        $entry = $document_payment + $sale_note_payment + $quotation_payment + $contract_payment + $income_payment + $cash_pos + $technical_service_payment;
         $egress = $expense_payment + $purchase_payment;
         
         $balance = $entry - $egress;
@@ -201,20 +207,28 @@ trait FinanceTrait
         return [
 
             'id' => 'cash',
-            'description' => "CAJA CHICA",
+            'description' => "CAJA GENERAL",
             'expense_payment' => number_format($expense_payment,2, ".", ""),
             'sale_note_payment' => number_format($sale_note_payment,2, ".", ""),
             'quotation_payment' => number_format($quotation_payment,2, ".", ""),
             'contract_payment' => number_format($contract_payment,2, ".", ""),
-            'income_payment' => number_format($income_payment,2, ".", ""),
+            'income_payment' => number_format($income_payment + $cash_pos,2, ".", ""),
             'document_payment' => number_format($document_payment,2, ".", ""),
             'purchase_payment' => number_format($purchase_payment,2, ".", ""),
+            'technical_service_payment' => number_format($technical_service_payment,2, ".", ""),
             'balance' => number_format($balance,2, ".", "")
             
         ];
 
     }
 
+
+    public function getSumPaymentCashPos($record, $model)
+    {
+        return $record->where('payment_type', $model)->sum(function($row){
+            return $row->payment->payment;
+        });
+    }
     
     
     public function getBalanceByBankAcounts($bank_accounts){
@@ -226,10 +240,11 @@ trait FinanceTrait
             $sale_note_payment = $this->getSumPayment($row->global_destination, SaleNotePayment::class);
             $purchase_payment = $this->getSumPayment($row->global_destination, PurchasePayment::class); 
             $quotation_payment = $this->getSumPayment($row->global_destination, QuotationPayment::class); 
-            $contract_payment = $this->getSumPayment($row->global_destination, ContractPayment::class); 
+            $contract_payment = 0; //$this->getSumPayment($row->global_destination, ContractPayment::class); 
             $income_payment = $this->getSumPayment($row->global_destination, IncomePayment::class); 
+            $technical_service_payment = $this->getSumPayment($row->global_destination, TechnicalServicePayment::class); 
 
-            $entry = $document_payment + $sale_note_payment + $quotation_payment + $contract_payment + $income_payment;
+            $entry = $document_payment + $sale_note_payment + $quotation_payment + $contract_payment + $income_payment + $technical_service_payment;
             $egress = $expense_payment + $purchase_payment;
             $balance = $row->initial_balance + $entry - $egress;
 
@@ -244,6 +259,7 @@ trait FinanceTrait
                 'document_payment' => number_format($document_payment,2, ".", ""),
                 'purchase_payment' => number_format($purchase_payment,2, ".", ""),
                 'income_payment' => number_format($income_payment,2, ".", ""),
+                'technical_service_payment' => number_format($technical_service_payment,2, ".", ""),
                 'balance' => number_format($balance,2, ".", "")
                 
             ];
@@ -301,8 +317,11 @@ trait FinanceTrait
             $sale_note_payment = $this->getSumByPMT($row->sale_note_payments);
             $purchase_payment = $this->getSumByPMT($row->purchase_payments); 
             $quotation_payment = $this->getSumByPMT($row->quotation_payments); 
-            $contract_payment = $this->getSumByPMT($row->contract_payments); 
-            $income_payment = $this->getSumByPMT($row->income_payments); 
+            $contract_payment = 0; //$this->getSumByPMT($row->contract_payments); 
+            $cash_transaction = $row->cash_transactions->sum('payment'); 
+            $income_payment = $this->getSumByPMT($row->income_payments) + $cash_transaction; 
+            $technical_service_payment = $this->getSumByPMT($row->technical_service_payments); 
+
 
             return [
 
@@ -315,6 +334,7 @@ trait FinanceTrait
                 'quotation_payment' => number_format($quotation_payment,2, ".", ""),
                 'contract_payment' => number_format($contract_payment,2, ".", ""),
                 'income_payment' => number_format($income_payment,2, ".", ""),
+                'technical_service_payment' => number_format($technical_service_payment,2, ".", ""),
                 
             ];
 
@@ -342,7 +362,8 @@ trait FinanceTrait
                 'quotation_payment' => '-',
                 'contract_payment' => '-',
                 'income_payment' => '-',
-                'purchase_payment' => '-'
+                'purchase_payment' => '-',
+                'technical_service_payment' => '-',
                 
             ];
 
@@ -374,15 +395,17 @@ trait FinanceTrait
         $t_purchases = 0;
         $t_expenses = 0;
         $t_income = 0;
+        $t_technical_services = 0;
 
         foreach ($records_by_pmt as $value) {
 
             $t_documents += $value['document_payment'];
             $t_sale_notes += $value['sale_note_payment'];
             $t_quotations += $value['quotation_payment'];
-            $t_contracts += $value['contract_payment'];
+            // $t_contracts += $value['contract_payment'];
             $t_purchases += $value['purchase_payment'];
             $t_income += $value['income_payment'];
+            $t_technical_services += $value['technical_service_payment'];
 
         }
 
@@ -400,6 +423,7 @@ trait FinanceTrait
             't_purchases' => number_format($t_purchases,2, ".", ""),
             't_expenses' => number_format($t_expenses,2, ".", ""),
             't_income' => number_format($t_income,2, ".", ""),
+            't_technical_services' => number_format($t_technical_services,2, ".", ""),
         ];
 
     }

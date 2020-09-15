@@ -10,6 +10,8 @@ use App\Models\Tenant\{
 use Modules\Sale\Models\QuotationPayment;
 use Modules\Sale\Models\ContractPayment;
 use Modules\Finance\Models\IncomePayment;
+use Modules\Pos\Models\CashTransaction;
+use Modules\Sale\Models\TechnicalServicePayment;
 
 class PaymentMethodType extends ModelTenant
 {
@@ -54,7 +56,18 @@ class PaymentMethodType extends ModelTenant
     {
         return $this->hasMany(IncomePayment::class,  'payment_method_type_id');
     }
+    
+    public function cash_transactions()
+    {
+        return $this->hasMany(CashTransaction::class,  'payment_method_type_id');
+    }
+    
+    public function technical_service_payments()
+    {
+        return $this->hasMany(TechnicalServicePayment::class,  'payment_method_type_id');
+    }
 
+    
     public function scopeWhereFilterPayments($query, $params)
     {
 
@@ -95,6 +108,15 @@ class PaymentMethodType extends ModelTenant
                     $q->whereBetween('date_of_payment', [$params->date_start, $params->date_end])
                         ->whereHas('associated_record_payment', function($p){
                             $p->whereStateTypeAccepted()->whereTypeUser();
+                        });
+                },
+                'cash_transactions' => function($q) use($params){
+                    $q->whereBetween('date', [$params->date_start, $params->date_end]);
+                },
+                'technical_service_payments' => function($q) use($params){
+                    $q->whereBetween('date_of_payment', [$params->date_start, $params->date_end])
+                        ->whereHas('associated_record_payment', function($p){
+                            $p->whereTypeUser();
                         });
                 }
                 ]);

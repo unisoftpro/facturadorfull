@@ -118,6 +118,26 @@ if($current_hostname) {
 
                 });
 
+
+                Route::prefix('fixed-asset-purchases')->group(function () {
+
+                    Route::get('', 'ReportFixedAssetPurchaseController@index')->name('tenant.reports.fixed-asset-purchases.index');
+                    Route::get('pdf', 'ReportFixedAssetPurchaseController@pdf');
+                    Route::get('excel', 'ReportFixedAssetPurchaseController@excel');
+                    Route::get('filter', 'ReportFixedAssetPurchaseController@filter');
+                    Route::get('records', 'ReportFixedAssetPurchaseController@records');
+    
+                });
+
+                Route::prefix('massive-downloads')->group(function () {
+
+                    Route::get('', 'ReportMassiveDownloadController@index')->name('tenant.reports.massive-downloads.index');
+                    Route::get('filter', 'ReportMassiveDownloadController@filter');
+                    Route::get('pdf', 'ReportMassiveDownloadController@pdf');
+                    Route::get('records', 'ReportMassiveDownloadController@records');
+    
+                });
+
             });
 
             Route::get('cash/report/income-summary/{cash}', 'ReportIncomeSummaryController@pdf')->name('tenant.reports.income_summary.pdf');
