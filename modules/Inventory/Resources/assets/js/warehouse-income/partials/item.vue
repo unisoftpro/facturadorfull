@@ -13,14 +13,14 @@
                             </el-select>
                             <small class="form-control-feedback" v-if="errors.item_id" v-text="errors.item_id[0]"></small>
                         </div>
-                    </div> 
+                    </div>
                     <div class="col-md-3">
                         <div class="form-group" :class="{'has-danger': errors.quantity}">
                             <label class="control-label">Cantidad</label>
                             <el-input-number v-model="form.quantity" :min="0.01"></el-input-number>
                             <small class="form-control-feedback" v-if="errors.quantity" v-text="errors.quantity[0]"></small>
                         </div>
-                    </div> 
+                    </div>
 
                     <div class="col-md-3">
                         <div class="form-group" :class="{'has-danger': errors.list_price}">
@@ -30,10 +30,10 @@
                             </el-input>
                             <small class="form-control-feedback" v-if="errors.list_price" v-text="errors.list_price[0]"></small>
                         </div>
-                    </div> 
+                    </div>
 
                     <template v-if="enabled_calc_prices">
-                    
+
                         <div class="col-md-3">
                             <div class="form-group" :class="{'has-danger': errors.discount_one}">
                                 <label class="control-label">Descuento % 1</label>
@@ -41,7 +41,7 @@
                                 <small class="form-control-feedback" v-if="errors.discount_one" v-text="errors.discount_one[0]"></small>
                             </div>
                         </div>
-                        
+
                         <div class="col-md-3">
                             <div class="form-group" :class="{'has-danger': errors.discount_two}">
                                 <label class="control-label">Descuento % 2</label>
@@ -72,8 +72,8 @@
                                 </el-input>
                                 <small class="form-control-feedback" v-if="errors.unit_value" v-text="errors.unit_value[0]"></small>
                             </div>
-                        </div> 
-                        
+                        </div>
+
                         <div class="col-md-3">
                             <div class="form-group" :class="{'has-danger': errors.unit_price}">
                                 <label class="control-label">Costo con IGV</label>
@@ -82,8 +82,8 @@
                                 </el-input>
                                 <small class="form-control-feedback" v-if="errors.unit_price" v-text="errors.unit_price[0]"></small>
                             </div>
-                        </div>  
-                        
+                        </div>
+
                         <div class="col-md-3">
                             <!-- manual -->
                             <div class="form-group" :class="{'has-danger': errors.warehouse_factor}">
@@ -91,7 +91,7 @@
                                 <el-input-number v-model="form.warehouse_factor" :min="0" @change="changeWarehouseFactor"></el-input-number>
                                 <small class="form-control-feedback" v-if="errors.warehouse_factor" v-text="errors.warehouse_factor[0]"></small>
                             </div>
-                        </div> 
+                        </div>
 
                         <div class="col-md-3">
                             <!-- manual -->
@@ -100,7 +100,7 @@
                                 <el-input-number v-model="form.sale_profit_factor" :min="0"  @change="inputSaleProfitFactor"></el-input-number>
                                 <small class="form-control-feedback" v-if="errors.sale_profit_factor" v-text="errors.sale_profit_factor[0]"></small>
                             </div>
-                        </div> 
+                        </div>
 
                         <div class="col-md-3">
                             <div class="form-group" :class="{'has-danger': errors.last_purchase_price}">
@@ -110,7 +110,7 @@
                                 </el-input>
                                 <small class="form-control-feedback" v-if="errors.last_purchase_price" v-text="errors.last_purchase_price[0]"></small>
                             </div>
-                        </div> 
+                        </div>
 
                         <div class="col-md-3">
                             <div class="form-group" :class="{'has-danger': errors.last_factor}">
@@ -119,7 +119,7 @@
                                 </el-input>
                                 <small class="form-control-feedback" v-if="errors.last_factor" v-text="errors.last_factor[0]"></small>
                             </div>
-                        </div> 
+                        </div>
 
 
                         <div class="col-md-3">
@@ -130,7 +130,7 @@
                                 </el-input>
                                 <small class="form-control-feedback" v-if="errors.price_fob_alm" v-text="errors.price_fob_alm[0]"></small>
                             </div>
-                        </div> 
+                        </div>
 
 
                         <div class="col-md-3">
@@ -141,7 +141,7 @@
                                 </el-input>
                                 <small class="form-control-feedback" v-if="errors.price_fob_alm_igv" v-text="errors.price_fob_alm_igv[0]"></small>
                             </div>
-                        </div> 
+                        </div>
 
 
                         <div class="col-md-3">
@@ -152,7 +152,7 @@
                                 </el-input>
                                 <small class="form-control-feedback" v-if="errors.retail_price" v-text="errors.retail_price[0]"></small>
                             </div>
-                        </div> 
+                        </div>
 
                         <div class="col-md-3">
                             <div class="form-group" :class="{'has-danger': errors.num_price}">
@@ -162,8 +162,8 @@
                                 </el-input>
                                 <small class="form-control-feedback" v-if="errors.num_price" v-text="errors.num_price[0]"></small>
                             </div>
-                        </div> 
-                        
+                        </div>
+
                         <div class="col-md-3">
                             <div class="form-group" :class="{'has-danger': errors.letter_price}">
                                 <label class="control-label">Prec. Vta. Letra</label>
@@ -171,17 +171,17 @@
                                 </el-input>
                                 <small class="form-control-feedback" v-if="errors.letter_price" v-text="errors.letter_price[0]"></small>
                             </div>
-                        </div> 
+                        </div>
                     </template>
-                     
-  
+
+
                 </div>
             </div>
             <div class="form-actions text-right pt-2">
                 <el-button @click.prevent="close()">Cerrar</el-button>
                 <el-button type="primary" native-type="submit" v-if="form.item_id && form.unit_value > 0" >Agregar</el-button>
             </div>
-        </form> 
+        </form>
 
     </el-dialog>
 </template>
@@ -216,9 +216,9 @@
             await this.$http.get(`/${this.resource}/item/tables`).then(response => {
                 this.items = response.data.items
             })
- 
+
         },
-        methods: { 
+        methods: {
             changeWarehouseFactor(){
 
                 if(this.form.warehouse_factor > 0){
@@ -233,13 +233,13 @@
 
                 if(this.form.sale_profit_factor > 0){
 
-                    this.form.retail_price =  _.round(parseFloat(this.form.unit_price) * parseFloat(this.form.sale_profit_factor) ,2)
+                    this.form.retail_price =  _.round(parseFloat(this.form.sale_profit_factor) * parseFloat(this.form.price_fob_alm_igv) ,2)
                     this.form.num_price = this.form.retail_price
-    
+
                     let letter_price = this.form.num_price.toString()
-    
+
                     this.form.letter_price = ''
-    
+
                     for (let i = 0; i < letter_price.length; i++) {
                         this.form.letter_price += this.letters[letter_price.charAt(i)]
                     }
@@ -307,14 +307,14 @@
             create() {
                 this.initForm()
                 this.verifyCalcPrices()
-            }, 
+            },
             verifyCalcPrices(){
                 this.enabled_calc_prices = (['103', '104'].includes(this.warehouseIncomeReasonId)) ? true : false
             },
             close() {
                 this.initForm()
                 this.$emit('update:showDialog', false)
-            }, 
+            },
             async changeItem() {
 
                 this.form.item = await _.find(this.items, {'id': this.form.item_id})
@@ -333,7 +333,7 @@
 
             },
             getListPrice(){
-                
+
                 if(this.purchaseOrderId){
 
                     this.$http.get(`/${this.resource}/item/list-price/${this.form.item_id}/${this.purchaseOrderId}`).then(response => {
@@ -348,11 +348,11 @@
                 await this.calculateRowItem(null, this.currencyTypeIdActive, this.exchangeRateSale)
                 await this.$emit('add', this.form)
                 await this.initForm()
-                
+
             },
             calculateRowItem(row = null, currency_type_id_new, exchange_rate_sale){
-                
-                if(row) this.form = row 
+
+                if(row) this.form = row
 
                 let currency_type_id_old = this.form.item.currency_type_id
 
