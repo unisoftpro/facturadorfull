@@ -242,14 +242,19 @@ class WarehouseIncomeController extends Controller
             $this->setFilename($this->warehouse_income);
             $this->createPdf($this->warehouse_income, "a4", 'warehouse_income');
 
-            return  [
-                'success' => true,
-                'message' => 'Ingreso creado con éxito'
-            ];
+
 
         });
 
-        return $record;
+        return  [
+            'success' => true,
+            'message' => 'Ingreso creado con éxito',
+            'data' => [
+                'id' => $this->warehouse_income->id,
+            ],
+        ];
+
+        //return $record;
 
     }
 
