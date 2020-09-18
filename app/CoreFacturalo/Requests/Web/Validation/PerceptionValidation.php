@@ -2,6 +2,8 @@
 
 namespace App\CoreFacturalo\Requests\Web\Validation;
 
+use Exception;
+
 class PerceptionValidation
 {
     public static function validation($inputs)

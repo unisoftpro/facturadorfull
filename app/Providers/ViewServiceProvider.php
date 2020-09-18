@@ -131,6 +131,11 @@ class ViewServiceProvider extends ServiceProvider
             'ecommerce',
             'Modules\Ecommerce\Http\ViewComposers\TakeProductoViewComposer'
         ); */
+
+        view()->composer(
+            'tenant.layouts.partials.header',
+            'App\Http\ViewComposers\Tenant\EstablishmentViewComposer'
+        );
     }
 
     /**

@@ -9,7 +9,7 @@
                 <header class="clearfix">
                     <div class="row">
                         <div class="col-sm-2 text-center mt-3 mb-0">
-                            <logo url="/" :path_logo="(company.logo != null) ? `/storage/uploads/logos/${company.logo}` : ''" ></logo>
+                            <logo url="/" :path_logo="(establishment.logo != null) ? `/storage/uploads/logos/${establishment.logo}` : ''" ></logo>
                         </div>
                         <div class="col-sm-10 text-left mt-3 mb-0">
                             <address class="ib mr-2" >

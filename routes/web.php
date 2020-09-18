@@ -90,6 +90,8 @@ if ($hostname) {
             Route::post('establishments', 'Tenant\EstablishmentController@store');
             Route::get('establishments/records', 'Tenant\EstablishmentController@records');
             Route::delete('establishments/{establishment}', 'Tenant\EstablishmentController@destroy');
+            Route::post('establishments/uploads', 'Tenant\EstablishmentController@uploadFile');
+            Route::post('establishments/uploads-logo', 'Tenant\EstablishmentController@uploadFileLogo');
 
             //Bank Accounts
             Route::get('bank_accounts', 'Tenant\BankAccountController@index')->name('tenant.bank_accounts.index');

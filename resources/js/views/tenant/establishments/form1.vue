@@ -125,6 +125,22 @@
                         </div>
                     </div>
 
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="control-label">Logo</label>
+                            <el-input v-model="form.logo" :readonly="true">
+                                <el-upload slot="append"
+                                            :headers="headers"
+                                            :data="{'type': 'logo'}"
+                                            action="/establishments/uploads"
+                                            :show-file-list="false"
+                                            :on-success="successUpload">
+                                    <el-button type="primary" icon="el-icon-upload"></el-button>
+                                </el-upload>
+                            </el-input>
+                            <div class="sub-title text-danger"><small>Se recomienda resoluciones 700x300</small></div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="form-actions text-right mt-4">
@@ -142,6 +158,7 @@
         props: ['showDialog', 'recordId'],
         data() {
             return {
+                headers: headers_token,
                 loading_submit: false,
                 titleDialog: null,
                 resource: 'establishments',
@@ -213,8 +230,18 @@
                     web_address: null,
                     aditional_information: null,
                     customer_id: null,
+                    logo: null,
+                    temp_path: null,
                 }
             },
+            successUpload(response, file, fileList) {
+                if (response.success) {
+                    this.form.logo = response.data.filename
+                    this.form.temp_path = response.data.temp_path
+                } else {
+                    this.$message.error(response.message)
+                }
+            }, 
             async create() {
                 this.titleDialog = (this.recordId)? 'Editar Establecimiento':'Nuevo Establecimiento'
                 if (this.recordId) {

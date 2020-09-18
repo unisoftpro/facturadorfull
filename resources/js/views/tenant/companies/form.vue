@@ -38,7 +38,7 @@
                                     <small class="form-control-feedback" v-if="errors.trade_name" v-text="errors.trade_name[0]"></small>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <!-- <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="control-label">Logo</label>
                                     <el-input v-model="form.logo" :readonly="true">
@@ -53,7 +53,7 @@
                                     </el-input>
                                     <div class="sub-title text-danger"><small>Se recomienda resoluciones 700x300</small></div>
                                 </div>
-                            </div>
+                            </div> -->
                             <!-- <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="control-label">Logo Tienda Virtual</label>
