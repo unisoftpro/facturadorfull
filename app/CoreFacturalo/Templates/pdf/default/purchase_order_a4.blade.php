@@ -3,13 +3,25 @@
     $supplier = $document->supplier;
     //$path_style = app_path('CoreFacturalo'.DIRECTORY_SEPARATOR.'Templates'.DIRECTORY_SEPARATOR.'pdf'.DIRECTORY_SEPARATOR.'style.css');
     $tittle = $document->prefix.'-'.str_pad($document->id, 8, '0', STR_PAD_LEFT);
+    $moneda = $document->currency_type->symbol;
+    if($document->currency_type_id == 'USD')
+    {
+        $moneda .= ' DOLARES';
+    }
+    else{
+        $moneda .= ' NUEVOS SOLES';
+
+    }
 @endphp
 <html>
 <head>
     {{--<title>{{ $tittle }}</title>--}}
     {{--<link href="{{ $path_style }}" rel="stylesheet" />--}}
 </head>
+
+
 <body>
+
 <table class="full-width">
     <tr>
         @if($company->logo)
@@ -58,7 +70,9 @@
 </table>
 <table class="full-width mt-5">
     <tr>
-        <td width="15%">Proveedor:</td>
+
+
+        <td width="15%">Proveedor: </td>
         <td width="45%">{{ $supplier->name }}</td>
         <td width="25%">Fecha de emisión:</td>
         <td width="15%">{{ $document->date_of_issue->format('Y-m-d') }}</td>
@@ -90,23 +104,17 @@
         </td>
     </tr>
     @endif
-    @if ($supplier->telephone)
-    <tr>
-        <td class="align-top">Teléfono:</td>
-        <td colspan="3">
-            {{ $supplier->telephone }}
-        </td>
-    </tr>
-    @endif
     @if ($document->payment_method_type)
     <tr>
         <td class="align-top">F. Pago:</td>
-        <td colspan="3">
+        <td colspan="1">
             {{ $document->payment_method_type->description }}
         </td>
+        <td>Moneda:</td>
+        <td >{{ $moneda }}</td>
+
     </tr>
     @endif
-
 
     <tr>
         @if($document->purchase_order_state_id)
@@ -132,32 +140,28 @@
 
     <tr>
         @if($document->observation)
-        <td width="15%">Observación:</td>
-        <td width="45%">{{ $document->observation }}</td>
+        <td>Observación:</td>
+        <td >{{ $document->observation }}</td>
         @endif
-        @if($document->reference)
-        <td width="15%">Referencia:</td>
-        <td width="45%">{{ $document->reference }}</td>
-        @endif
+
+        <td>Lugar entrega:</td>
+        <td>{{ $document->place_of_delivery }}</td>
+
     </tr>
 
     <tr>
-        @if($document->place_of_delivery)
-        <td width="15%">Lugar entrega:</td>
-        <td width="45%">{{ $document->place_of_delivery }}</td>
-        @endif
         @if($document->work_order_id)
         <td width="15%">O. Trabajo:</td>
         <td width="45%">{{ $document->work_order->number }}</td>
         @endif
     </tr>
 
-    <tr>
+    {{--<tr>
         <td class="align-top">Vendedor:</td>
         <td colspan="3">
             {{ $document->user->name }}
         </td>
-    </tr>
+    </tr>--}}
     @if($document->sale_opportunity)
     <tr>
         <td class="align-top">O. Venta:</td>

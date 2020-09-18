@@ -162,6 +162,13 @@ if($hostname) {
 
             });
 
+
+            Route::prefix('price-list')->group(function () {
+
+                Route::post('/', 'PriceListController@store');
+            });
+
+
         });
     });
 }

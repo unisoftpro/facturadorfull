@@ -16,7 +16,7 @@
                                 </el-select>
                                 <small class="form-control-feedback" v-if="errors.warehouse_id" v-text="errors.warehouse_id[0]"></small>
                             </div>
-                        </div> 
+                        </div>
 
                          <div class="col-lg-4">
                             <div class="form-group" :class="{'has-danger': errors.warehouse_income_reason_id}">
@@ -26,8 +26,8 @@
                                 </el-select>
                                 <small class="form-control-feedback" v-if="errors.warehouse_income_reason_id" v-text="errors.warehouse_income_reason_id[0]"></small>
                             </div>
-                        </div> 
-                        
+                        </div>
+
                          <div class="col-lg-4">
                             <div class="form-group" :class="{'has-danger': errors.supplier_id}">
                                 <label class="control-label">Proveedor</label>
@@ -36,7 +36,7 @@
                                 </el-select>
                                 <small class="form-control-feedback" v-if="errors.supplier_id" v-text="errors.supplier_id[0]"></small>
                             </div>
-                        </div> 
+                        </div>
 
                         <div class="col-lg-2">
                             <div class="form-group" :class="{'has-danger': errors.date_of_issue}">
@@ -64,7 +64,7 @@
                                 <small class="form-control-feedback" v-if="errors.currency_type_id" v-text="errors.currency_type_id[0]"></small>
                             </div>
                         </div>
-                        
+
                         <div class="col-md-6">
                             <div class="form-group" :class="{'has-danger': errors.observation}">
                                 <label class="control-label">Observación</label>
@@ -82,7 +82,7 @@
                                 <small class="form-control-feedback" v-if="errors.purchase_order_id" v-text="errors.purchase_order_id[0]"></small>
                             </div>
                         </div>
- 
+
                         <div class="col-lg-2">
                             <div class="form-group" :class="{'has-danger': errors.work_order_id}">
                                 <label class="control-label">O. Trabajo</label>
@@ -107,10 +107,32 @@
                         <div class="col-lg-12 col-md-6 d-flex align-items-end mt-4">
                             <div class="form-group">
                                 <button type="button" class="btn waves-effect waves-light btn-primary" @click.prevent="showDialogAddItem = true">+ Agregar Producto</button>
+                                <el-button v-if="enableButtonProcessPrice" @click.prevent="clickProccessLocal" type="warning" icon="el-icon-s-tools">Procesar Precios Compra-Local</el-button>
+                                <el-popover
+                                    v-if="enableButtonProcessPrice"
+                                    placement="right"
+                                    width="350"
+                                    trigger="click">
+                                    <div style="text-align: left; margin: 0">
+                                        <label for="">Tipo  de lista:</label>
+                                        <el-select v-model="form_process_price.list_type_id" filterable>
+                                            <el-option v-for="option in type_list_prices" :key="option.id + 'OP'" :value="option.id" :label="option.description"></el-option>
+                                        </el-select>
+
+                                        <label for="">Factor:</label>
+                                        <el-input-number :min="0" v-model="form_process_price.factor"></el-input-number>
+                                        <br> <br>
+                                        <el-button @click="clickProccessExterior" type="primary" plain>Procesar</el-button>
+
+                                    </div>
+
+                                    <el-button type="warning" icon="el-icon-s-tools" slot="reference">Procesar Precios Compra-Exterior</el-button>
+                                </el-popover>
+
                             </div>
                         </div>
-                        
-                    </div>  
+
+                    </div>
                     <div class="row mt-2" v-if="form.items.length > 0">
                         <div class="col-md-12">
                             <div class="table-responsive">
@@ -159,7 +181,7 @@
                 </div>
             </form>
         </div>
- 
+
         <item-form :showDialog.sync="showDialogAddItem"
                            :currency-type-id-active="form.currency_type_id"
                            :exchange-rate-sale="form.exchange_rate_sale"
@@ -167,7 +189,7 @@
                            :warehouse-income-reason-id="form.warehouse_income_reason_id"
                            @add="addRow"
                            ref="item_form"></item-form>
- 
+
         <warehouse-income-options :showDialog.sync="showDialogOptions"
                           :recordId="recordId"
                           :showClose="false"></warehouse-income-options>
@@ -176,7 +198,7 @@
 </template>
 
 <script>
- 
+
     import ItemForm from './partials/item.vue'
     import WarehouseIncomeOptions from './partials/options.vue'
 
@@ -201,14 +223,24 @@
                 showDialogAddItem: false,
                 loading_submit: false,
                 currency_type: {},
+                type_list_prices: [],
+                form_process_price: {
+                    list_type_id: null,
+                    factor:null
+                }
             }
         },
         async created() {
             await this.initForm()
             await this.getTables()
- 
+
         },
-        methods: { 
+        computed:{
+            enableButtonProcessPrice(){
+                return (['103', '104'].includes(this.form.warehouse_income_reason_id)) ? true : false && this.form.items.length > 0
+            },
+        },
+        methods: {
             changeSupplier(){
                 this.getExchangeRatePurchaseOrder()
             },
@@ -226,7 +258,7 @@
                         this.form.currency_type_id = 'PEN'
                         return this.$message.error('Debe seleccionar un proveedor para buscar el tipo de cambio')
                     }
-    
+
                     await this.getExchangeRatePurchaseOrder()
                 }
 
@@ -246,7 +278,7 @@
 
             },
             async getExchangeRatePurchaseOrder(){
-                
+
                 if(this.form.currency_type_id == 'USD'){
 
                     await this.$http.get(`/${this.resource}/exchange-rate/${this.form.reference_date}/${this.form.supplier_id}`)
@@ -257,28 +289,29 @@
                             if(!response.data.success){
                                 this.$message.warning(response.data.message)
                             }
-                            
+
                         })
 
                 }
             },
             async getTables(){
-                
+
                 await this.$http.get(`/${this.resource}/tables`)
                     .then(response => {
-                        this.warehouses = response.data.warehouses 
-                        this.purchase_orders = response.data.purchase_orders 
-                        this.warehouse_income_reasons = response.data.warehouse_income_reasons 
-                        this.suppliers = response.data.suppliers 
-                        this.currency_types = response.data.currency_types 
-                        this.work_orders = response.data.work_orders 
+                        this.warehouses = response.data.warehouses
+                        this.purchase_orders = response.data.purchase_orders
+                        this.warehouse_income_reasons = response.data.warehouse_income_reasons
+                        this.suppliers = response.data.suppliers
+                        this.currency_types = response.data.currency_types
+                        this.work_orders = response.data.work_orders
                         this.currency_type = _.find(this.currency_types, {'id': this.form.currency_type_id})
                         this.form.warehouse_income_reason_id = this.warehouse_income_reasons.length > 0 ? this.warehouse_income_reasons[0].id : null
+                        this.type_list_prices = response.data.type_list_prices
                     })
 
-            }, 
+            },
             async validates(){
- 
+
                 // if(!this.form.purchase_order){
                 //     return  {
                 //         success : false,
@@ -290,7 +323,7 @@
                     success : true,
                     message : null
                 }
-            }, 
+            },
             clickRemoveItem(index) {
                 this.form.items.splice(index, 1)
                 this.calculateTotal()
@@ -299,7 +332,7 @@
                 this.form.items.push(row)
                 this.calculateTotal()
             },
-            calculateTotal() { 
+            calculateTotal() {
                 let total_value = 0
                 let total = 0
 
@@ -307,7 +340,7 @@
                     total_value += parseFloat(row.total_value)
                     total += parseFloat(row.total)
                 });
- 
+
                 this.form.total_value = _.round(total_value, 2)
                 this.form.total = _.round(total, 2)
                 this.form.original_total = this.form.total
@@ -321,7 +354,7 @@
                 this.form = {
                     warehouse_id: null,
                     warehouse_income_reason_id: null,
-                    date_of_issue: moment().format('YYYY-MM-DD'), 
+                    date_of_issue: moment().format('YYYY-MM-DD'),
                     supplier_id: null,
                     currency_type_id:  'PEN',
                     observation: null,
@@ -341,8 +374,8 @@
             resetForm() {
                 this.initForm()
                 // this.getTables()
-            }, 
-            async submit() { 
+            },
+            async submit() {
 
                 // let validate = await this.validates()
                 // if(!validate.success) {
@@ -359,7 +392,7 @@
                             this.resetForm()
                             this.recordId = response.data.data.id
                             this.showDialogOptions = true
- 
+
                         } else {
                             this.$message.error(response.data.message)
                         }
@@ -377,7 +410,88 @@
             },
             close() {
                 location.href = `/${this.resource}`
-            }, 
+            },
+
+            async requestProcessPrices(payload)
+            {
+                await this.$http.post(`/price-list`, payload)
+                    .then(response => {
+
+                        if (response.data.success) {
+                            this.$message.error(response.data.message)
+                        }
+                        else{
+                            this.$message.error('Sucedió un error.')
+                        }
+
+                    })
+                    .catch(error => {
+                        this.$message.error('Sucedió un error.')
+                    })
+                    .then(() => {
+                    })
+            },
+            clickProccessLocal()
+            {
+                const list_type_id = '01'
+
+                const payload = {
+                    items: this.getItemPurchaseLocal(list_type_id)
+                }
+
+                this.requestProcessPrices(payload)
+            },
+            async clickProccessExterior()
+            {
+                if(!this.form_process_price.list_type_id || !this.form_process_price.factor)
+                {
+                    return
+                }
+
+                const payload = {
+                    items: this.getItemPurchaseExterior(this.form_process_price.list_type_id, this.form_process_price.factor)
+                }
+
+                await this.requestProcessPrices(payload)
+
+                this.form_process_price = {
+                    list_type_id: null,
+                    factor:null
+                }
+
+            },
+            getItemPurchaseLocal(list_type_id)
+            {
+                return this.form.items.map( row => {
+
+                    return {
+                        item_id: row.item_id,
+                        list_type_id: list_type_id,
+                        price_fob: row.unit_value,
+                        factor: row.sale_profit_factor,
+                        price_list: row.retail_price,
+                        discount_one: 0,
+                        discount_two: 0,
+                        discount_three: 0,
+                    }
+                })
+            },
+            getItemPurchaseExterior(list_type_id, factor)
+            {
+                return this.form.items.map( row => {
+                    return {
+                        item_id: row.item_id,
+                        list_type_id: list_type_id,
+                        price_fob: row.unit_value,
+                        factor: factor,
+                        price_list: row.price_fob_alm,
+                        discount_one: 0,
+                        discount_two: 0,
+                        discount_three: 0,
+                    }
+                })
+            },
+
 
         }
     }

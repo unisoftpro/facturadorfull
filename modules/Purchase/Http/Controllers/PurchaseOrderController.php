@@ -138,14 +138,14 @@ class PurchaseOrderController extends Controller
     {
 
         $purchase_order_item = PurchaseOrderItem::where('item_id', $item_id)->latest('id')->first();
-         
+
         if($purchase_order_item){
             return [
                 'previous_cost' => $purchase_order_item->unit_price,
                 'previous_currency_type_id' => $purchase_order_item->purchase_order->currency_type_id,
             ];
         }
-        
+
         return [
             'previous_cost' => 0,
             'previous_currency_type_id' => null,
@@ -174,6 +174,7 @@ class PurchaseOrderController extends Controller
 
 
     public function store(PurchaseOrderRequest $request) {
+
 
         DB::connection('tenant')->transaction(function () use ($request) {
 
@@ -372,10 +373,11 @@ class PurchaseOrderController extends Controller
 
         $html = $template->pdf($base_template, "purchase_order", $company, $document, $format_pdf);
 
-        $pdf_font_regular = config('tenant.pdf_name_regular');
-        $pdf_font_bold = config('tenant.pdf_name_bold');
+        $pdf_font_regular = 'oc_font'; // config('tenant.pdf_name_regular');
+        $pdf_font_bold = 'oc_font'; //config('tenant.pdf_name_bold');
+       // throw new Exception("");
 
-        if ($pdf_font_regular != false) {
+        if (true) {
             $defaultConfig = (new ConfigVariables())->getDefaults();
             $fontDirs = $defaultConfig['fontDir'];
 
@@ -390,13 +392,12 @@ class PurchaseOrderController extends Controller
                                                 DIRECTORY_SEPARATOR.'font')
                 ]),
                 'fontdata' => $fontData + [
-                    'custom_bold' => [
-                        'R' => $pdf_font_bold.'.ttf',
-                    ],
-                    'custom_regular' => [
-                        'R' => $pdf_font_regular.'.ttf',
-                    ],
-                ]
+                    'frutiger' => [
+                        'R' => 'oc_font.ttf',
+                        'I' => 'oc_font.ttf',
+                    ]
+                ],
+                'default_font' => 'frutiger'
             ]);
         }
 
@@ -446,9 +447,9 @@ class PurchaseOrderController extends Controller
 
     public function uploadAttached(Request $request)
     {
-        
+
         $validate_upload = UploadFileHelper::validateUploadFile($request, 'file', 'jpg,jpeg,png,gif,svg,pdf');
-        
+
         if(!$validate_upload['success']){
             return $validate_upload;
         }

@@ -27,9 +27,7 @@ use Modules\Inventory\Traits\{
 };
 use Barryvdh\DomPDF\Facade as PDF;
 use Modules\Inventory\Models\Warehouse as ModuleWarehouse;
-
-
-
+use App\Models\Tenant\TypeListPrice;
 
 
 class WarehouseIncomeController extends Controller
@@ -82,6 +80,7 @@ class WarehouseIncomeController extends Controller
             'suppliers' => $this->table('suppliers'),
             'currency_types' => CurrencyType::whereActive()->get(),
             'work_orders' => WorkOrder::get(),
+            'type_list_prices' => TypeListPrice::all()
         ];
     }
 

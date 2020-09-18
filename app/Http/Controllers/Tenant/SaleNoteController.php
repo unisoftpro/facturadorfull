@@ -225,7 +225,7 @@ class SaleNoteController extends Controller
                 $data);
 
 
-            // $this->sale_note->payments()->delete();
+            //$this->sale_note->payments()->delete();
             $this->deleteAllPayments($this->sale_note->payments);
 
 
@@ -295,7 +295,7 @@ class SaleNoteController extends Controller
             $this->sale_note->save();
 
         }else{
-            
+
             $this->sale_note->total_canceled = false;
             $this->sale_note->save();
         }
