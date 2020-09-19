@@ -418,7 +418,7 @@
                     .then(response => {
 
                         if (response.data.success) {
-                            this.$message.error(response.data.message)
+                            this.$message.success(response.data.message)
                         }
                         else{
                             this.$message.error('Sucedió un error.')
@@ -449,9 +449,8 @@
                 }
 
                 const payload = {
-                    items: this.getItemPurchaseExterior(this.form_process_price.list_type_id, this.form_process_price.factor)
+                    items: this.getItemPurchaseExterior()
                 }
-
                 await this.requestProcessPrices(payload)
 
                 this.form_process_price = {
@@ -476,21 +475,35 @@
                     }
                 })
             },
-            getItemPurchaseExterior(list_type_id, factor)
+            getItemPurchaseExterior()
             {
+                const list_type_id = this.form_process_price.list_type_id
+                const factor = this.form_process_price.factor
+
                 return this.form.items.map( row => {
+
+                    const {price_fob, price_list } = this.calculateValuesExterior(row, factor)
+
                     return {
                         item_id: row.item_id,
                         list_type_id: list_type_id,
-                        price_fob: row.unit_value,
+                        price_fob: price_fob,
                         factor: factor,
-                        price_list: row.price_fob_alm,
+                        price_list: price_list,
                         discount_one: 0,
                         discount_two: 0,
                         discount_three: 0,
                     }
                 })
             },
+            calculateValuesExterior(row, factor)
+            {
+                const price_fob = row.unit_value * row.warehouse_factor
+                const price_fob_alm_igv = price_fob * 1.18
+                const price_list = price_fob_alm_igv * factor
+
+                return {price_fob, price_list }
+            }
 
 
         }
