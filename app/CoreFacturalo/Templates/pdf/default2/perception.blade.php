@@ -18,6 +18,7 @@
         '6' => 'RUC',
     ];
     //$document_type_description = $document_type_description_array[$document->document_type_code];
+    $establishment_logo = \App\Services\EstablishmentService::getLogo($document->establishment_id);
 @endphp
 <html>
 <head>
@@ -146,9 +147,9 @@
 <body>
 <table class="voucher-company">
     <tr>
-        @if($company->logo)
+        @if($establishment_logo)
             <td width="25%">
-                <img src="data:{{mime_content_type(public_path("storage/uploads/logos/{$company->logo}"))}};base64, {{base64_encode(file_get_contents(public_path("storage/uploads/logos/{$company->logo}")))}}" alt="{{$company->name}}" class="company_logo">
+                <img src="data:{{mime_content_type(public_path("storage/uploads/logos/{$establishment_logo}"))}};base64, {{base64_encode(file_get_contents(public_path("storage/uploads/logos/{$establishment_logo}")))}}" alt="{{$company->name}}" class="company_logo">
             </td>
         @else
             <td width="20%">
