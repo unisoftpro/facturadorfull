@@ -7,6 +7,7 @@
 
     $address_full_delivery = Modules\Order\Services\AddressFullService::getDescription($document->delivery->location_id[2]);
     $address_full_origin= Modules\Order\Services\AddressFullService::getDescription($document->origin->location_id[2]);
+    $establishment_logo = \App\Services\EstablishmentService::getLogo($document->establishment_id);
 @endphp
 <html>
 <head>
@@ -14,9 +15,9 @@
 <body>
 <table class="full-width">
     <tr>
-        @if($company->logo)
+        @if($establishment_logo)
             <td width="10%">
-                <img src="data:{{mime_content_type(public_path("storage/uploads/logos/{$company->logo}"))}};base64, {{base64_encode(file_get_contents(public_path("storage/uploads/logos/{$company->logo}")))}}" alt="{{$company->name}}" alt="{{ $company->name }}"  class="company_logo" style="max-width: 300px">
+                <img src="data:{{mime_content_type(public_path("storage/uploads/logos/{$establishment_logo}"))}};base64, {{base64_encode(file_get_contents(public_path("storage/uploads/logos/{$establishment_logo}")))}}" alt="{{$company->name}}" alt="{{ $company->name }}"  class="company_logo" style="max-width: 300px">
             </td>
         @else
             <td width="10%">

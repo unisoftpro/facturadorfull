@@ -18,6 +18,7 @@
     $document->load('reference_guides');
     $total_payment = $document->payments->sum('payment');
     $balance = ($document->total - $total_payment) - $document->payments->sum('change');
+    $establishment_logo = \App\Services\EstablishmentService::getLogo($document->establishment_id);
 
 @endphp
 <html>
@@ -27,9 +28,9 @@
 </head>
 <body>
 
-@if($company->logo)
+@if($establishment_logo)
     <div class="text-center company_logo_box_sm pt-5 desc-9">
-        <img src="data:{{mime_content_type(public_path("storage/uploads/logos/{$company->logo}"))}};base64, {{base64_encode(file_get_contents(public_path("storage/uploads/logos/{$company->logo}")))}}" alt="{{$company->name}}" class="company_logo_sm content">
+        <img src="data:{{mime_content_type(public_path("storage/uploads/logos/{$establishment_logo}"))}};base64, {{base64_encode(file_get_contents(public_path("storage/uploads/logos/{$establishment_logo}")))}}" alt="{{$company->name}}" class="company_logo_sm content">
     </div>
 {{--@else--}}
     {{--<div class="text-center company_logo_box pt-5">--}}

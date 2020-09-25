@@ -6,6 +6,7 @@
     $left =  ($document->series) ? $document->series : $document->prefix;
     $tittle = $left.'-'.str_pad($document->number, 8, '0', STR_PAD_LEFT);
     $payments = $document->payments;
+    $establishment_logo = \App\Services\EstablishmentService::getLogo($document->establishment_id);
 
 @endphp
 <html>
@@ -16,10 +17,10 @@
 <body>
 <table class="full-width">
     <tr>
-        @if($company->logo)
+        @if($establishment_logo)
             <td width="20%">
                 <div class="company_logo_box">
-                    <img src="data:{{mime_content_type(public_path("storage/uploads/logos/{$company->logo}"))}};base64, {{base64_encode(file_get_contents(public_path("storage/uploads/logos/{$company->logo}")))}}" alt="{{$company->name}}" class="company_logo" style="max-width: 150px;">
+                    <img src="data:{{mime_content_type(public_path("storage/uploads/logos/{$establishment_logo}"))}};base64, {{base64_encode(file_get_contents(public_path("storage/uploads/logos/{$establishment_logo}")))}}" alt="{{$company->name}}" class="company_logo" style="max-width: 150px;">
                 </div>
             </td>
         @else

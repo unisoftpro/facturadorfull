@@ -18,6 +18,7 @@
 
     $total_payment = $document->payments->sum('payment');
     $balance = ($document->total - $total_payment) - $document->payments->sum('change');
+    $establishment_logo = \App\Services\EstablishmentService::getLogo($document->establishment_id);
 
 @endphp
 <html>
@@ -27,9 +28,9 @@
 </head>
 <body>
 
-@if($company->logo)
+@if($establishment_logo)
     <div class="text-center company_logo_box pt-5">
-        <img src="data:{{mime_content_type(public_path("storage/uploads/logos/{$company->logo}"))}};base64, {{base64_encode(file_get_contents(public_path("storage/uploads/logos/{$company->logo}")))}}" alt="{{$company->name}}" class="company_logo_ticket contain">
+        <img src="data:{{mime_content_type(public_path("storage/uploads/logos/{$establishment_logo}"))}};base64, {{base64_encode(file_get_contents(public_path("storage/uploads/logos/{$establishment_logo}")))}}" alt="{{$company->name}}" class="company_logo_ticket contain">
     </div>
 {{--@else--}}
     {{--<div class="text-center company_logo_box pt-5">--}}
