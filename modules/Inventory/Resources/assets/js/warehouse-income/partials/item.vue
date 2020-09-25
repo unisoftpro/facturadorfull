@@ -230,6 +230,7 @@
 
             },
             inputSaleProfitFactor(){
+                debugger
 
                 if(this.form.sale_profit_factor > 0){
 

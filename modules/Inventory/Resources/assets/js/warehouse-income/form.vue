@@ -237,7 +237,7 @@
         },
         computed:{
             enableButtonProcessPrice(){
-                return (['103', '104'].includes(this.form.warehouse_income_reason_id)) ? true : false && this.form.items.length > 0
+                return (['103', '104'].includes(this.form.warehouse_income_reason_id)) && this.form.items.length > 0
             },
         },
         methods: {
