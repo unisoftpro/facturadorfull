@@ -21,7 +21,7 @@
                          <div class="col-lg-4">
                             <div class="form-group" :class="{'has-danger': errors.warehouse_income_reason_id}">
                                 <label class="control-label">Motivo</label>
-                                <el-select v-model="form.warehouse_income_reason_id" filterable @change="changeWarehouseIncomeReason">
+                                <el-select :disabled="form.items.length > 0" v-model="form.warehouse_income_reason_id" filterable @change="changeWarehouseIncomeReason">
                                     <el-option v-for="option in warehouse_income_reasons" :key="option.id" :value="option.id" :label="option.description"></el-option>
                                 </el-select>
                                 <small class="form-control-feedback" v-if="errors.warehouse_income_reason_id" v-text="errors.warehouse_income_reason_id[0]"></small>
@@ -126,7 +126,7 @@
 
                                     </div>
 
-                                    <el-button type="warning" icon="el-icon-s-tools" slot="reference">Procesar Precios Compra-Exterior</el-button>
+                                    <el-button type="warning" icon="el-icon-s-tools" slot="reference">Procesar Precios Compra</el-button>
                                 </el-popover>
 
                             </div>
@@ -237,7 +237,7 @@
         },
         computed:{
             enableButtonProcessPrice(){
-                return (['103', '104'].includes(this.form.warehouse_income_reason_id)) && this.form.items.length > 0
+                return (['103', '104'].includes(this.form.warehouse_income_reason_id))
             },
         },
         methods: {
@@ -466,14 +466,28 @@
                     return {
                         item_id: row.item_id,
                         list_type_id: list_type_id,
-                        price_fob: row.unit_value,
+                        price_fob:  this.getPriceFob(row),
                         factor: row.sale_profit_factor,
                         price_list: row.retail_price,
-                        discount_one: 0,
-                        discount_two: 0,
-                        discount_three: 0,
+                        discount_one: row.discount_one,
+                        discount_two: row.discount_two,
+                        discount_three: row.discount_three,
                     }
                 })
+            },
+            getPriceFob( row)
+            {
+                const type = this.form.warehouse_income_reason_id
+
+                if(type == '104')
+                {
+                    return row.unit_value
+                }
+                else if(type == '103')
+                {
+                    return row.price_fob_alm
+                }
+
             },
             getItemPurchaseExterior()
             {
@@ -490,19 +504,37 @@
                         price_fob: price_fob,
                         factor: factor,
                         price_list: price_list,
-                        discount_one: 0,
-                        discount_two: 0,
-                        discount_three: 0,
+                        discount_one: row.discount_one,
+                        discount_two: row.discount_two,
+                        discount_three: row.discount_three,
                     }
                 })
             },
             calculateValuesExterior(row, factor)
             {
-                const price_fob = row.unit_value * row.warehouse_factor
-                const price_fob_alm_igv = price_fob * 1.18
-                const price_list = price_fob_alm_igv * factor
+                const type = this.form.warehouse_income_reason_id
 
-                return {price_fob, price_list }
+                if(type == '104') //local
+                {
+                    const price_fob = row.unit_value
+                    //const price_fob_alm_igv = price_fob * 1.18
+                    const price_list = row.unit_value * factor
+
+                    return {price_fob, price_list }
+
+                }
+                else if(type == '103') //exterior
+                {
+                    const price_fob = row.unit_value * row.warehouse_factor
+                    //const price_fob_alm_igv = price_fob * 1.18
+                    const price_list = price_fob * factor
+
+                    return {price_fob, price_list }
+
+                }
+
+
+
             }
 
 

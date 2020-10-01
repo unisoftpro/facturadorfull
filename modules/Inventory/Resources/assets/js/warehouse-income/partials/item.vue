@@ -230,9 +230,21 @@
 
             },
             inputSaleProfitFactor(){
-                debugger
+                
+                if(this.warehouseIncomeReasonId == '104')
+                {
+                    this.form.retail_price =  _.round(parseFloat(this.form.unit_price) * parseFloat(this.form.sale_profit_factor) ,2)
+                    this.form.num_price = this.form.retail_price
+                    let letter_price = this.form.num_price.toString()
 
-                if(this.form.sale_profit_factor > 0){
+                    this.form.letter_price = ''
+
+                    for (let i = 0; i < letter_price.length; i++) {
+                        this.form.letter_price += this.letters[letter_price.charAt(i)]
+                    }
+
+                }
+                else if(this.form.sale_profit_factor > 0){
 
                     this.form.retail_price =  _.round(parseFloat(this.form.sale_profit_factor) * parseFloat(this.form.price_fob_alm_igv) ,2)
                     this.form.num_price = this.form.retail_price
