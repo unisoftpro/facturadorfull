@@ -97,6 +97,7 @@
                 </tr>
             </table>
         </div>
+        
         <div style="margin-top:20px; margin-bottom:20px;">
             <table>
                 <thead>
@@ -104,21 +105,38 @@
                         <th>Código</th>
                         <th>Descripcion</th>
                         <th>UM</th>
+
                         <th>Cantidad</th>
-                        <th>Total</th>
+                        <th>Precio x Factor</th>
+                        <th>Letra</th>
                     </tr>
                 </thead>
                 <tbody>
+                    @php
+                        $total = 0;
+                    @endphp
                     @foreach($record->items as $record)
+                        @php
+                            $total += $record->retail_price;
+                        @endphp
                         <tr>
                             <td>{{ $record->relation_item->item_code }}</td>
                             <td> {{ $record->item->description}}</td>
                             <td> {{ $record->item->unit_type_id}}</td>
+
                             <td> {{ $record->quantity}}</td>
-                            <td> {{ $record->total}}</td>
+                            <td> {{ $record->retail_price}}</td>
+                            <td> {{ $record->letter_price}}</td>
                         </tr>
                     @endforeach
                 </tbody>
+            </table>
+            <br>
+            <table>
+                <tr>
+                    <td style="text-align: right;" colspan="5">Total:</td>
+                    <td>{{ $total }}</td>
+                </tr>
             </table>
         </div>
 

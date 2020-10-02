@@ -111,22 +111,20 @@
                        <p>Descripcion</p>
                     </td>
                     <td class="td-custom">
-                        <p>Um Costo Orig.</p>
+                       <p>UM</p>
                     </td>
                     <td class="td-custom">
-                       <p>Cantidad</p>
+                        <p>Costo Orig.</p>
+                    </td>
+                    <td class="td-custom">
+                       <p>Cant.</p>
                     </td>
                     <td class="td-custom">
                        <p>Sub-Total</p>
                     </td>
-                    <td class="td-custom">
-                       <p>Total</p>
-                    </td>
                 </tr>
             </table>
         </div>
-
-        <p>MATERIAS PRIMAS</p>
 
         @if($record->items->count())
 
@@ -134,25 +132,50 @@
 
             @php
                 $rows = $serviceFamily->GroupedByFamily( $record->id );
+                $total_sin_igv = 0;
+                $total_con_igv = 0;
             @endphp
             <div>
-                    @foreach ($rows as $x => $x_value)
-                    <p> {{ $x }} </p>
-                    <table>
-                            @foreach($x_value as $it)
-                                <tr>
-                                    <td>{{ $it->code }}</td>
-                                    <td> {{ $it->name }} </td>
-                                    <td> {{ $it->unit }} </td>
+                    @foreach ($rows as $family => $family_value)
+                    <P> {{ $family }} </P>
 
-                                    <td> {{ $it->quantity }} </td>
-                                    <td> {{ $it->sub_total }} </td>
-                                    <td> {{ $it->total }} </td>
-                                </tr>
-                            @endforeach
-                    </table>
+                        @foreach($family_value as $line => $line_value)
+                            &nbsp;&nbsp;<span> {{ $line }} </span> <br>
+
+                            <table>
+                                    @foreach($line_value as $it)
+                                        @php
+                                            $subtotal = $it->total * $it->unit_value ;
+                                            $total_sin_igv += $subtotal;
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $it->code }}</td>
+                                            <td> {{ $it->name }} </td>
+                                            <td> {{ $it->unit }} </td>
+
+                                            <td> {{ $it->unit_value }} </td>
+                                            <td> {{ $it->quantity }} </td>
+                                            <td> {{ $it->total * $it->unit_value  }} </td>
+                                        </tr>
+                                    @endforeach
+                            </table>
+
+                        @endforeach
+
+
                     @endforeach
             </div>
+            <br>
+            <table>
+                <tr>
+                    <td style="text-align: right;" >Total Sin IGV:</td>
+                    <td> {{ $total_sin_igv}}</td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;" >Total Con IGV:</td>
+                    <td> {{ $total_con_igv}} </td>
+                </tr>
+            </table>
         @else
 
         @endif

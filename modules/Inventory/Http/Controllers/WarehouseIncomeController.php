@@ -213,6 +213,9 @@ class WarehouseIncomeController extends Controller
                                             'unit_type_id' => $row->unit_type_id,
                                             'category_id' => $row->category_id,
                                             'family_id' => $row->family_id,
+                                            'line_id' => $row->line_id,
+                                            'brand_id' => $row->brand_id,
+
                                     ];
 
                                 });
