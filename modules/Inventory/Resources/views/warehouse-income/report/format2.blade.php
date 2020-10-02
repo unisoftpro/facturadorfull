@@ -97,7 +97,7 @@
                 </tr>
             </table>
         </div>
-        
+
         <div style="margin-top:20px; margin-bottom:20px;">
             <table>
                 <thead>
@@ -120,7 +120,7 @@
                             $total += $record->retail_price;
                         @endphp
                         <tr>
-                            <td>{{ $record->relation_item->item_code }}</td>
+                            <td>{{ $record->relation_item->internal_id }}</td>
                             <td> {{ $record->item->description}}</td>
                             <td> {{ $record->item->unit_type_id}}</td>
 
