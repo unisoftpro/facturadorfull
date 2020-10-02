@@ -22,7 +22,7 @@ class ItemReportFamilyService
                 'family' => ($row->family) ? $row->family->name : 'Familia no definido',
                 'line' => ($row->relation_item->line_id) ? self::getLine($row->relation_item->line_id) : 'Linea no definido',
                 'brand' => ($row->relation_item->brand) ? $row->relation_item->brand->name : 'Marca no definido',
-                'code' => $row->relation_item->internal_idt,
+                'code' => $row->relation_item->internal_id,
                 'name' => $row->item->description,
                 'unit' => $row->item->unit_type_id,
                 'quantity' => $row->quantity,
