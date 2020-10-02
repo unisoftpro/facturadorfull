@@ -145,7 +145,7 @@
                             <table>
                                     @foreach($line_value as $it)
                                         @php
-                                            $subtotal = $it->total * $it->unit_value ;
+                                            $subtotal = $it->quantity * $it->unit_value ;
                                             $total_sin_igv += $subtotal;
                                         @endphp
                                         <tr>
@@ -155,7 +155,7 @@
 
                                             <td> {{ $it->unit_value }} </td>
                                             <td> {{ $it->quantity }} </td>
-                                            <td> {{ $it->total * $it->unit_value  }} </td>
+                                            <td> {{ $it->quantity * $it->unit_value  }} </td>
                                         </tr>
                                     @endforeach
                             </table>
@@ -173,7 +173,7 @@
                 </tr>
                 <tr>
                     <td style="text-align: right;" >Total Con IGV:</td>
-                    <td> {{ $total_con_igv}} </td>
+                    <td> {{ round($total_sin_igv * 1.18, 2)}} </td>
                 </tr>
             </table>
         @else
