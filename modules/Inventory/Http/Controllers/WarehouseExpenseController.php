@@ -289,9 +289,23 @@ class WarehouseExpenseController extends Controller
     }*/
 
     public function download($id) {
-        $row = WarehouseExpense::find($id);
+        $company = Company::first();
+
+        $record = WarehouseExpense::find($id);
+        if (!$record) throw new Exception("El indentificador {$id} es inválido, no se encontro el registro.");
+
+        $view = "inventory::warehouse-expense.report.format";
+
+        set_time_limit(0);
+
+        $pdf = PDF::loadView($view, compact("record", "company"));
+        $filename = "Reporte_Salida";
+
+        return $pdf->download($filename.'.pdf');
+
+        /*$row = WarehouseExpense::find($id);
         if (!$row) throw new Exception("El indentificador {$id} es inválido, no se encontro el registro.");
-        return $this->downloadStorage($row->filename, 'warehouse_expense');
+        return $this->downloadStorage($row->filename, 'warehouse_expense');*/
     }
 
 
