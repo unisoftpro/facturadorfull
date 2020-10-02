@@ -254,7 +254,7 @@ class Item extends ModelTenant
     {
         return $this->hasMany(SaleNoteItem::class, 'item_id');
     }
-    
+
     public function scopeWhereFilterValuedKardex($query, $params)
     {
 
@@ -301,12 +301,12 @@ class Item extends ModelTenant
     {
         return $query->where('active', false);
     }
-    
+
     public function scopeWhereHasInternalId($query)
     {
         return $query->where('internal_id','!=', null);
     }
-    
+
     public function line()
     {
         return $this->belongsTo(Line::class);
