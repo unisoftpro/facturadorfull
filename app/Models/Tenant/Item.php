@@ -258,6 +258,7 @@ class Item extends ModelTenant
     public function scopeWhereFilterValuedKardex($query, $params)
     {
 
+        //dd( $params);
         if($params->establishment_id){
 
             return $query->with(['document_items'=> function($q) use($params){

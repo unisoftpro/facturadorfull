@@ -13,4 +13,6 @@ class TypeListPrice extends ModelTenant
     public $incrementing = false;
     public $timestamps = false;
 
+
+
 }

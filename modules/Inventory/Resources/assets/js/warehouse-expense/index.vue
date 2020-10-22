@@ -41,9 +41,9 @@
                         <td>{{ index }}</td>
                         <td class="text-center">{{ row.number }}</td>
                         <td>{{ row.date_of_issue }}</td>
-                        <td>{{ row.warehouse_description }}</td>
-                        <td>{{ row.warehouse_description }}</td>
-                        <td>{{ row.warehouse_income_reason_description }}</td>
+                        <td>{{ row.warehouse_expense_description }}</td>
+                        <td>{{ row.warehouse_destination_description }}</td>
+                        <td>{{ row.warehouse_expense_reason_description }}</td>
                         <td>{{ row.reference_date}}</td>
                         <td>{{ row.currency_type_id}}</td>
                         <td>{{ row.original_total}}</td>

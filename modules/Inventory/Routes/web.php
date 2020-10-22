@@ -72,6 +72,15 @@ if($hostname) {
                 Route::get('valued-kardex/filter', 'ReportValuedKardexController@filter');
                 Route::get('valued-kardex/records', 'ReportValuedKardexController@records');
 
+                Route::get('precie-list','ReportPriceListController@index')->name('reports.precie-list.index');
+                Route::get('precie-list/tables', 'ReportPriceListController@filters');
+                Route::get('precie-list/records', 'ReportPriceListController@records');
+                Route::get('precie-list/pdf', 'ReportPriceListController@pdf');
+
+                Route::get('valuted-balances','ReportValutedBalancesController@index')->name('reports.valuted-balances.index');
+                Route::get('valuted-balances/tables', 'ReportValutedBalancesController@filters');
+                Route::get('valuted-balances/records', 'ReportValutedBalancesController@records');
+
             });
 
 

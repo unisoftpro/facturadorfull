@@ -15,7 +15,7 @@ use Modules\Inventory\Helpers\InventoryValuedKardex;
 
 class ReportValuedKardexController extends Controller
 {
-    
+
     use ReportTrait;
 
     public function filter() {
@@ -43,8 +43,8 @@ class ReportValuedKardexController extends Controller
 
         return new ReportValuedKardexCollection($records->paginate(config('tenant.items_per_page')));
     }
- 
-    
+
+
     public function getRecords($request){
 
         $data_of_period = $this->getDataOfPeriod($request);
@@ -56,7 +56,7 @@ class ReportValuedKardexController extends Controller
         ];
 
         $records = $this->data($params);
-
+        dd($records );
         return $records;
 
     }
@@ -69,7 +69,7 @@ class ReportValuedKardexController extends Controller
                     ->whereNotService()
                     ->orderBy('description');
 
-        // dd($data->get()[0]->document_items);
+        //dd($data);
 
         return $data;
 

@@ -51,6 +51,7 @@ class ReportKardexController extends Controller
 
     public function filter() {
 
+
         $items = Item::query()->whereNotIsSet()
             ->where([['item_type_id', '01'], ['unit_type_id', '!=','ZZ']])
             ->latest()
@@ -147,6 +148,7 @@ class ReportKardexController extends Controller
 
     public function getFullDescription($row){
 
+        //dd($row);
         $desc = ($row->internal_id)?$row->internal_id.' - '.$row->description : $row->description;
         $category = ($row->category) ? " - {$row->category->name}" : "";
         $brand = ($row->brand) ? " - {$row->brand->name}" : "";

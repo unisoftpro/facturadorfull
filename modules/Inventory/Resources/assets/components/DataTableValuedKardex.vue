@@ -3,9 +3,9 @@
         <div class="row">
 
             <div class="col-md-12 col-lg-12 col-xl-12 ">
-                  
-                <div class="row mt-2"> 
-                     
+
+                <div class="row mt-2">
+
                         <div class="col-md-3">
                             <label class="control-label">Periodo</label>
                             <el-select v-model="form.period" @change="changePeriod">
@@ -47,7 +47,7 @@
                                                 value-format="yyyy-MM-dd" format="dd/MM/yyyy" :clearable="false"></el-date-picker>
                             </div>
                         </template>
-                        
+
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label class="control-label">Establecimiento</label>
@@ -56,22 +56,22 @@
                                 </el-select>
                             </div>
                         </div>
-                        
-                        <div class="col-lg-7 col-md-7 col-md-7 col-sm-12" style="margin-top:29px"> 
+
+                        <div class="col-lg-7 col-md-7 col-md-7 col-sm-12" style="margin-top:29px">
                             <el-button class="submit" type="primary" @click.prevent="getRecordsByFilter" :loading="loading_submit" icon="el-icon-search" >Buscar</el-button>
-                            
-                            <template v-if="records.length>0"> 
+
+                            <template v-if="records.length>0">
 
                                 <el-button class="submit" type="success" @click.prevent="clickDownload('excel')"><i class="fa fa-file-excel" ></i>  Exportal Excel</el-button>
 
                             </template>
 
-                        </div>             
-                    
+                        </div>
+
                 </div>
                 <div class="row mt-1 mb-4">
-                    
-                </div> 
+
+                </div>
             </div>
 
 
@@ -83,7 +83,7 @@
                         </thead>
                         <tbody>
                             <slot v-for="(row, index) in records" :row="row" :index="customIndex(index)"></slot>
-                        </tbody> 
+                        </tbody>
                     </table>
                     <div>
                         <el-pagination
@@ -110,7 +110,7 @@
     import moment from 'moment'
     import queryString from 'query-string'
 
-    export default { 
+    export default {
         props: {
             resource: String,
         },
@@ -120,11 +120,11 @@
                 loading_search:false,
                 columns: [],
                 records: [],
-                pagination: {}, 
-                search: {}, 
-                totals: {}, 
+                pagination: {},
+                search: {},
+                totals: {},
                 establishment: null,
-                establishments: [],       
+                establishments: [],
                 form: {},
                 pickerOptionsDates: {
                     disabledDate: (time) => {
@@ -148,7 +148,7 @@
                 this.getRecords()
             })
         },
-        async mounted () { 
+        async mounted () {
 
             await this.$http.get(`/${this.resource}/filter`)
                 .then(response => {
@@ -157,15 +157,15 @@
 
 
         },
-        methods: { 
-            clickDownload(type) {                 
+        methods: {
+            clickDownload(type) {
                 let query = queryString.stringify({
                     ...this.form
                 });
                 window.open(`/${this.resource}/${type}/?${query}`, '_blank');
             },
             initForm(){
- 
+
                 this.form = {
                     establishment_id: null,
                     period: 'month',
@@ -175,12 +175,12 @@
                     month_end: moment().format('YYYY-MM'),
                 }
 
-            }, 
+            },
             customIndex(index) {
                 return (this.pagination.per_page * (this.pagination.current_page - 1)) + index + 1
-            }, 
+            },
             async getRecordsByFilter(){
-                
+
                 this.loading_submit = await true
                 await this.getRecords()
                 this.loading_submit = await false
@@ -204,7 +204,7 @@
                     ...this.form
                 })
             },
-            
+
             changeDisabledDates() {
                 if (this.form.date_end < this.form.date_start) {
                     this.form.date_end = this.form.date_start

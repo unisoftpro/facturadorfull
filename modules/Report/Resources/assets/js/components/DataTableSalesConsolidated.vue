@@ -3,20 +3,20 @@
         <div class="row">
 
             <div class="col-md-12 col-lg-12 col-xl-12 ">
-                  
-                <div class="row mt-2"> 
-                    
+
+                <div class="row mt-2">
+
                         <div class="col-lg-3 col-md-3" >
-                            <div class="form-group"> 
+                            <div class="form-group">
                                 <label class="control-label">Tipo de rango
                                 </label>
-                                
+
                                 <el-select v-model="form.date_range_type_id" filterable >
                                     <el-option v-for="option in date_range_types" :key="option.id" :value="option.id" :label="option.description"></el-option>
                                 </el-select>
- 
+
                             </div>
-                        </div> 
+                        </div>
 
                         <div class="col-md-3">
                             <label class="control-label">Fecha del</label>
@@ -31,38 +31,38 @@
                                             :picker-options="pickerOptionsDates"
                                             value-format="yyyy-MM-dd" format="dd/MM/yyyy" :clearable="false"></el-date-picker>
                         </div>
-                        
+
                         <template v-if="resource != 'reports/sales-consolidated'">
                             <div class="col-lg-3 col-md-3" >
-                                <div class="form-group"> 
+                                <div class="form-group">
                                     <label class="control-label">Estado
                                     </label>
-                                    
+
                                     <el-select v-model="form.order_state_type_id" filterable >
                                         <el-option v-for="option in order_state_types" :key="option.id" :value="option.id" :label="option.description"></el-option>
                                     </el-select>
-    
+
                                 </div>
-                            </div> 
+                            </div>
                         </template>
                         <template v-else>
                             <div class="col-lg-3 col-md-3" >
-                                <div class="form-group"> 
+                                <div class="form-group">
                                     <label class="control-label">Tipo documento
                                     </label>
                                     <el-select v-model="form.document_type_id" filterable clearable>
                                         <el-option v-for="option in document_types" :key="option.id" :value="option.id" :label="option.description"></el-option>
                                     </el-select>
-    
+
                                 </div>
-                            </div> 
+                            </div>
                         </template>
 
                         <div class="col-lg-6 col-md-6" >
-                            <div class="form-group"> 
+                            <div class="form-group">
                                 <label class="control-label">Cliente
                                 </label>
-                                
+
                                 <el-select v-model="form.person_id" filterable remote  popper-class="el-select-customers"  clearable
                                     placeholder="Nombre o número de documento"
                                     :remote-method="searchRemotePersons"
@@ -70,45 +70,45 @@
                                     @change="changePersons">
                                     <el-option v-for="option in persons" :key="option.id" :value="option.id" :label="option.description"></el-option>
                                 </el-select>
- 
+
                             </div>
-                        </div> 
- 
+                        </div>
+
                         <div class="col-lg-6 col-md-6" >
-                            <div class="form-group"> 
+                            <div class="form-group">
                                 <label class="control-label">Vendedor
                                 </label>
-                                
+
                                 <el-select v-model="form.seller_id" filterable  popper-class="el-select-customers"  clearable
                                     placeholder="Nombre"
                                     @change="changeSellers">
                                     <el-option v-for="option in sellers" :key="option.id" :value="option.id" :label="option.name"></el-option>
                                 </el-select>
- 
+
                             </div>
-                        </div> 
- 
-                        
-                        <div class="col-lg-7 col-md-7 col-md-7 col-sm-12" style="margin-top:29px"> 
+                        </div>
+
+
+                        <div class="col-lg-7 col-md-7 col-md-7 col-sm-12" style="margin-top:29px">
                             <el-button class="submit" type="primary" @click.prevent="getRecordsByFilter" :loading="loading_submit" icon="el-icon-search" >Buscar</el-button>
-                            
-                            <template v-if="records.length>0"> 
+
+                            <template v-if="records.length>0">
 
                                 <!-- <el-button class="submit" type="success" @click.prevent="clickDownload('excel')"><i class="fa fa-file-excel" ></i>  Exportal Excel</el-button> -->
                                 <el-button class="submit" type="danger"  icon="el-icon-tickets" @click.prevent="clickDownload('pdf')" >Exportar PDF</el-button>
 
-                                <template v-if="resource == 'reports/sales-consolidated'"> 
+                                <template v-if="resource == 'reports/sales-consolidated'">
                                     <el-button class="submit" type="success"  icon="el-icon-search" @click.prevent="clickTotalByItem()" >Ver totales por producto</el-button>
                                 </template>
 
                             </template>
 
-                        </div>             
-                    
+                        </div>
+
                 </div>
                 <div class="row mt-1 mb-4">
-                    
-                </div> 
+
+                </div>
             </div>
 
 
@@ -118,15 +118,15 @@
                         <thead>
                         <slot name="heading"></slot>
                         </thead>
-                        <tbody> 
+                        <tbody>
                             <slot v-for="(row, index) in records" :row="row" :index="customIndex(index)"></slot>
-                        </tbody> 
+                        </tbody>
                         <tfoot v-if="resource == 'reports/order-notes-consolidated' || resource == 'reports/sales-consolidated'">
                             <tr>
                                 <td colspan="2"></td>
                                 <td class="text-center"><strong>Total</strong></td>
                                 <td class="text-center">{{totals}}</td>
-                            </tr> 
+                            </tr>
                         </tfoot>
                     </table>
                     <div>
@@ -157,7 +157,7 @@
     import queryString from 'query-string'
     import TotalsByItemForm from './partials/totals_by_item.vue'
 
-    export default { 
+    export default {
         components: {TotalsByItemForm},
         props: {
             resource: String,
@@ -175,12 +175,12 @@
                 document_types: [],
                 order_state_types: [],
                 sellers: [],
-                pagination: {}, 
-                search: {}, 
-                totals: {}, 
+                pagination: {},
+                search: {},
+                totals: {},
                 establishment: null,
                 parameters: null,
-                form: {}, 
+                form: {},
                 pickerOptionsDates: {
                     disabledDate: (time) => {
                         time = moment(time).format('YYYY-MM-DD')
@@ -198,7 +198,7 @@
                 this.getRecords()
             })
         },
-        async mounted () { 
+        async mounted () {
 
             await this.$http.get(`/${this.resource}/filter`)
                 .then(response => {
@@ -216,11 +216,11 @@
             this.form.type_person = 'customers'
 
         },
-        methods: { 
+        methods: {
             clickTotalByItem(){
-                
+
                 this.showDialog = true
-                
+
             },
             changeDisabledDates() {
                 if (this.form.date_end < this.form.date_start) {
@@ -238,40 +238,40 @@
                 this.$eventHub.$emit('changeFilterColumn', 'seller')
                 // this.records = []
             },
-            searchRemotePersons(input) {  
-                
-                if (input.length > 0) { 
+            searchRemotePersons(input) {
+
+                if (input.length > 0) {
 
                     this.loading_search = true
                     let parameters = `input=${input}`
-                    
+
                     this.form.type_person = 'customers'
 
                     this.$http.get(`/reports/data-table/persons/${this.form.type_person}?${parameters}`)
-                            .then(response => { 
+                            .then(response => {
                                 this.persons = response.data.persons
                                 this.loading_search = false
-                                
+
                                 if(this.persons.length == 0){
                                     this.filterPersons()
                                 }
-                            })  
+                            })
                 } else {
                     this.filterPersons()
                 }
 
             },
-            filterPersons() { 
+            filterPersons() {
                 this.persons = this.all_persons
-            }, 
-            clickDownload(type) {                 
+            },
+            clickDownload(type) {
                 let query = queryString.stringify({
                     ...this.form
                 });
                 window.open(`/${this.resource}/${type}/?${query}`, '_blank');
             },
             initForm(){
- 
+
                 this.form = {
                     person_id: null,
                     document_type_id: null,
@@ -279,16 +279,16 @@
                     order_state_type_id: 'all_states',
                     type_person:null,
                     seller_id:null,
-                    date_start: moment().startOf('month').format('YYYY-MM-DD'), 
-                    date_end: moment().endOf('month').format('YYYY-MM-DD'), 
+                    date_start: moment().startOf('month').format('YYYY-MM-DD'),
+                    date_end: moment().endOf('month').format('YYYY-MM-DD'),
                 }
 
-            },  
+            },
             customIndex(index) {
                 return (this.pagination.per_page * (this.pagination.current_page - 1)) + index + 1
-            }, 
+            },
             async getRecordsByFilter(){
-                
+
                 if(!this.form.person_id &&  !this.form.seller_id){
                     return this.$message.error('Debe seleccionar un cliente o vendedor')
                 }
@@ -309,8 +309,6 @@
                     this.pagination.per_page = parseInt(response.data.meta.per_page)
                     this.loading_submit = false
                 });
-
-
             },
             getQueryParameters() {
                 return queryString.stringify({
@@ -318,7 +316,7 @@
                     limit: this.limit,
                     ...this.form
                 })
-            }, 
+            },
         }
     }
 </script>

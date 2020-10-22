@@ -67,6 +67,10 @@ class ItemReportFamilyService
         $grouped = $records->groupBy(['family', 'line']);
         return $grouped->toArray();
     }
+    public function GroupedByFamilySale($data)
+    {
+
+    }
 
 
 

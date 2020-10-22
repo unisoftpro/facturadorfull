@@ -58,7 +58,7 @@
         },
         created() {
             this.$eventHub.$on('emitItemID', (item_id) => {
-                // console.log(item_id)
+                console.log(item_id)
                 this.item_id = item_id
             })
         },

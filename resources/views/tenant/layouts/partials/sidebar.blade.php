@@ -497,6 +497,16 @@
                                         Kardex valorizado
                                     </a>
                                 </li>
+                                <li class="{{(($path[0] === 'reports') && ($path[1] === 'price-list')) ? 'nav-active' : ''}}">
+                                    <a class="nav-link" href="{{route('reports.precie-list.index')}}">
+                                        Reporte Lista de precios
+                                    </a>
+                                </li>
+                                <li class="{{(($path[0] === 'reports') && ($path[1] === 'valuted-balances')) ? 'nav-active' : ''}}">
+                                    <a class="nav-link" href="{{route('reports.valuted-balances.index')}}">
+                                        Reporte Saldos valorizados
+                                    </a>
+                                </li>
                             </ul>
                         </li>
                         @endif

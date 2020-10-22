@@ -59,6 +59,7 @@ class WarehouseIncomeController extends Controller
     {
         $records = WarehouseIncome::where($request->column, 'like', "%{$request->value}%")->latest();
 
+
         return new WarehouseIncomeCollection($records->paginate(config('tenant.items_per_page')));
     }
 
@@ -287,7 +288,7 @@ class WarehouseIncomeController extends Controller
 
         $record = WarehouseIncome::where('external_id', $external_id)->first();
         $view = "inventory::warehouse-income.report.{$template}";
-
+        //dd($record);
         set_time_limit(0);
 
         $pdf = PDF::loadView($view, compact("record", "company"));
