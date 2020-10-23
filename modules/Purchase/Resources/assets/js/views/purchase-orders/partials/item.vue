@@ -582,7 +582,10 @@ export default {
       this.getPreviousCost();
 
       this.form.item = _.find(this.items, { id: this.form.item_id });
-      if ((this.purchaseOrderTypeId = "02")) {
+
+      var id = this.purchaseOrderTypeId;
+
+      if (id == "02") {
         this.form.unit_price = this.form.item.fob;
       } else {
         this.form.unit_price = this.form.item.purchase_unit_price;
