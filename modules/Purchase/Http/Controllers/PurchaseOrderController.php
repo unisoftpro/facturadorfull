@@ -44,6 +44,7 @@ use Modules\Purchase\Models\PurchaseOrderState;
 use Modules\Purchase\Models\PurchaseOrderType;
 use Modules\Transport\Models\WorkOrder;
 use Modules\Purchase\Models\PurchaseOrderItem;
+use App\Models\Tenant\ListPriceItem;
 
 
 class PurchaseOrderController extends Controller
@@ -63,7 +64,7 @@ class PurchaseOrderController extends Controller
     public function create($id = null)
     {
         $sale_opportunity = null;
-        return view('purchase::purchase-orders.form', compact('id','sale_opportunity'));
+        return view('purchase::purchase-orders.form', compact('id', 'sale_opportunity'));
     }
 
     public function generate($id)
@@ -78,7 +79,7 @@ class PurchaseOrderController extends Controller
         $sale_opportunity = SaleOpportunity::with(['items'])->findOrFail($id);
         $id = null;
 
-        return view('purchase::purchase-orders.form', compact('id','sale_opportunity'));
+        return view('purchase::purchase-orders.form', compact('id', 'sale_opportunity'));
     }
 
     public function columns()
@@ -91,14 +92,15 @@ class PurchaseOrderController extends Controller
     public function records(Request $request)
     {
         $records = PurchaseOrder::where($request->column, 'like', "%{$request->value}%")
-                            ->whereTypeUser()
-                            ->latest();
+            ->whereTypeUser()
+            ->latest();
 
         return new PurchaseOrderCollection($records->paginate(config('tenant.items_per_page')));
     }
 
 
-    public function tables() {
+    public function tables()
+    {
 
         $suppliers = $this->table('suppliers');
         // $establishments = Establishment::where('id', auth()->user()->establishment_id)->get();
@@ -113,8 +115,18 @@ class PurchaseOrderController extends Controller
         $purchase_order_types = PurchaseOrderType::get();
         $work_orders = WorkOrder::where('work_order_state_id', '01')->get(['id', 'prefix', 'number']);
 
-        return compact('suppliers', 'establishment','company','currency_types','payment_method_types',
-                        'lines', 'families', 'purchase_order_states', 'purchase_order_types', 'work_orders');
+        return compact(
+            'suppliers',
+            'establishment',
+            'company',
+            'currency_types',
+            'payment_method_types',
+            'lines',
+            'families',
+            'purchase_order_states',
+            'purchase_order_types',
+            'work_orders'
+        );
     }
 
 
@@ -130,8 +142,17 @@ class PurchaseOrderController extends Controller
         $attribute_types = AttributeType::whereActive()->orderByDescription()->get();
         $warehouses = Warehouse::all();
 
-        return compact('items', 'categories', 'affectation_igv_types', 'system_isc_types', 'price_types',
-                        'discount_types', 'charge_types', 'attribute_types','warehouses');
+        return compact(
+            'items',
+            'categories',
+            'affectation_igv_types',
+            'system_isc_types',
+            'price_types',
+            'discount_types',
+            'charge_types',
+            'attribute_types',
+            'warehouses'
+        );
     }
 
     public function previousCost($item_id)
@@ -139,7 +160,7 @@ class PurchaseOrderController extends Controller
 
         $purchase_order_item = PurchaseOrderItem::where('item_id', $item_id)->latest('id')->first();
 
-        if($purchase_order_item){
+        if ($purchase_order_item) {
             return [
                 'previous_cost' => $purchase_order_item->unit_price,
                 'previous_currency_type_id' => $purchase_order_item->purchase_order->currency_type_id,
@@ -150,7 +171,6 @@ class PurchaseOrderController extends Controller
             'previous_cost' => 0,
             'previous_currency_type_id' => null,
         ];
-
     }
 
     public function record($id)
@@ -161,19 +181,28 @@ class PurchaseOrderController extends Controller
     }
 
 
-    public function getFullDescription($row){
+    public function getFullDescription($row)
+    {
 
-        $desc = ($row->internal_id)?$row->internal_id.' - '.$row->description : $row->description;
+        $desc = ($row->internal_id) ? $row->internal_id . ' - ' . $row->description : $row->description;
         $category = ($row->category) ? " - {$row->category->name}" : "";
         $brand = ($row->brand) ? " - {$row->brand->name}" : "";
 
         $desc = "{$desc} {$category} {$brand}";
-
+        //dd($desc);
         return $desc;
+    }
+    public function precio_list($row)
+    {
+
+        $list_price = ListPriceItem::where('item_id', $row->id)->first();
+
+        return  $list_price['price_fob'];
     }
 
 
-    public function store(PurchaseOrderRequest $request) {
+    public function store(PurchaseOrderRequest $request)
+    {
 
 
         DB::connection('tenant')->transaction(function () use ($request) {
@@ -182,7 +211,7 @@ class PurchaseOrderController extends Controller
 
             $id = $request->input('id');
 
-            $this->purchase_order =  PurchaseOrder::updateOrCreate( ['id' => $id], $data);
+            $this->purchase_order =  PurchaseOrder::updateOrCreate(['id' => $id], $data);
 
             $this->purchase_order->items()->delete();
 
@@ -192,17 +221,16 @@ class PurchaseOrderController extends Controller
 
             $temp_path = $request->input('attached_temp_path');
 
-            if($temp_path) {
+            if ($temp_path) {
 
                 $datenow = date('YmdHis');
                 $file_name_old = $request->input('attached');
                 $file_name_old_array = explode('.', $file_name_old);
-                $file_name = Str::slug($this->purchase_order->id).'-'.$datenow.'.'.$file_name_old_array[1];
+                $file_name = Str::slug($this->purchase_order->id) . '-' . $datenow . '.' . $file_name_old_array[1];
                 $file_content = file_get_contents($temp_path);
-                Storage::disk('tenant')->put('purchase_order_attached'.DIRECTORY_SEPARATOR.$file_name, $file_content);
+                Storage::disk('tenant')->put('purchase_order_attached' . DIRECTORY_SEPARATOR . $file_name, $file_content);
                 $this->purchase_order->upload_filename = $file_name;
                 $this->purchase_order->save();
-
             }
 
             $this->setFilename();
@@ -241,12 +269,12 @@ class PurchaseOrderController extends Controller
 
 
 
-    private function setFilename(){
+    private function setFilename()
+    {
 
-        $name = [$this->purchase_order->prefix,$this->purchase_order->id,date('Ymd')];
+        $name = [$this->purchase_order->prefix, $this->purchase_order->id, date('Ymd')];
         $this->purchase_order->filename = join('-', $name);
         $this->purchase_order->save();
-
     }
 
 
@@ -255,10 +283,10 @@ class PurchaseOrderController extends Controller
         switch ($table) {
             case 'suppliers':
 
-                $suppliers = Person::whereType('suppliers')->orderBy('name')->get()->transform(function($row) {
+                $suppliers = Person::whereType('suppliers')->orderBy('name')->get()->transform(function ($row) {
                     return [
                         'id' => $row->id,
-                        'description' => $row->number.' - '.$row->name,
+                        'description' => $row->number . ' - ' . $row->name,
                         'name' => $row->name,
                         'number' => $row->number,
                         'email' => $row->email,
@@ -275,37 +303,40 @@ class PurchaseOrderController extends Controller
                 $warehouse = Warehouse::where('establishment_id', auth()->user()->establishment_id)->first();
 
                 $items = Item::orderBy('description')->whereNotIsSet()
-                    ->get()->transform(function($row) {
-                    $full_description = $this->getFullDescription($row);
-                    return [
-                        'id' => $row->id,
-                        'full_description' => $full_description,
-                        'description' => $row->description,
-                        'currency_type_id' => $row->currency_type_id,
-                        'currency_type_symbol' => $row->currency_type->symbol,
-                        'sale_unit_price' => $row->sale_unit_price,
-                        'purchase_unit_price' => $row->purchase_unit_price,
-                        'unit_type_id' => $row->unit_type_id,
-                        'sale_affectation_igv_type_id' => $row->sale_affectation_igv_type_id,
-                        'purchase_affectation_igv_type_id' => $row->purchase_affectation_igv_type_id,
-                        'has_perception' => (bool) $row->has_perception,
-                        'percentage_perception' => $row->percentage_perception,
-                        'item_unit_types' => collect($row->item_unit_types)->transform(function($row) {
-                            return [
-                                'id' => $row->id,
-                                'description' => "{$row->description}",
-                                'item_id' => $row->item_id,
-                                'unit_type_id' => $row->unit_type_id,
-                                'quantity_unit' => $row->quantity_unit,
-                                'price1' => $row->price1,
-                                'price2' => $row->price2,
-                                'price3' => $row->price3,
-                                'price_default' => $row->price_default,
-                            ];
-                        }),
-                        'series_enabled' => (bool) $row->series_enabled,
-                    ];
-                });
+                    ->get()->transform(function ($row) {
+                        $price_list = $this->precio_list($row);
+                        //dd($price_list);
+                        $full_description = $this->getFullDescription($row);
+                        return [
+                            'id' => $row->id,
+                            'full_description' => $full_description,
+                            'description' => $row->description,
+                            'currency_type_id' => $row->currency_type_id,
+                            'currency_type_symbol' => $row->currency_type->symbol,
+                            'sale_unit_price' => $row->sale_unit_price,
+                            'purchase_unit_price' => $row->purchase_unit_price,
+                            'unit_type_id' => $row->unit_type_id,
+                            'sale_affectation_igv_type_id' => $row->sale_affectation_igv_type_id,
+                            'purchase_affectation_igv_type_id' => $row->purchase_affectation_igv_type_id,
+                            'has_perception' => (bool) $row->has_perception,
+                            'percentage_perception' => $row->percentage_perception,
+                            'fob' =>  $price_list,
+                            'item_unit_types' => collect($row->item_unit_types)->transform(function ($row) {
+                                return [
+                                    'id' => $row->id,
+                                    'description' => "{$row->description}",
+                                    'item_id' => $row->item_id,
+                                    'unit_type_id' => $row->unit_type_id,
+                                    'quantity_unit' => $row->quantity_unit,
+                                    'price1' => $row->price1,
+                                    'price2' => $row->price2,
+                                    'price3' => $row->price3,
+                                    'price_default' => $row->price_default,
+                                ];
+                            }),
+                            'series_enabled' => (bool) $row->series_enabled,
+                        ];
+                    });
                 return $items;
 
                 break;
@@ -317,7 +348,8 @@ class PurchaseOrderController extends Controller
     }
 
 
-    public function download($external_id, $format = "a4") {
+    public function download($external_id, $format = "a4")
+    {
 
         $purchase_order = PurchaseOrder::where('external_id', $external_id)->first();
 
@@ -326,20 +358,20 @@ class PurchaseOrderController extends Controller
         $this->reloadPDF($purchase_order, $format, $purchase_order->filename);
 
         return $this->downloadStorage($purchase_order->filename, 'purchase_order');
-
     }
 
-    public function downloadAttached($external_id) {
+    public function downloadAttached($external_id)
+    {
 
         $purchase_order = PurchaseOrder::where('external_id', $external_id)->first();
 
         if (!$purchase_order) throw new Exception("El código {$external_id} es inválido, no se encontro la orden de compra relacionada");
 
-        return Storage::disk('tenant')->download('purchase_order_attached'.DIRECTORY_SEPARATOR.$purchase_order->upload_filename);
-
+        return Storage::disk('tenant')->download('purchase_order_attached' . DIRECTORY_SEPARATOR . $purchase_order->upload_filename);
     }
 
-    public function toPrint($external_id, $format) {
+    public function toPrint($external_id, $format)
+    {
 
         $purchase_order = PurchaseOrder::where('external_id', $external_id)->first();
 
@@ -351,16 +383,17 @@ class PurchaseOrderController extends Controller
         file_put_contents($temp, $this->getStorage($purchase_order->filename, 'purchase_order'));
 
         return response()->file($temp);
-
     }
 
 
-    private function reloadPDF($purchase_order, $format, $filename) {
+    private function reloadPDF($purchase_order, $format, $filename)
+    {
         $this->createPdf($purchase_order, $format, $filename);
     }
 
 
-    public function createPdf($purchase_order = null, $format_pdf = null, $filename = null) {
+    public function createPdf($purchase_order = null, $format_pdf = null, $filename = null)
+    {
 
         $template = new Template();
         $pdf = new Mpdf();
@@ -375,7 +408,7 @@ class PurchaseOrderController extends Controller
 
         $pdf_font_regular = 'oc_font'; // config('tenant.pdf_name_regular');
         $pdf_font_bold = 'oc_font'; //config('tenant.pdf_name_bold');
-       // throw new Exception("");
+        // throw new Exception("");
 
         if (true) {
             $defaultConfig = (new ConfigVariables())->getDefaults();
@@ -386,10 +419,10 @@ class PurchaseOrderController extends Controller
 
             $pdf = new Mpdf([
                 'fontDir' => array_merge($fontDirs, [
-                    app_path('CoreFacturalo'.DIRECTORY_SEPARATOR.'Templates'.
-                                                DIRECTORY_SEPARATOR.'pdf'.
-                                                DIRECTORY_SEPARATOR.$base_template.
-                                                DIRECTORY_SEPARATOR.'font')
+                    app_path('CoreFacturalo' . DIRECTORY_SEPARATOR . 'Templates' .
+                        DIRECTORY_SEPARATOR . 'pdf' .
+                        DIRECTORY_SEPARATOR . $base_template .
+                        DIRECTORY_SEPARATOR . 'font')
                 ]),
                 'fontdata' => $fontData + [
                     'frutiger' => [
@@ -401,10 +434,10 @@ class PurchaseOrderController extends Controller
             ]);
         }
 
-        $path_css = app_path('CoreFacturalo'.DIRECTORY_SEPARATOR.'Templates'.
-                                             DIRECTORY_SEPARATOR.'pdf'.
-                                             DIRECTORY_SEPARATOR.$base_template.
-                                             DIRECTORY_SEPARATOR.'style.css');
+        $path_css = app_path('CoreFacturalo' . DIRECTORY_SEPARATOR . 'Templates' .
+            DIRECTORY_SEPARATOR . 'pdf' .
+            DIRECTORY_SEPARATOR . $base_template .
+            DIRECTORY_SEPARATOR . 'style.css');
 
         $stylesheet = file_get_contents($path_css);
 
@@ -412,7 +445,7 @@ class PurchaseOrderController extends Controller
         $pdf->WriteHTML($html, HTMLParserMode::HTML_BODY);
 
         if ($format_pdf != 'ticket') {
-            if(config('tenant.pdf_template_footer')) {
+            if (config('tenant.pdf_template_footer')) {
                 $html_footer = $template->pdfFooter($base_template);
                 $pdf->SetHTMLFooter($html_footer);
             }
@@ -422,7 +455,8 @@ class PurchaseOrderController extends Controller
     }
 
 
-    public function uploadFile($filename, $file_content, $file_type) {
+    public function uploadFile($filename, $file_content, $file_type)
+    {
         $this->uploadStorage($filename, $file_content, $file_type);
     }
 
@@ -450,7 +484,7 @@ class PurchaseOrderController extends Controller
 
         $validate_upload = UploadFileHelper::validateUploadFile($request, 'file', 'jpg,jpeg,png,gif,svg,pdf');
 
-        if(!$validate_upload['success']){
+        if (!$validate_upload['success']) {
             return $validate_upload;
         }
 

@@ -230,7 +230,7 @@
 
             },
             inputSaleProfitFactor(){
-                
+
                 if(this.warehouseIncomeReasonId == '104')
                 {
                     this.form.retail_price =  _.round(parseFloat(this.form.unit_price) * parseFloat(this.form.sale_profit_factor) ,2)
@@ -262,20 +262,41 @@
             },
             inputListPrice(){
 
-                this.form.unit_value = _.round(parseFloat(this.form.list_price) - (parseFloat(this.form.list_price) * (parseFloat(this.form.discount_one) / 100)), 6)
 
-                this.form.unit_value = _.round(this.form.unit_value - (this.form.unit_value * (parseFloat(this.form.discount_two) / 100)), 6)
 
-                this.form.unit_value = _.round(this.form.unit_value - (this.form.unit_value * (parseFloat(this.form.discount_three) / 100)), 6)
 
-                this.form.unit_value = _.round(this.form.unit_value - (this.form.unit_value * (parseFloat(this.form.discount_four) / 100)), 6)
+                        if(this.warehouseIncomeReasonId == '104'){
+                            let variableconifv=0
+                            let variableunit = 0
+                            variableconifv = _.round(parseFloat(this.form.list_price) - (parseFloat(this.form.list_price) * (parseFloat(this.form.discount_one) / 100)), 6)
+                            variableconifv = _.round(variableconifv- (variableconifv * (parseFloat(this.form.discount_two) / 100)), 6)
+                            variableconifv = _.round(variableconifv - (variableconifv * (parseFloat(this.form.discount_three) / 100)), 6)
+                            variableconifv = _.round(variableconifv- (variableconifv* (parseFloat(this.form.discount_four) / 100)), 6)
+                            let percentage_igv = 18
+                            this.form.unit_price = _.round((variableconifv), 6)
+                            variableunit=_.round((this.form.unit_price * (percentage_igv/100)), 6)
 
-                let percentage_igv = 18
+                            this.form.unit_value = _.round((this.form.unit_price - variableunit),6)
 
-                this.form.unit_price = _.round((this.form.unit_value * (1 + percentage_igv/100)), 6)
+                        }else{
+                            this.form.unit_value = _.round(parseFloat(this.form.list_price) - (parseFloat(this.form.list_price) * (parseFloat(this.form.discount_one) / 100)), 6)
 
-                this.inputSaleProfitFactor()
-                this.changeWarehouseFactor()
+                            this.form.unit_value = _.round(this.form.unit_value - (this.form.unit_value * (parseFloat(this.form.discount_two) / 100)), 6)
+
+                            this.form.unit_value = _.round(this.form.unit_value - (this.form.unit_value * (parseFloat(this.form.discount_three) / 100)), 6)
+
+                            this.form.unit_value = _.round(this.form.unit_value - (this.form.unit_value * (parseFloat(this.form.discount_four) / 100)), 6)
+
+
+                            let percentage_igv = 18
+                            this.form.unit_price = _.round((this.form.unit_value * (1 + percentage_igv/100)), 6)
+
+                            this.inputSaleProfitFactor()
+                            this.changeWarehouseFactor()
+
+                        }
+
+
 
             },
             initForm() {

@@ -52,7 +52,7 @@
                                     <small class="form-control-feedback" v-if="errors.number" v-text="errors.number[0]"></small>
                                 </div>
                             </div> -->
-                            
+
 
                             <div class="col-lg-6">
                                 <div class="form-group" :class="{'has-danger': errors.supplier_id}">
@@ -74,7 +74,7 @@
                                     <small class="form-control-feedback" v-if="errors.date_of_issue" v-text="errors.date_of_issue[0]"></small>
                                 </div>
                             </div>
-                            
+
                             <div class="col-lg-2">
                                 <div class="form-group" :class="{'has-danger': errors.date_of_due}">
                                     <label class="control-label">Fec. Vencimiento</label>
@@ -82,7 +82,7 @@
                                     <small class="form-control-feedback" v-if="errors.date_of_due" v-text="errors.date_of_due[0]"></small>
                                 </div>
                             </div>
-                            
+
                             <div class="col-lg-2">
                                 <div class="form-group" :class="{'has-danger': errors.currency_type_id}">
                                     <label class="control-label">Moneda</label>
@@ -94,7 +94,7 @@
                             </div>
                         </div>
                         <div class="row">
-                            
+
                             <div class="col-lg-2">
                                 <div class="form-group" :class="{'has-danger': errors.exchange_rate_sale}">
                                     <label class="control-label">Tipo de cambio
@@ -116,14 +116,14 @@
                                     </el-select>
                                     <small class="form-control-feedback" v-if="errors.purchase_order_type_id" v-text="errors.purchase_order_type_id[0]"></small>
                                 </div>
-                            </div> 
-                            
+                            </div>
+
                             <div class="col-md-2">
                                 <div class="form-group" :class="{'has-danger': errors.work_order_id}">
                                     <label class="control-label">
                                         Órden de trabajo
                                     </label>
-        
+
                                     <el-select v-model="form.work_order_id" filterable  >
                                         <el-option v-for="option in work_orders" :key="option.id" :value="option.id" :label="option.number"></el-option>
                                     </el-select>
@@ -141,7 +141,7 @@
                                     </el-select>
                                     <small class="form-control-feedback" v-if="errors.payment_method_type_id" v-text="errors.payment_method_type_id[0]"></small>
                                 </div>
-                            </div> 
+                            </div>
                             <div class="col-lg-3">
                                 <div class="form-group" :class="{'has-danger': errors.purchase_order_state_id}">
                                     <label class="control-label">
@@ -152,12 +152,12 @@
                                     </el-select>
                                     <small class="form-control-feedback" v-if="errors.purchase_order_state_id" v-text="errors.purchase_order_state_id[0]"></small>
                                 </div>
-                            </div> 
+                            </div>
 
                             <div class="col-md-3">
                                 <div class="form-group" :class="{'has-danger': errors.line_id}">
                                     <label class="control-label">
-                                    Línea de producto 
+                                    Línea de producto
                                     </label>
                                     <el-select v-model="form.line_id" filterable clearable>
                                         <el-option v-for="option in lines" :key="option.id" :value="option.id" :label="option.name"></el-option>
@@ -171,7 +171,7 @@
                                     <label class="control-label">
                                         Familia
                                     </label>
-        
+
                                     <el-select v-model="form.family_id" filterable clearable >
                                         <el-option v-for="option in families" :key="option.id" :value="option.id" :label="option.name"></el-option>
                                     </el-select>
@@ -181,25 +181,25 @@
 
                             <div class="col-lg-6">
                                 <div class="form-group" :class="{'has-danger': errors.place_of_delivery}">
-                                    <label class="control-label">Lugar de entrega 
+                                    <label class="control-label">Lugar de entrega
                                     </label>
-                                    <el-input v-model="form.place_of_delivery"></el-input>
+                                    <el-input v-model="form.place_of_delivery" ></el-input>
                                     <small class="form-control-feedback" v-if="errors.place_of_delivery" v-text="errors.place_of_delivery[0]"></small>
                                 </div>
                             </div>
 
                             <div class="col-lg-4">
                                 <div class="form-group" :class="{'has-danger': errors.observation}">
-                                    <label class="control-label">Observación 
+                                    <label class="control-label">Observación
                                     </label>
                                     <el-input v-model="form.observation" type="textarea" autosize></el-input>
                                     <small class="form-control-feedback" v-if="errors.observation" v-text="errors.observation[0]"></small>
                                 </div>
                             </div>
-                            
+
                             <div class="col-lg-2">
                                 <div>
-                                    <label class="control-label">Usuario compra 
+                                    <label class="control-label">Usuario compra
                                     </label>
                                     <el-input v-model="userName" readonly></el-input>
                                 </div>
@@ -207,7 +207,7 @@
 
                             <div class="col-lg-3">
                                 <div class="form-group" :class="{'has-danger': errors.reference}">
-                                    <label class="control-label">Referencia 
+                                    <label class="control-label">Referencia
                                     </label>
                                     <el-input v-model="form.reference"></el-input>
                                     <small class="form-control-feedback" v-if="errors.reference" v-text="errors.reference[0]"></small>
@@ -215,7 +215,7 @@
                             </div>
 
 
-                            
+
                             <div class="col-lg-3" style="margin-top:29px;">
                                 <div class="form-group" :class="{'has-danger': errors.file}">
                                     <el-upload
@@ -328,8 +328,8 @@
                                         </div>
                                     </div>
                                     <h3 class="text-right" v-if="form.total > 0 && !hide_button"><b>MONTO TOTAL : </b>{{ currency_type.symbol }} {{ total_amount }}</h3>
-                                    
-                                    
+
+
                                 </template>
                             </div>
                         </div>
@@ -344,6 +344,7 @@
 
         <purchase-form-item :showDialog.sync="showDialogAddItem"
                            :currency-type-id-active="form.currency_type_id"
+                           :purchase-order-type-id="form.purchase_order_type_id"
                            :exchange-rate-sale="form.exchange_rate_sale"
                            @add="addRow"></purchase-form-item>
 
@@ -421,13 +422,13 @@
                     this.establishment = response.data.establishment
                     this.suppliers = response.data.suppliers
                     this.payment_method_types = response.data.payment_method_types
-                    this.company = response.data.company 
-
-                    this.lines = response.data.lines 
-                    this.families = response.data.families 
-                    this.purchase_order_states = response.data.purchase_order_states 
-                    this.purchase_order_types = response.data.purchase_order_types 
-                    this.work_orders = response.data.work_orders 
+                    this.company = response.data.company
+                    this.form.place_of_delivery = response.data.establishment.trade_address
+                    this.lines = response.data.lines
+                    this.families = response.data.families
+                    this.purchase_order_states = response.data.purchase_order_states
+                    this.purchase_order_types = response.data.purchase_order_types
+                    this.work_orders = response.data.work_orders
 
                     this.form.currency_type_id = (this.currency_types.length > 0)?this.currency_types[0].id:null
                     this.form.establishment_id = (this.establishment.id) ? this.establishment.id:null
@@ -441,7 +442,7 @@
                 this.reloadDataSuppliers(supplier_id)
            })
             this.loading_form = true
-           
+
             this.$eventHub.$on('initInputPerson', () => {
                 this.initInputPerson()
             })
@@ -469,7 +470,7 @@
                     this.form.sale_opportunity_id = this.saleOpportunity.id
                     // console.log(this.form)
                 }
-                
+
             },
             getFormatUnitPriceRow(unit_price){
                 return _.round(unit_price, 6)
@@ -487,11 +488,11 @@
                     this.$message.error(response.message)
                 }
             },
-            handleRemove(file, fileList) {                
+            handleRemove(file, fileList) {
                 this.form.upload_filename = null
                 this.form.temp_path = null
                 this.fileList = []
-            }, 
+            },
             cleanFileList(){
                 this.fileList = []
 
@@ -503,15 +504,15 @@
                     await this.$http.get(`/${this.resource}/record/${this.id}`)
                         .then(response => {
                             // console.log(response)
-                            this.form = response.data.data.purchase_order; 
+                            this.form = response.data.data.purchase_order;
                             if(this.form.upload_filename){
                                 this.fileList.push({
                                     name:this.form.upload_filename,
                                     url:this.form.upload_filename,
                                 })
-                            } 
+                            }
 
-                            // this.form.suppliers = Object.values(response.data.data.purchase_quotation.suppliers); 
+                            // this.form.suppliers = Object.values(response.data.data.purchase_quotation.suppliers);
                         })
 
                     this.button_text = 'Actualizar'
@@ -528,17 +529,17 @@
                 }
             },
             keyupEnterSupplier(){
-            
+
                 if(this.input_person.number){
 
-                    if(!isNaN(parseInt(this.input_person.number))){ 
+                    if(!isNaN(parseInt(this.input_person.number))){
 
                         switch (this.input_person.number.length) {
                             case 8:
                                 this.input_person.identity_document_type_id = '1'
                                 this.showDialogNewPerson = true
                                 break;
-                        
+
                             case 11:
                                 this.input_person.identity_document_type_id = '6'
                                 this.showDialogNewPerson = true
@@ -550,11 +551,11 @@
                         }
                     }
                 }
-            }, 
-            keyupSupplier(e){ 
+            },
+            keyupSupplier(e){
 
                 if(e.key !== "Enter"){
-                    
+
                     this.input_person.number = this.$refs.select_person.$el.getElementsByTagName('input')[0].value
                     let exist_persons = this.suppliers.filter((supplier)=>{
                         let pos = supplier.description.search(this.input_person.number);
@@ -563,17 +564,17 @@
 
                     this.input_person.number = (exist_persons.length == 0) ? this.input_person.number : null
                 }
-            
+
             },
             inputSeries(){
 
                 const pattern = new RegExp('^[A-Z0-9]+$', 'i');
-                if(!pattern.test(this.form.series)){ 
+                if(!pattern.test(this.form.series)){
                     this.form.series = this.form.series.substring(0, this.form.series.length - 1);
                 } else {
                     this.form.series = this.form.series.toUpperCase()
                 }
-                
+
             },
             changePaymentMethodType(flag_submit = true){
                 let payment_method_type = _.find(this.payment_method_types, {'id':this.form.payment_method_type_id})
@@ -596,8 +597,8 @@
 
                 }
             },
-            changeSupplier(){  
-                this.calculatePerception() 
+            changeSupplier(){
+                this.calculatePerception()
             },
             filterSuppliers() {
 
@@ -661,7 +662,7 @@
                     attached_temp_path: null,
                     attached: null,
                     sale_opportunity_id: null,
-                    
+
                     purchase_order_state_id: '03',
                     purchase_order_type_id: '01',
                     line_id: null,
@@ -762,11 +763,11 @@
                 this.form.total = _.round(total, 2)
 
                 this.calculatePerception()
-                
+
 
              },
             calculatePerception(){
-                
+
                 let supplier = _.find(this.all_suppliers,{'id':this.form.supplier_id})
 
                 if(supplier){
@@ -780,9 +781,9 @@
 
                         this.form.perception_date = moment().format('YYYY-MM-DD')
 
-                        this.form.items.forEach((row) => { 
-                            quantity_item_perception += (row.item.has_perception) ? 1:0 
-                            total_perception += (row.item.has_perception) ? (parseFloat(row.unit_price) * parseFloat(row.quantity) * (parseFloat(row.item.percentage_perception)/100)) : 0 
+                        this.form.items.forEach((row) => {
+                            quantity_item_perception += (row.item.has_perception) ? 1:0
+                            total_perception += (row.item.has_perception) ? (parseFloat(row.unit_price) * parseFloat(row.quantity) * (parseFloat(row.item.percentage_perception)/100)) : 0
                         });
 
                         this.is_perception_agent = (quantity_item_perception > 0) ? true : false
@@ -800,8 +801,8 @@
                     }
 
                 }
-                
-                
+
+
             },
             async submit() {
 
@@ -811,12 +812,12 @@
                     .then(response => {
 
                         if (response.data.success) {
- 
+
                             this.resetForm()
                             this.purchaseNewId = response.data.data.id
 
                             if(this.saleOpportunity){
-                                
+
                                 this.$message.success(`La orden de compra ${response.data.data.number_full} fue generada`)
                                 this.close()
 
@@ -825,7 +826,7 @@
                                 this.isUpdate()
                                 this.showDialogOptions = true
                             }
-                            
+
 
                         } else {
                             this.$message.error(response.data.message)
