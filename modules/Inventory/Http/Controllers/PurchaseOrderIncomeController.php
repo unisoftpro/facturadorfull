@@ -41,6 +41,7 @@ class PurchaseOrderIncomeController extends Controller
 
     public function records(Request $request)
     {
+
         $records = PurchaseOrderIncome::where($request->column, 'like', "%{$request->value}%")->latest();
 
         return new PurchaseOrderIncomeCollection($records->paginate(config('tenant.items_per_page')));
@@ -89,14 +90,14 @@ class PurchaseOrderIncomeController extends Controller
                                         ];
                                     });
 
-                break; 
+                break;
 
         }
 
         return $data;
 
     }
- 
+
 
     public function store(PurchaseOrderIncomeRequest $request)
     {
@@ -129,7 +130,7 @@ class PurchaseOrderIncomeController extends Controller
                         'warehouse_destination_id' => null,
                         'inventory_transaction_id' => null,
                         'quantity' => $item['attended_quantity'],
-                    ]); 
+                    ]);
 
                     $p_order_item = PurchaseOrderItem::find($item['id']);
 
@@ -138,17 +139,17 @@ class PurchaseOrderIncomeController extends Controller
                     }else{
                         $p_order_item->attended_quantity = $item['attended_quantity'];
                     }
-                    
+
                     $p_order_item->pending_quantity_income -= $item['attended_quantity'];
                     $p_order_item->save();
                 }
 
             }
-            
+
             $pending_quantity_po = PurchaseOrderItem::where([['purchase_order_id', $purchase_order['id']], ['pending_quantity_income', '>', 0]])->count();
-            
+
             if($pending_quantity_po == 0){
-                
+
                 $find_purchase_order = PurchaseOrder::find($purchase_order['id']);
                 $find_purchase_order->purchase_order_state_id = '13';
                 $find_purchase_order->save();

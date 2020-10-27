@@ -427,6 +427,7 @@ export default {
     "currencyTypeIdActive",
     "exchangeRateSale",
     "purchaseOrderTypeId",
+    "currencyTypeId",
   ],
 
   components: { itemForm, LotsForm },
@@ -584,11 +585,18 @@ export default {
       this.form.item = _.find(this.items, { id: this.form.item_id });
 
       var id = this.purchaseOrderTypeId;
+      var id_money = this.currencyTypeId;
 
-      if (id == "02") {
+      /*if (id == "02") {
         this.form.unit_price = this.form.item.fob;
+      } else {*/
+      this.form.unit_price = this.form.item.purchase_unit_price;
+
+      // }
+      if (id_money === "PEN") {
+        this.form.item.currency_type_symbol = "S/";
       } else {
-        this.form.unit_price = this.form.item.purchase_unit_price;
+        this.form.item.currency_type_symbol = "$";
       }
 
       this.form.affectation_igv_type_id = this.form.item.purchase_affectation_igv_type_id;

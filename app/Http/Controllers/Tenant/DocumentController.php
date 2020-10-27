@@ -253,9 +253,9 @@ class DocumentController extends Controller
             });
             return $prepayment_documents;
         }
-        
+
         if ($table === 'payment_method_types') {
-            
+
             $payment_method_types = PaymentMethodType::whereNotIn('id', ['05', '08', '09'])->get();
             $end_payment_method_types = PaymentMethodType::whereIn('id', ['05', '08', '09'])->get(); //by requirement
 

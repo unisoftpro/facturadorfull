@@ -18,6 +18,7 @@ trait StorageDocument
     public function downloadStorage($filename, $file_type, $root = null)
     {
         $this->setData($filename, $file_type, $root);
+        //dd($this->_folder.DIRECTORY_SEPARATOR.$this->_filename);
         return Storage::disk('tenant')->download($this->_folder.DIRECTORY_SEPARATOR.$this->_filename);
     }
 

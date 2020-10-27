@@ -10,6 +10,7 @@ use Modules\Inventory\Http\Resources\WarehouseIncomeCollection;
 use Modules\Inventory\Models\WarehouseIncome;
 use Modules\Inventory\Models\WarehouseIncomeItem;
 use Modules\Inventory\Models\WarehouseIncomeReason;
+use App\Models\Tenant\Catalogs\DocumentType;
 use Modules\Purchase\Models\PurchaseOrder;
 use Modules\Purchase\Models\PurchaseOrderItem;
 use Modules\Inventory\Http\Requests\WarehouseIncomeRequest;
@@ -74,6 +75,7 @@ class WarehouseIncomeController extends Controller
 
     public function tables()
     {
+
         return [
             'warehouses' => $this->optionsWarehouse(),
             'purchase_orders' => $this->table('purchase_orders'),
@@ -81,7 +83,8 @@ class WarehouseIncomeController extends Controller
             'suppliers' => $this->table('suppliers'),
             'currency_types' => CurrencyType::whereActive()->get(),
             'work_orders' => WorkOrder::get(),
-            'type_list_prices' => TypeListPrice::all()
+            'type_list_prices' => TypeListPrice::all(),
+            'document_types_invoice'=> DocumentType::all(),
         ];
     }
 
@@ -157,6 +160,14 @@ class WarehouseIncomeController extends Controller
             'last_purchase_price' => 0,
             'last_factor' => 0,
         ];
+
+    }
+    public function getItemsWareHouseIncome($id){
+
+        //dd($id);
+        $record = WarehouseIncomeItem::where('warehouse_income_id', $id)->get();
+        //dd($record);
+        return compact('record');
 
     }
 

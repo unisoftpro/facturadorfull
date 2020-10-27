@@ -4,7 +4,7 @@
 
             <div class="col-md-12 col-lg-12 col-xl-12 ">
                 <div class="row" v-if="applyFilter">
-                    <div class="col-lg-4 col-md-4 col-sm-12 pb-2">
+                    <div class="col-lg-3 col-md-3 col-sm-12 pb-2">
                         <div class="d-flex">
                             <div style="width:100px">
                                 Filtrar por:
@@ -14,31 +14,30 @@
                             </el-select>
                         </div>
                     </div>
-                    <div class="col-lg-3 col-md-4 col-sm-12 pb-2">
-                        <template v-if="search.column=='date_of_issue' || search.column=='date_of_due' || search.column=='date_of_payment' || search.column=='delivery_date'">
-                            <el-date-picker
-                                v-model="search.value"
-                                type="date"
-                                style="width: 100%;"
-                                placeholder="Buscar"
-                                value-format="yyyy-MM-dd"
-                                @change="getRecords">
-                            </el-date-picker>
+                    <div class="col-lg-4 col-md-4 col-sm-12 pb-2">
+                        <div class="d-flex">
+                            <div style="width:100px">
+                                Proveedor:
+                            </div>
+                            <el-select v-model="search.supplier_id" filterable remote popper-class="el-select-customers" clearable  placeholder="Nombre o número de documento" @change="changeClearInput">
+                                <el-option v-for="option in suppliers" :key="option.id" :value="option.id" :label="option.description"></el-option>
+                            </el-select>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-4 col-sm-12 pb-2">
+                        <template>
+                                <el-date-picker v-model="search.date_of_issue" type="date" @change="changeClearInput"
+                                placeholder="Fecha inicio" value-format="yyyy-MM-dd" format="dd/MM/yyyy" :clearable="true"></el-date-picker>
                         </template>
-                        <template v-else>
-                            <el-input placeholder="Buscar"
-                                v-model="search.value"
-                                style="width: 100%;"
-                                prefix-icon="el-icon-search"
-                                @input="getRecords">
-                            </el-input>
+                    </div>
+                    <div class="col-lg-2 col-md-4 col-sm-12 pb-2">
+                        <template>
+                                <el-date-picker v-model="search.date_of_due" type="date" @change="changeClearInput"
+                                placeholder="Fecha fin" value-format="yyyy-MM-dd" :picker-options="pickerOptionsDates" format="dd/MM/yyyy" :clearable="true"></el-date-picker>
                         </template>
                     </div>
                 </div>
-
             </div>
-
-
             <div class="col-md-12">
                 <div class="table-responsive">
                     <table class="table">
@@ -84,24 +83,40 @@
             return {
                 search: {
                     column: null,
-                    value: null
+                    value: null,
+                    supplier_id:null,
+                    date_of_issue:null,
+                    date_of_due:null
                 },
+                form :{},
+                suppliers:[],
                 columns: [],
                 records: [],
                 pagination: {},
-                loading_submit: false
+                loading_submit: false,
+                pickerOptionsDates: {
+                    disabledDate: (time) => {
+                        time = moment(time).format('YYYY-MM-DD')
+                        return this.form.date_start > time
+                    }
+                },
             }
         },
         computed: {
         },
         created() {
             this.$eventHub.$on('reloadData', () => {
-                this.getRecords()
+                this.getRecords();
+                this.initForm();
             })
         },
         async mounted () {
             let column_resource = _.split(this.resource, '/')
-           // console.log(column_resource)
+
+            await this.$http.get(`/${_.head(column_resource)}/filter`).then((response) => {
+                this.suppliers = response.data.suppliers;
+                this.search.suppliers=null;
+            });
             await this.$http.get(`/${_.head(column_resource)}/columns`).then((response) => {
                 this.columns = response.data
                 this.search.column = _.head(Object.keys(this.columns))
@@ -134,6 +149,13 @@
             changeClearInput(){
                 this.search.value = ''
                 this.getRecords()
+            },
+            initForm(){
+                this.search = {
+                    date_of_issue: moment().format('YYYY-MM-DD'),
+                    date_of_due: moment().format('YYYY-MM-DD'),
+                }
+
             }
         }
     }

@@ -183,7 +183,10 @@
                                 <div class="form-group" :class="{'has-danger': errors.place_of_delivery}">
                                     <label class="control-label">Lugar de entrega
                                     </label>
-                                    <el-input v-model="form.place_of_delivery" ></el-input>
+                                    <el-select v-model="form.place_of_delivery" filterable clearable >
+                                        <el-option v-for="option in comboestablishment" :key="option.trade_address" :value="option.trade_address" :label="option.trade_address"></el-option>
+                                    </el-select>
+
                                     <small class="form-control-feedback" v-if="errors.place_of_delivery" v-text="errors.place_of_delivery[0]"></small>
                                 </div>
                             </div>
@@ -345,6 +348,7 @@
         <purchase-form-item :showDialog.sync="showDialogAddItem"
                            :currency-type-id-active="form.currency_type_id"
                            :purchase-order-type-id="form.purchase_order_type_id"
+                           :currency-type-id="form.currency_type_id"
                            :exchange-rate-sale="form.exchange_rate_sale"
                            @add="addRow"></purchase-form-item>
 
@@ -404,6 +408,7 @@
                 propIsUpdate:false,
                 fileList: [],
                 currency_type: {},
+                comboestablishment:{},
                 purchaseNewId: null,
                 lines: [],
                 families: [],
@@ -420,6 +425,7 @@
 
                     this.currency_types = response.data.currency_types
                     this.establishment = response.data.establishment
+                    this.comboestablishment = response.data.comboestablishment
                     this.suppliers = response.data.suppliers
                     this.payment_method_types = response.data.payment_method_types
                     this.company = response.data.company
@@ -663,7 +669,7 @@
                     attached: null,
                     sale_opportunity_id: null,
 
-                    purchase_order_state_id: '03',
+                    purchase_order_state_id: '01',
                     purchase_order_type_id: '01',
                     line_id: null,
                     family_id: null,

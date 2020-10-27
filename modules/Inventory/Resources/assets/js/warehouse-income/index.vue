@@ -48,8 +48,12 @@
                         <td>{{ row.national_total}}</td>
                         <td class="text-right">
                             <button  type="button" class="btn waves-effect waves-light btn-xs btn-primary" @click.prevent="clickOptions(row.id)">Opciones</button>
+                            <template v-if="row.warehouse_income_reason_id == '103' || row.warehouse_income_reason_id == '104' ">
+                                    <button  type="button" class="btn waves-effect waves-light btn-xs btn-warning m-1__2" @click.prevent="clickProcess(row.id,row.warehouse_income_reason_id)">
+                                        Procesar
+                                    </button>
+                            </template>
                         </td>
-
                     </tr>
                 </data-table>
             </div>
@@ -57,6 +61,11 @@
             <warehouse-income-options :showDialog.sync="showDialogOptions"
                             :recordId="recordId"
                             :showClose="true"></warehouse-income-options>
+            <process-options :showDialog.sync="showDialogProcess"
+                            :recordId="recordIdProcess"
+                            :wareHouseIncomeId="wareHouseIncomeId"
+                            :showClose="true">
+            </process-options>
         </div>
     </div>
 </template>
@@ -65,16 +74,20 @@
 
     import DataTable from "@components/DataTable.vue";
     import {deletable} from "@mixins/deletable";
-    import WarehouseIncomeOptions from './partials/options.vue'
+    import WarehouseIncomeOptions from './partials/options.vue';
+    import ProcessOptions from './partials/proccess.vue';
 
     export default {
-        components: {DataTable, WarehouseIncomeOptions},
+        components: {DataTable, WarehouseIncomeOptions,ProcessOptions},
         mixins: [deletable],
         data() {
             return {
                 title: null,
                 showDialog: false,
                 showDialogOptions: false,
+                showDialogProcess:false,
+                recordIdProcess:null,
+                wareHouseIncomeId:null,
                 resource: 'warehouse-income',
                 recordId: null,
                 typeTransaction: null,
@@ -87,6 +100,11 @@
             clickOptions(recordId = null) {
                 this.recordId = recordId
                 this.showDialogOptions = true
+            },
+            clickProcess(recordIdProcess = null,wareHouseIncomeId=null){
+                this.recordIdProcess = recordIdProcess
+                this.showDialogProcess = true
+                this.wareHouseIncomeId = wareHouseIncomeId
             },
             clickCreate(recordId = null) {
                 location.href = `/${this.resource}/create`;

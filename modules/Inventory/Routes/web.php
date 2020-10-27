@@ -148,6 +148,8 @@ if($hostname) {
                 Route::get('item/list-price/{item_id}/{purchase_order_id}', 'WarehouseIncomeController@getListPrice');
                 Route::get('exchange-rate/{date_reference}/{supplier_id}', 'WarehouseIncomeController@getExchangeRate');
                 Route::get('item/additional-values/{item_id}', 'WarehouseIncomeController@getAdditionalValues');
+                Route::get('items/{id}', 'WarehouseIncomeController@getItemsWareHouseIncome');
+
                 Route::get('download/{external_id}/{template}', 'WarehouseIncomeController@download');
 
 

@@ -60,7 +60,7 @@
                         </td>
                         <td>{{row.sale_opportunity_number_full}}</td>
 
-                        <td> 
+                        <td>
 
                           <el-popover placement="right" width="400" trigger="click">
                             <el-table :data="row.items">
@@ -93,8 +93,9 @@
                             >PDF</button>
                         </td>
 
-                        <td class="text-right"> 
-                            <template v-if="row.purchase_order_state_id != '13'">
+                        <td class="text-right">
+
+                            <template v-if="row.purchase_order_state_id != '13' || row.user == 'admin' ">
                                 <button
                                     type="button"
                                     v-if="!row.has_purchases && row.state_type_id!='11'"
@@ -158,6 +159,7 @@ import { deletable } from "@mixins/deletable";
 export default {
     mixins: [deletable],
     // components: {DocumentsVoided, DocumentOptions, DataTable},
+    props:['userName'],
     components: { DataTable, PurchaseOptions }, //DocumentOptions
     data() {
         return {
@@ -166,9 +168,12 @@ export default {
             recordId: null,
             showDialogOptions: false,
             showDialogGenerateDocument: false,
+            username : this.userName
         };
     },
-    created() {},
+    created() {
+
+    },
     methods: {
         clickCreate(id = "") {
             location.href = `/${this.resource}/create/${id}`;

@@ -87,6 +87,7 @@
                     value: null
                 },
                 columns: [],
+                suppliers:[],
                 records: [],
                 pagination: {}
             }
@@ -101,10 +102,13 @@
         async mounted () {
             // let column_resource = _.split(this.resource, '/')
            // console.log(column_resource)
+
             await this.$http.get(`/${this.resource}/columns`).then((response) => {
                 this.columns = response.data
-                this.search.column = _.head(Object.keys(this.columns))
+               // console.log(this.suppliers);
+                this.search.column = _.head(Object.keys(this.columns));
             });
+
             await this.getRecords()
 
         },

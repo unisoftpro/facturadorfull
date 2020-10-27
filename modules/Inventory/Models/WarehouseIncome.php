@@ -9,6 +9,7 @@ use App\Models\Tenant\Catalogs\CurrencyType;
 use Modules\Transport\Models\WorkOrder;
 use App\Models\Tenant\Person;
 use Modules\Purchase\Models\PurchaseOrder;
+use App\Models\Tenant\Catalogs\DocumentType;
 
 class WarehouseIncome extends ModelTenant
 {
@@ -29,6 +30,8 @@ class WarehouseIncome extends ModelTenant
         'observation',
         'number',
         'reference_date',
+        'cat_document_types_id',
+        'document_reference',
         'purchase_order_id',
         'work_order_id',
         'original_total',
@@ -52,12 +55,12 @@ class WarehouseIncome extends ModelTenant
     public function user()
     {
         return $this->belongsTo(User::class);
-    } 
+    }
 
     public function soap_type()
     {
         return $this->belongsTo(SoapType::class);
-    } 
+    }
 
     public function currency_type()
     {
@@ -72,7 +75,7 @@ class WarehouseIncome extends ModelTenant
     {
         return $this->belongsTo(WorkOrder::class);
     }
- 
+
     public function purchase_order()
     {
         return $this->belongsTo(PurchaseOrder::class);
@@ -82,20 +85,23 @@ class WarehouseIncome extends ModelTenant
     {
         return $this->belongsTo(Warehouse::class);
     }
- 
+
     public function warehouse_income_reason()
     {
         return $this->belongsTo(WarehouseIncomeReason::class);
     }
-    
+
     public function items()
     {
         return $this->hasMany(WarehouseIncomeItem::class);
     }
-    
+
     public function inventory_kardex()
     {
         return $this->morphMany(InventoryKardex::class, 'inventory_kardexable');
+    }
+    public function documents_type(){
+        return $this->belongsTo(DocumentType::class,'cat_document_types_id');
     }
 
 }

@@ -84,16 +84,44 @@ class PurchaseOrderController extends Controller
 
     public function columns()
     {
+        //$suppliers = $this->table('suppliers');
+        //dd($date_of_issue);
+        //return compact('suppliers');
         return [
-            'date_of_issue' => 'Fecha de emisión'
+            'date_of_issue' =>  'Fecha de emision'
         ];
+    }
+    public function filter(){
+        $suppliers = $this->table('suppliers');
+        //dd($date_of_issue);
+        return compact('suppliers');
     }
 
     public function records(Request $request)
     {
-        $records = PurchaseOrder::where($request->column, 'like', "%{$request->value}%")
-            ->whereTypeUser()
-            ->latest();
+        $wheres = [];
+        if ($request->column) :
+            $array1 = [$request->column, 'like',"%{$request->value}%"];
+            array_push($wheres, $array1);
+        endif;
+        if ($request->supplier_id) :
+            $array1 = ['supplier_id', $request->supplier_id];
+            array_push($wheres, $array1);
+        endif;
+        //dd($wheres);
+        //dd($wheres);
+        if($request->date_of_issue &&  $request->date_of_due){
+            $records = PurchaseOrder::where($wheres)->whereBetween('date_of_issue',[$request->date_of_issue,$request->date_of_due])
+            /*cuando se coloca el whereTypeUser valida por el usuario que creo cada orden de compra */
+                /**->whereTypeUser()*/
+                ->latest();
+        }else{
+            $records = PurchaseOrder::where($wheres)
+            /*cuando se coloca el whereTypeUser valida por el usuario que creo cada orden de compra */
+                /**->whereTypeUser()*/
+                ->latest();
+        }
+
 
         return new PurchaseOrderCollection($records->paginate(config('tenant.items_per_page')));
     }
@@ -103,7 +131,9 @@ class PurchaseOrderController extends Controller
     {
 
         $suppliers = $this->table('suppliers');
-        // $establishments = Establishment::where('id', auth()->user()->establishment_id)->get();
+        // $establishments =
+        $comboestablishment = Establishment::all();
+        //obtiene el id 1 depende del usuario.
         $establishment = Establishment::where('id', auth()->user()->establishment_id)->first();
         $currency_types = CurrencyType::whereActive()->get();
         $company = Company::active();
@@ -125,7 +155,8 @@ class PurchaseOrderController extends Controller
             'families',
             'purchase_order_states',
             'purchase_order_types',
-            'work_orders'
+            'work_orders',
+            'comboestablishment'
         );
     }
 

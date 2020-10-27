@@ -17,7 +17,7 @@ class PurchaseOrderCollection extends ResourceCollection
         return $this->collection->transform(function($row, $key) {
 
             return [
-
+                'user'=>auth()->user()->type,
                 'id' => $row->id,
                 // 'purchases' => $row->purchases,
                 'has_purchases' => ($row->purchases->count()) ? true : false,
@@ -47,8 +47,8 @@ class PurchaseOrderCollection extends ResourceCollection
                     return [
                         'id' => $row->id,
                         'description' => $row->item->description,
-                        'quantity' => $row->quantity, 
-                        'attended_quantity' => $row->attended_quantity, 
+                        'quantity' => $row->quantity,
+                        'attended_quantity' => $row->attended_quantity,
                     ];
                 })
 

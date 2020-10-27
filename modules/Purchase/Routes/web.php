@@ -27,6 +27,7 @@ if($current_hostname) {
 
                 Route::get('', 'PurchaseOrderController@index')->name('tenant.purchase-orders.index');
                 Route::get('columns', 'PurchaseOrderController@columns');
+                Route::get('filter', 'PurchaseOrderController@filter');
                 Route::get('records', 'PurchaseOrderController@records');
                 Route::get('create/{id?}', 'PurchaseOrderController@create')->name('tenant.purchase-orders.create');
                 Route::get('generate/{id}', 'PurchaseOrderController@generate')->name('tenant.purchase-orders.generate');
@@ -56,7 +57,7 @@ if($current_hostname) {
 
             });
 
-            
+
             Route::prefix('fixed-asset')->group(function () {
 
                 Route::get('items', 'FixedAssetItemController@index')->name('tenant.fixed_asset_items.index');

@@ -26,14 +26,16 @@ class PriceListController extends Controller
     {
         //$list_type_id = $request->list_type_id;
 
+        //dd($request);
+
         foreach ($request->items as $item) {
 
-            $data = [   'currency_type_id' => 'PEN', 'price_fob' => $item['price_fob'], 'factor' => $item['factor'],
+            $data = [   'currency_type_id' =>$item['currency_type_id'] , 'price_fob' => $item['price_fob'], 'factor' => $item['factor'],
                         'price_list' => $item['price_list'], 'discount_one' => $item['discount_one'], 'discount_two' => $item['discount_two'],
-                        'discount_three' => $item['discount_three']
+                        'discount_three' => $item['discount_three'],'item_id' => $item['item_id'], 'list_type_id' => $item['list_type_id']
                     ];
 
-            $row = ListPriceItem::updateOrCreate( ['item_id' => $item['item_id'], 'list_type_id' => $item['list_type_id'] ], $data );
+            $row = ListPriceItem::create( $data );
 
         }
 
@@ -43,6 +45,4 @@ class PriceListController extends Controller
         ];
 
     }
-
-
 }
