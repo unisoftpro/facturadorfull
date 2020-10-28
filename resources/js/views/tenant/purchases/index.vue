@@ -141,13 +141,13 @@
             <purchase-import :showDialog.sync="showImportDialog"></purchase-import>
         </div>
 
-        
+
         <purchase-payments
             :showDialog.sync="showDialogPurchasePayments"
             :purchaseId="recordId"
             :external="true"
             ></purchase-payments>
-            
+
         <purchase-options :showDialog.sync="showDialogOptions"
                           :recordId="recordId"
                           :showClose="true"></purchase-options>

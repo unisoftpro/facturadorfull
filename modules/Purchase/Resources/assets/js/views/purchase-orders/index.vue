@@ -151,7 +151,7 @@
 <script>
 // import DocumentGenerate from "./partials/document_generate.vue";
 // import DocumentOptions from './partials/document_options.vue'
-import DataTable from "../../../../../../../resources/js/components/DataTable.vue";
+import DataTable from "../../../../../../../resources/js/components/DataTableOC.vue";
 import PurchaseOptions from "./partials/options.vue";
 
 import { deletable } from "@mixins/deletable";
