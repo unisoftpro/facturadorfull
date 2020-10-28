@@ -482,6 +482,9 @@
                                 <li class="{{ ($path[0] === 'warehouse-expense')?'nav-active':'' }}">
                                     <a class="nav-link" href="{{route('tenant.warehouse-expense.index')}}">Salidas almacén</a>
                                 </li>
+                                <li class="{{ ($path[0] === 'precielist')?'nav-active':'' }}">
+                                    <a class="nav-link" href="{{route('listprecieitem.index')}}">Lista Precios Items</a>
+                                </li>
                                 <li class="{{(($path[0] === 'reports') && ($path[1] === 'kardex')) ? 'nav-active' : ''}}">
                                     <a class="nav-link" href="{{route('reports.kardex.index')}}">
                                         Reporte Kardex

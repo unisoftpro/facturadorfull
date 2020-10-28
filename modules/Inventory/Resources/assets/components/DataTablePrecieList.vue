@@ -189,18 +189,11 @@ export default {
       await this.getRecords();
       this.loading_submit = await false;
     },
-    customIndex(index) {
-      return (
-        this.pagination.per_page * (this.pagination.current_page - 1) +
-        index +
-        1
-      );
-    },
+
     getRecords() {
       return this.$http
         .get(`/${this.resource}/records?${this.getQueryParameters()}`)
         .then((response) => {
-          console.log(response);
           this.records = response.data.data;
           this.pagination = response.data.meta;
           this.pagination.per_page = parseInt(response.data.meta.per_page);

@@ -172,6 +172,7 @@ Vue.component('tenant-order-notes-form', require('../../modules/Order/Resources/
 Vue.component('tenant-order-notes-edit', require('../../modules/Order/Resources/assets/js/views/order_notes/form_edit.vue'));
 Vue.component('tenant-report-valued-kardex', require('../../modules/Inventory/Resources/assets/js/valued_kardex/index.vue'));
 Vue.component('tenant-repport-precie-list',require('../../modules/Inventory/Resources/assets/js/precie-list/index.vue'));
+Vue.component('tenant-precie-list',require('../../modules/Inventory/Resources/assets/js/list-price-items/index.vue'));
 Vue.component('tenant-report-valuted-balances',require('../../modules/Inventory/Resources/assets/js/voluted-balances/index.vue'));
 //Finance
 Vue.component('tenant-finance-global-payments-index', require('../../modules/Finance/Resources/assets/js/views/global_payments/index.vue'));

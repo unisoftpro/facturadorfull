@@ -14,26 +14,10 @@
                             </el-select>
                         </div>
                     </div>
-                    <div class="col-lg-4 col-md-4 col-sm-12 pb-2">
-                        <div class="d-flex">
-                            <div style="width:100px">
-                                Proveedor:
-                            </div>
-                            <el-select v-model="search.supplier_id" filterable remote popper-class="el-select-customers" clearable  placeholder="Nombre o número de documento" @change="changeClearInput">
-                                <el-option v-for="option in suppliers" :key="option.id" :value="option.id" :label="option.description"></el-option>
-                            </el-select>
-                        </div>
-                    </div>
                     <div class="col-lg-2 col-md-4 col-sm-12 pb-2">
                         <template>
-                                <el-date-picker v-model="search.date_of_issue" type="date" @change="changeClearInput"
-                                placeholder="Fecha inicio" value-format="yyyy-MM-dd" format="dd/MM/yyyy" :clearable="true"></el-date-picker>
-                        </template>
-                    </div>
-                    <div class="col-lg-2 col-md-4 col-sm-12 pb-2">
-                        <template>
-                                <el-date-picker v-model="search.date_of_due" type="date" @change="changeClearInput"
-                                placeholder="Fecha fin" value-format="yyyy-MM-dd" :picker-options="pickerOptionsDates" format="dd/MM/yyyy" :clearable="true"></el-date-picker>
+                                <el-date-picker v-model="search.value" type="date" @change="changeClearInput"
+                                placeholder="Buscar" value-format="yyyy-MM-dd" format="dd/MM/yyyy" :clearable="true"></el-date-picker>
                         </template>
                     </div>
                 </div>
@@ -112,11 +96,6 @@
         },
         async mounted () {
             let column_resource = _.split(this.resource, '/')
-
-            await this.$http.get(`/${_.head(column_resource)}/filter`).then((response) => {
-                this.suppliers = response.data.suppliers;
-                this.search.suppliers=null;
-            });
             await this.$http.get(`/${_.head(column_resource)}/columns`).then((response) => {
                 this.columns = response.data
                 this.search.column = _.head(Object.keys(this.columns))

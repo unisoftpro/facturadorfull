@@ -16,6 +16,11 @@ if($hostname) {
                 Route::post('/', 'WarehouseController@store');
                 Route::get('initialize', 'WarehouseController@initialize');
             });
+            Route::prefix('precielist')->group(function () {
+                Route::get('/', 'PriceListController@index')->name('listprecieitem.index');
+                Route::get('records', 'PriceListController@records');
+                Route::get('record/{item}/{currency}/{listtype}', 'PriceListController@getitems');
+            });
 
             Route::prefix('inventory')->group(function () {
                 Route::get('/', 'InventoryController@index')->name('inventory.index');
