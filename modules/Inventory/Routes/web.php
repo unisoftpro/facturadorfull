@@ -20,6 +20,8 @@ if($hostname) {
                 Route::get('/', 'PriceListController@index')->name('listprecieitem.index');
                 Route::get('records', 'PriceListController@records');
                 Route::get('record/{item}/{currency}/{listtype}', 'PriceListController@getitems');
+                Route::get('item/tables', 'PriceListController@item_tables');
+                Route::get('item/additional-values/{item_id}', 'PriceListController@getAdditionalValues');
             });
 
             Route::prefix('inventory')->group(function () {

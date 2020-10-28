@@ -3,14 +3,17 @@
 namespace Modules\Inventory\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Tenant\Catalogs\CurrencyType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Tenant\TypeListPrice;
 use App\Models\Tenant\ListPriceItem;
 use App\Models\Tenant\Item;
+use App\Models\Tenant\Person;
 use Modules\Inventory\Http\Resources\ListPriceItems;
-
-
+use Modules\Inventory\Models\WarehouseIncomeItem;
+use Modules\Inventory\Models\WarehouseIncomeReason;
+use Modules\Purchase\Models\PurchaseOrder;
 
 class PriceListController extends Controller
 {
@@ -29,10 +32,13 @@ class PriceListController extends Controller
         //$record = Item::join('list_price_item',);
         $record = Item::join('list_price_item', 'items.id', '=', 'list_price_item.item_id')
         ->join('type_list_prices', 'type_list_prices.id', '=', 'list_price_item.list_type_id')
+        ->join('cat_currency_types','cat_currency_types.id','=','list_price_item.currency_type_id')
         ->select(
-            'items.id','items.name','list_price_item.currency_type_id','list_price_item.list_type_id','type_list_prices.description'
+            'cat_currency_types.description AS currencydescription','items.id','items.name','list_price_item.currency_type_id','list_price_item.list_type_id','type_list_prices.description'
+
+
         )
-        ->groupBy('items.id', 'items.name', 'list_price_item.currency_type_id', 'list_price_item.list_type_id', 'type_list_prices.description')
+        ->groupBy('items.id', 'items.name', 'list_price_item.currency_type_id', 'list_price_item.list_type_id', 'type_list_prices.description','cat_currency_types.description')
         ->orderBy('items.name', 'asc')
         ->orderBy('list_price_item.list_type_id','asc')
         ->orderBy('list_price_item.currency_type_id','asc');
@@ -68,5 +74,104 @@ class PriceListController extends Controller
         $listpriceitems = ListPriceItem::where('item_id',$item)->where('currency_type_id',$currency)->where('list_type_id',$listtype)->get();
         //dd($items,$listpriceitems);
         return compact('items','listpriceitems');
+    }
+    public function item_tables()
+    {
+
+        $items = $this->table('items');
+        $warehouse_income_reasons=WarehouseIncomeReason::whereIn('id', ['103', '104'])->get();
+        $type_list_prices= TypeListPrice::all();
+        $currency_types = CurrencyType::whereActive()->get();
+        return compact('items','warehouse_income_reasons','type_list_prices','currency_types');
+
+    }
+    public function getAdditionalValues($item_id)
+    {
+
+        $record = WarehouseIncomeItem::where('item_id', $item_id)
+                                    ->whereHas('warehouse_income', function($q){
+                                        $q->whereIn('warehouse_income_reason_id', ["103", "104"]);
+                                    })
+                                    ->latest('id')
+                                    ->first();
+
+        if($record){
+            return [
+                'last_purchase_price' => $record->list_price,
+                'last_factor' => $record->sale_profit_factor,
+            ];
+        }
+
+        return [
+            'last_purchase_price' => 0,
+            'last_factor' => 0,
+        ];
+
+    }
+    public function table($table)
+    {
+
+        $data = [];
+
+        switch ($table) {
+            case 'purchase_orders':
+
+                $data = PurchaseOrder::get()->transform(function($row) {
+                                        return [
+                                            'id' => $row->id,
+                                            'number' => $row->id,
+                                        ];
+                                    });
+
+                break;
+
+            case 'suppliers':
+
+                $data = Person::whereType('suppliers')->orderBy('name')->get()->transform(function($row) {
+                                    return [
+                                        'id' => $row->id,
+                                        'description' => $row->number.' - '.$row->name,
+                                        'name' => $row->name,
+                                        'number' => $row->number,
+                                        'email' => $row->email,
+                                        'identity_document_type_id' => $row->identity_document_type_id,
+                                    ];
+                                });
+
+                break;
+
+
+            case 'items':
+
+                $data = Item::orderBy('description')
+                                ->whereNotIsSet()
+                                ->whereIsActive()
+                                ->get()
+                                ->transform(function($row) {
+
+                                    $full_description = ($row->internal_id)?$row->internal_id.' - '.$row->description:$row->description;
+                                        return [
+                                            'id' => $row->id,
+                                            'full_description' => $full_description,
+                                            'description' => $row->description,
+                                            'currency_type_id' => $row->currency_type_id,
+                                            'currency_type_symbol' => $row->currency_type->symbol,
+                                            'sale_unit_price' => $row->sale_unit_price,
+                                            'purchase_unit_price' => $row->purchase_unit_price,
+                                            'unit_type_id' => $row->unit_type_id,
+                                            'category_id' => $row->category_id,
+                                            'family_id' => $row->family_id,
+                                            'line_id' => $row->line_id,
+                                            'brand_id' => $row->brand_id,
+
+                                    ];
+
+                                });
+
+                break;
+        }
+
+        return $data;
+
     }
 }

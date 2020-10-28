@@ -16,7 +16,8 @@ class ListPriceItems extends ResourceCollection
                 'currency_type_id' => $row->currency_type_id,
                 'description' => $row->description,
                 'list_type_id' => $row->list_type_id,
-                'name' => $row->name
+                'name' => $row->name,
+                'currencydescription'=>$row->currencydescription,
             ];
         });
     }
