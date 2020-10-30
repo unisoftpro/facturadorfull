@@ -485,6 +485,10 @@
                                 <li class="{{ ($path[0] === 'precielist')?'nav-active':'' }}">
                                     <a class="nav-link" href="{{route('listprecieitem.index')}}">Lista Precios Items</a>
                                 </li>
+                                <li class="{{ ($path[0] === 'typepricelist')?'nav-active':'' }}">
+                                    <a class="nav-link" href="{{route('typepricelist.index')}}">Tipo Lista Precio</a>
+                                </li>
+
                                 <li class="{{(($path[0] === 'reports') && ($path[1] === 'kardex')) ? 'nav-active' : ''}}">
                                     <a class="nav-link" href="{{route('reports.kardex.index')}}">
                                         Reporte Kardex

@@ -22,6 +22,16 @@ if($hostname) {
                 Route::get('record/{item}/{currency}/{listtype}', 'PriceListController@getitems');
                 Route::get('item/tables', 'PriceListController@item_tables');
                 Route::get('item/additional-values/{item_id}', 'PriceListController@getAdditionalValues');
+                Route::get('combo', 'PriceListController@combo');
+                Route::delete('{listprice}','PriceListController@destroy');
+
+            });
+            Route::prefix('typepricelist')->group(function () {
+                Route::get('/', 'PriceListController@index_type')->name('typepricelist.index');
+                Route::get('records', 'PriceListController@recordstypelist');
+                Route::delete('{typelist}','PriceListController@destroytypelist');
+                Route::post('store', 'PriceListController@storetypelist');
+                Route::get('getTypeList', 'PriceListController@getIdType');
             });
 
             Route::prefix('inventory')->group(function () {
@@ -184,6 +194,7 @@ if($hostname) {
             Route::prefix('price-list')->group(function () {
 
                 Route::post('/', 'PriceListController@store');
+
             });
 
 

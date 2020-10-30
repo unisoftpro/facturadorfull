@@ -14,7 +14,7 @@
         <button
           type="button"
           class="btn btn-custom btn-sm mt-2 mr-2"
-          @click.prevent="showDialogAddItem = true"
+          @click.prevent="clickCreate()"
         >
           + Agregar
         </button>
@@ -52,7 +52,7 @@
                   )
                 "
               >
-                Editar
+                Listar
               </button>
             </td>
           </tr>
@@ -66,20 +66,18 @@
         :currencyTypeDescription="list_type_description"
         :currencyDescription="currencydescription"
         :showClose="true"
+        :showCreate="editorcreate"
+        :disableCombo="disableoptions"
       ></list-price-items>
-      <item-form
-        :showDialog.sync="showDialogAddItem"
-        :showClose="true"
-      ></item-form>
+
     </div>
   </div>
 </template>
 <script>
 import DataTable from "../../components/DataTableListPriceItem.vue";
 import ListPriceItems from "./partials/items.vue";
-import ItemForm from "./partials/item.vue";
 export default {
-  components: { DataTable, ListPriceItems, ItemForm },
+  components: { DataTable, ListPriceItems },
   data() {
     return {
       title: null,
@@ -91,10 +89,12 @@ export default {
       list_type_description: null,
       currencydescription: null,
       showDialogAddItem: false,
+      editorcreate: false,
+      disableoptions:false,
     };
   },
   created() {
-    this.title = "listado de precios";
+    this.title = "Listado de precios";
   },
   methods: {
     clickEdit(
@@ -104,6 +104,8 @@ export default {
       list_type_description = null,
       currencydescription = null
     ) {
+      this.editorcreate = false;
+      this.disableoptions = true;
       this.recordId = recordId;
       this.currency_type_id = currency_type_id;
       this.list_type_id = list_type_id;
@@ -112,7 +114,14 @@ export default {
       this.currencydescription = currencydescription;
     },
     clickCreate() {
-        this.showDialogAddItem=true;
+      this.disableoptions = false;
+      this.recordId = null;
+      this.currency_type_id = null;
+      this.list_type_id = null;
+      this.list_type_description = null;
+      this.currencydescription = null;
+      this.editorcreate = true;
+      this.showDialogOptions = true;
     },
   },
 };
