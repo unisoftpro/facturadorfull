@@ -42,6 +42,7 @@ class PurchaseOrderCollection extends ResourceCollection
                 // 'payment_method_type_description' => isset($row->purchase_payments['payment_method_type']['description'])?$row->purchase_payments['payment_method_type']['description']:'-',
                 'created_at' => $row->created_at->format('Y-m-d H:i:s'),
                 'updated_at' => $row->updated_at->format('Y-m-d H:i:s'),
+                'purchase_order_state'=>$row->purchase_order_state->description,
                 'sale_opportunity_number_full' => ($row->sale_opportunity) ? $row->sale_opportunity->number_full : '',
                 'items' => $row->items->transform(function($row, $key) {
                     return [

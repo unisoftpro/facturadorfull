@@ -25,7 +25,9 @@
                         <th class="text-center">F. Emisión</th>
                         <th class="text-center">F. Vencimiento</th>
                         <th>Proveedor</th>
+                        <th>Usuario</th>
                         <!-- <th>Estado</th> -->
+                        <th>Estado</th>
                         <th>O. Compra</th>
                         <th>O. Venta</th>
                         <th>Detalle Productos</th>
@@ -51,7 +53,12 @@
                             <br />
                             <small v-text="row.supplier_number"></small>
                         </td>
-                        <!-- <td>{{row.state_type_description}}</td> -->
+                        <td>
+
+                            <small v-text="row.user"></small>
+                        </td>
+                        <td>
+                            <small v-text="row.purchase_order_state"></small></td>
                         <td>
                             {{ row.number }}
                             <br />

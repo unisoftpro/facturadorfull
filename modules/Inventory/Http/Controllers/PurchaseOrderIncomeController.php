@@ -67,7 +67,7 @@ class PurchaseOrderIncomeController extends Controller
                 $data = PurchaseOrder::whereConfirmed()->get()->transform(function($row) {
                                         return [
                                             'id' => $row->id,
-                                            'number' => $row->id,
+                                            'number' => $row->number_full,
                                             'date_of_issue' => $row->date_of_issue->format('Y-m-d'),
                                             'purchase_order_state_id' => $row->purchase_order_state_id,
                                             'purchase_order_state_description' => $row->purchase_order_state->description,

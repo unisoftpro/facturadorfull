@@ -20,7 +20,10 @@ class PurchaseOrderRequest extends FormRequest
             'supplier_id' => [
                 'required'
             ],
-           
+            'work_order_id'=>[
+                'required'
+            ]
+
         ];
     }
 
@@ -28,6 +31,7 @@ class PurchaseOrderRequest extends FormRequest
     {
         return [
             'supplier_id.required' => 'El campo Proveedor es obligatorio.',
+            'work_order_id.required' => 'El campo Orden de Trabajo es obligatorio.',
         ];
     }
 }
