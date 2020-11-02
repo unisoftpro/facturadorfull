@@ -11,38 +11,38 @@
                 font-family: sans-serif;
                 font-size: 12px;
             }
-            
+
             table {
                 width: 100%;
                 border-spacing: 0;
                 border: 1px solid black;
             }
-            
+
             .celda {
                 text-align: center;
                 padding: 5px;
                 border: 0.1px solid black;
             }
-            
+
             th {
                 padding: 5px;
                 text-align: center;
                 border-color: #0088cc;
                 border: 0.1px solid black;
             }
-            
+
             .title {
                 font-weight: bold;
                 padding: 5px;
                 font-size: 20px !important;
                 text-decoration: underline;
             }
-            
+
             p>strong {
                 margin-left: 5px;
                 font-size: 13px;
             }
-            
+
             thead {
                 font-weight: bold;
                 background: #0088cc;
@@ -113,27 +113,27 @@
                                                 {{($value->quantity < 0) ? "Venta":"Anulación"}}
                                                 @break
                                             @case($models[1])
-                                                {{"Compra"}}                                                    
-                                                @break 
-                                                
+                                                {{"Compra"}}
+                                                @break
+
                                             @case($models[2])
-                                                {{"Nota de venta"}}                                                    
-                                                @break  
+                                                {{"Nota de venta"}}
+                                                @break
 
                                             @case($models[3])
-                                                {{$value->inventory_kardexable->description}}                                                    
-                                                @break  
-                                                
+                                                {{$value->inventory_kardexable->description}}
+                                                @break
+
                                             @case($models[4])
                                                 {{($value->quantity < 0) ? "Pedido":"Anulación pedido"}}
                                                 @break
 
                                             @case($models[5])
-                                                {{"Ingreso a almacén"}}                                                    
-                                                @break  
+                                                {{"Ingreso a almacén"}}
+                                                @break
                                         @endswitch
 
-                                        
+
                                     </td>
                                     <td class="celda">
                                         @switch($value->inventory_kardexable_type)
@@ -141,40 +141,40 @@
                                                 {{ optional($value->inventory_kardexable)->series."-".optional($value->inventory_kardexable)->number }}
                                                 @break
                                             @case($models[1])
-                                                {{optional($value->inventory_kardexable)->series."-".optional($value->inventory_kardexable)->number}}                                                    
-                                                @break 
-                                                
+                                                {{optional($value->inventory_kardexable)->series."-".optional($value->inventory_kardexable)->number}}
+                                                @break
+
                                             @case($models[2])
-                                                {{  optional($value->inventory_kardexable)->prefix."-".optional($value->inventory_kardexable)->id }}                                                    
-                                                @break  
+                                                {{  optional($value->inventory_kardexable)->prefix."-".optional($value->inventory_kardexable)->id }}
+                                                @break
 
                                             @case($models[3])
                                                 @if($value->inventory_kardexable->purchase_order_income_id)
                                                     {{ optional($value->inventory_kardexable->purchase_order_income)->number }}
                                                 @else
-                                                    {{"-"}}                                                 
+                                                    {{"-"}}
                                                 @endif
-                                                @break  
+                                                @break
 
                                             @case($models[4])
-                                                {{  optional($value->inventory_kardexable)->prefix."-".optional($value->inventory_kardexable)->id }}                                                    
-                                                @break  
-                                                
+                                                {{  optional($value->inventory_kardexable)->prefix."-".optional($value->inventory_kardexable)->id }}
+                                                @break
+
                                             @case($models[5])
-                                                {{ optional($value->inventory_kardexable)->number }}                                                    
-                                                @break 
+                                                {{ optional($value->inventory_kardexable)->number }}
+                                                @break
                                         @endswitch
 
                                     </td>
                                     <td class="celda">
                                         @switch($value->inventory_kardexable_type)
                                             @case($models[0])
-                                            
+
                                                 {{ isset($value->inventory_kardexable->sale_note_id)  ? optional($value->inventory_kardexable)->sale_note->prefix.'-'.optional($value->inventory_kardexable)->sale_note->id:"-" }}
-                                                @break 
+                                                @break
                                             @default
-                                                {{"-"}}                                                 
-                                                @break  
+                                                {{"-"}}
+                                                @break
                                         @endswitch
 
                                     </td>
@@ -189,13 +189,13 @@
                                                 {{'-'}}
                                                 @break
                                             @case($models[2])
-                                                {{"-"}}                                                 
+                                                {{"-"}}
                                                 @break
                                             @case($models[3])
-                                                {{"-"}}                                                 
-                                                @break  
+                                                {{"-"}}
+                                                @break
                                             @case($models[4])
-                                                {{"-"}}                                                 
+                                                {{"-"}}
                                                 @break
                                         @endswitch
 
@@ -217,9 +217,9 @@
                                                 @if($value->inventory_kardexable->purchase_order_income)
                                                     {{ $value->inventory_kardexable->purchase_order_income->date_of_issue }}
                                                 @else
-                                                    {{"-"}}                                                 
+                                                    {{"-"}}
                                                 @endif
-                                                @break  
+                                                @break
                                             @case($models[4])
                                                 {{ isset($value->inventory_kardexable->date_of_issue) ? $value->inventory_kardexable->date_of_issue->format('Y-m-d') : '' }}
                                                 @break
@@ -232,22 +232,22 @@
 
                                     </td>
                                     @php
-                                        if($value->inventory_kardexable_type == $models[3]){    
+                                        if($value->inventory_kardexable_type == $models[3]){
                                             if(!$value->inventory_kardexable->type && !$value->inventory_kardexable->purchase_order_income_id){
                                                 $transaction = Modules\Inventory\Models\InventoryTransaction::findOrFail($value->inventory_kardexable->inventory_transaction_id);
                                             }
-                                        }                                           
+                                        }
                                     @endphp
                                     <td class="celda">
-                                        @switch($value->inventory_kardexable_type) 
+                                        @switch($value->inventory_kardexable_type)
 
                                             @case($models[0])
                                                 {{ ($value->quantity > 0) ?  $value->quantity:"-"}}
                                                 @break
                                             @case($models[1])
-                                                {{ ($value->quantity > 0) ?  $value->quantity:"-"}}                                                    
-                                                @break 
-                                                
+                                                {{ ($value->quantity > 0) ?  $value->quantity:"-"}}
+                                                @break
+
                                             @case($models[2])
                                                 {{ ($value->quantity > 0) ?  $value->quantity:"-"}}
                                                 @break
@@ -256,80 +256,80 @@
 
                                                 @if($value->inventory_kardexable->type != null)
 
-                                                    {{ ($value->inventory_kardexable->type == 1) ? $value->quantity : "-" }}                                                    
+                                                    {{ ($value->inventory_kardexable->type == 1) ? $value->quantity : "-" }}
 
                                                 @elseif($value->inventory_kardexable->purchase_order_income_id)
-                                                    {{ $value->quantity }} 
+                                                    {{ $value->quantity }}
                                                 @else
 
-                                                    {{($transaction->type == 'input') ? $value->quantity : "-" }} 
+                                                    {{($transaction->type == 'input') ? $value->quantity : "-" }}
 
                                                 @endif
-                                                @break  
+                                                @break
 
                                             @case($models[4])
                                                 {{ ($value->quantity > 0) ?  $value->quantity:"-"}}
                                                 @break
 
                                             @case($models[5])
-                                                {{ $value->quantity}}                                                    
-                                                @break 
+                                                {{ $value->quantity}}
+                                                @break
 
                                             @default
-                                                {{"-"}}                                                 
-                                                @break  
+                                                {{"-"}}
+                                                @break
                                         @endswitch
                                     </td>
                                     <td class="celda">
-                                    
-                                        @switch($value->inventory_kardexable_type) 
+
+                                        @switch($value->inventory_kardexable_type)
                                             @case($models[0])
                                                 {{ ($value->quantity < 0) ?  (isset($value->inventory_kardexable->sale_note_id) ? "-":$value->quantity):"-" }}
 
                                                 @php
-                                                ($value->quantity < 0) ?  (isset($value->inventory_kardexable->sale_note_id) ? $value->quantity = 0:$value->quantity):"-";       
-                                                @endphp                                                   
+                                                ($value->quantity < 0) ?  (isset($value->inventory_kardexable->sale_note_id) ? $value->quantity = 0:$value->quantity):"-";
+                                                @endphp
                                                 @break
-                                                
+
                                             @case($models[1])
-                                                {{ ($value->quantity < 0) ?  $value->quantity:"-"}}                                                    
+                                                {{ ($value->quantity < 0) ?  $value->quantity:"-"}}
                                                 @break
 
                                             @case($models[2])
-                                                {{  ($value->quantity < 0) ?  $value->quantity:"-" }}  
-                                                @break      
+                                                {{  ($value->quantity < 0) ?  $value->quantity:"-" }}
+                                                @break
 
                                             @case($models[3])
 
                                                 @if($value->inventory_kardexable->type != null)
 
-                                                    {{($value->inventory_kardexable->type == 2 || $value->inventory_kardexable->type == 3) ? $value->quantity : "-" }} 
+                                                    {{($value->inventory_kardexable->type == 2 || $value->inventory_kardexable->type == 3) ? $value->quantity : "-" }}
 
                                                 @elseif($value->inventory_kardexable->purchase_order_income_id)
                                                     {{ "-" }}
                                                 @else
 
-                                                    {{($transaction->type == 'output') ? $value->quantity : "-" }}  
+                                                    {{($transaction->type == 'output') ? $value->quantity : "-" }}
 
                                                 @endif
-                                                @break  
+                                                @break
 
                                             @case($models[4])
-                                                {{ ($value->quantity < 0) ?  $value->quantity:"-"}}                                                    
-                                                @break     
-                                                
+                                                {{ ($value->quantity < 0) ?  $value->quantity:"-"}}
+                                                @break
+
                                             @case($models[5])
-                                                {{ "-" }}                                                    
-                                                @break 
+                                                {{ "-" }}
+                                                @break
 
                                             @default
-                                                {{"-"}}                                                 
-                                                @break  
+                                                {{"-"}}
+                                                @break
                                         @endswitch
-                                    
+
                                     </td>
-                                    @php                        
-                                        $balance += $value->quantity;     
+                                    @php
+                                        $balance += $value->quantity;
                                     @endphp
 
                                     @if($item_id)

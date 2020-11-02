@@ -44,6 +44,8 @@ if($current_hostname) {
                 Route::get('download-attached/{external_id}', 'PurchaseOrderController@downloadAttached');
                 Route::get('sale-opportunity/{id}', 'PurchaseOrderController@generateFromSaleOpportunity');
                 Route::get('item/previous-cost/{item}', 'PurchaseOrderController@previousCost');
+                Route::get('download_filters/{filter1}/{filter2}/{filter3}/{filter4}/{filter5}', 'PurchaseOrderController@download_filters');
+
 
             });
 

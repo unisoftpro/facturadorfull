@@ -45,6 +45,9 @@ use Modules\Purchase\Models\PurchaseOrderType;
 use Modules\Transport\Models\WorkOrder;
 use Modules\Purchase\Models\PurchaseOrderItem;
 use App\Models\Tenant\ListPriceItem;
+use App\Models\Tenant\Supplier;
+use App\Models\Tenant\User;
+use Barryvdh\DomPDF\Facade as PDF;
 
 
 class PurchaseOrderController extends Controller
@@ -91,33 +94,40 @@ class PurchaseOrderController extends Controller
             'date_of_issue' =>  'Fecha de emision'
         ];
     }
-    public function filter(){
+    public function filter()
+    {
         $suppliers = $this->table('suppliers');
+        $purchase_order_states = PurchaseOrderState::get();
         //dd($date_of_issue);
-        return compact('suppliers');
+        return compact('suppliers', 'purchase_order_states');
     }
 
     public function records(Request $request)
     {
+
         $wheres = [];
         if ($request->column) :
-            $array1 = [$request->column, 'like',"%{$request->value}%"];
+            $array1 = [$request->column, 'like', "%{$request->value}%"];
             array_push($wheres, $array1);
         endif;
         if ($request->supplier_id) :
             $array1 = ['supplier_id', $request->supplier_id];
             array_push($wheres, $array1);
         endif;
+        if ($request->purchase_order_states_id) :
+            $array1 = ['purchase_order_state_id', $request->purchase_order_states_id];
+            array_push($wheres, $array1);
+        endif;
         //dd($wheres);
         //dd($wheres);
-        if($request->date_of_issue &&  $request->date_of_due){
-            $records = PurchaseOrder::where($wheres)->whereBetween('date_of_issue',[$request->date_of_issue,$request->date_of_due])
-            /*cuando se coloca el whereTypeUser valida por el usuario que creo cada orden de compra */
+        if ($request->date_of_issue &&  $request->date_of_due) {
+            $records = PurchaseOrder::where($wheres)->whereBetween('date_of_issue', [$request->date_of_issue, $request->date_of_due])
+                /*cuando se coloca el whereTypeUser valida por el usuario que creo cada orden de compra */
                 /**->whereTypeUser()*/
                 ->latest();
-        }else{
+        } else {
             $records = PurchaseOrder::where($wheres)
-            /*cuando se coloca el whereTypeUser valida por el usuario que creo cada orden de compra */
+                /*cuando se coloca el whereTypeUser valida por el usuario que creo cada orden de compra */
                 /**->whereTypeUser()*/
                 ->latest();
         }
@@ -563,5 +573,81 @@ class PurchaseOrderController extends Controller
             'success' => true,
             'message' => 'Orden de compra anulada con éxito'
         ];
+    }
+    public function download_filters($filer1, $filer2, $filer3, $filer4, $filer5)
+    {
+
+        $wheres = [];
+        $items =[];
+        if ($filer1!='null') :
+            //$array1 = [$filer1, 'like', "%{null}%"];
+            //array_push($wheres, $array1);
+        endif;
+
+        if ($filer2 != 'null') :
+            $array1 = ['supplier_id', $filer2];
+            array_push($wheres, $array1);
+        endif;
+        if ($filer5 != 'null') :
+            $array1 = ['purchase_order_state_id', '=', $filer5];
+            array_push($wheres, $array1);
+        endif;
+        if ($filer3 != 'null' &&  $filer4 != 'null') {
+            //dd('a');
+            $records = PurchaseOrder::where($wheres)->whereBetween('date_of_issue', [$filer3, $filer4])
+                /*cuando se coloca el whereTypeUser valida por el usuario que creo cada orden de compra */
+                /**->whereTypeUser()*/
+                ->get();
+        } else {
+            $company = Company::active();
+            $records = PurchaseOrder::where($wheres)->get()->transform(function ($row) {
+                $UserName = $this->getUser( $row->user_id);
+                return [
+                    'id' => $row->id,
+                    'userName' => $UserName[0]['name'],
+                    'date_of_issue' => $row->date_of_issue,
+                    'date_of_due' => $row->date_of_due,
+                    'supplier_id' => $row->supplier_id,
+                    'supplier' => $row->supplier->name,
+                    'currency_type' => $row->currency_type->description,
+                    'work_order' => $row->work_order->id,
+                    'purchase_order_state'=> $row->purchase_order_state->description,
+                    'total_value'=>$row->total_value,
+                    'total_igv'=>$row->total_igv,
+                    'total'=>$row->total,
+                    'items' => collect($row->items)->transform(function ($row) {
+                        $items_des = $row->item;
+                        return [
+                            'item_id' => $row->item_id,
+                            'unit_type_id'=>$items_des->{'unit_type_id'},
+                            'unit_price'=>$row->unit_price,
+                            'total'=>$row->total_value,
+                            'description'=>$items_des->{'description'},
+                        ];
+                    }),
+                ];
+            });
+            /*cuando se coloca el whereTypeUser valida por el usuario que creo cada orden de compra */
+            /**->whereTypeUser()*/
+        }
+
+        $view = "purchase::purchase-orders.report.pdf";
+        //dd($record);
+        set_time_limit(0);
+
+        $pdf = PDF::loadView($view, compact("record", "company"));
+        $filename = "Reporte_pdf";
+
+        return $pdf->download($filename . '.pdf');
+    }
+    public function getUser($id){
+        $user = User::where('id',$id)->get()->transform(function ($row) {
+
+            return [
+                'name' => $row->name,
+            ];
+
+        });
+        return $user;
     }
 }

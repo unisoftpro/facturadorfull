@@ -134,6 +134,7 @@
                     list_type_id: null,
                     factor: null,
                     currency_type_id: null,
+                    id:null
                 },
                 form_process_local :{
                      currency_type_id: null,
@@ -263,6 +264,7 @@
                     discount_one: row.discount_one,
                     discount_two: row.discount_two,
                     discount_three: row.discount_three,
+                    id:null
                     };
                 });
             },
@@ -281,6 +283,7 @@
                     discount_one: row.discount_one,
                     discount_two: row.discount_two,
                     discount_three: row.discount_three,
+                    id:null
                     };
                 });
             },

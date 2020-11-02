@@ -22,6 +22,7 @@ use Modules\Inventory\Models\PurchaseOrderIncome;
 class PurchaseOrder extends ModelTenant
 {
 
+    protected $with = ['items','currency_type','supplier','work_order','purchase_order_state'];
     protected $fillable = [
         'user_id',
         'external_id',
