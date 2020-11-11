@@ -391,6 +391,7 @@ export default {
     "exchangeRateSale",
     "purchaseOrderId",
     "warehouseIncomeReasonId",
+    "idItems",
   ],
   data() {
     return {
@@ -408,14 +409,18 @@ export default {
       enabled_calc_prices: false,
     };
   },
-  async created() {
-    await this.initForm();
-    await this.initLetters();
-    await this.$http.get(`/${this.resource}/item/tables`).then((response) => {
-      this.items = response.data.items;
-    });
+  created() {
+    this.initForm();
+    this.initLetters();
+    this.getTables();
+    console.log(this.idItems);
   },
   methods: {
+    getTables() {
+      this.$http.get(`/${this.resource}/item/tables`).then((response) => {
+        this.items = response.data.items;
+      });
+    },
     handleChange(event) {
       if (event) {
         this.withIgv = event;
@@ -439,7 +444,7 @@ export default {
       }
     },
     inputSaleProfitFactor() {
-      if (this.warehouseIncomeReasonId == "104" ) {
+      if (this.warehouseIncomeReasonId == "104") {
         this.form.retail_price = _.round(
           parseFloat(this.form.unit_price) *
             parseFloat(this.form.sale_profit_factor),
@@ -471,7 +476,7 @@ export default {
       }
     },
     inputListPrice() {
-      if (this.warehouseIncomeReasonId == "104" &&  this.withIgv==false) {
+      if (this.warehouseIncomeReasonId == "104" && this.withIgv == false) {
         let variableconifv = 0;
         let variableunit = 0;
         variableconifv = _.round(
@@ -549,6 +554,7 @@ export default {
         category_id: null,
         family_id: null,
         quantity: 1,
+        quantity2: 1,
         list_price: 0,
         discount_one: 0,
         discount_two: 0,
@@ -635,6 +641,9 @@ export default {
         this.currencyTypeIdActive,
         this.exchangeRateSale
       );
+
+      this.form.quantity2 = this.form.quantity;
+      this.form.pending_quantity_income = this.form.quantity;
       await this.$emit("add", this.form);
       await this.initForm();
     },

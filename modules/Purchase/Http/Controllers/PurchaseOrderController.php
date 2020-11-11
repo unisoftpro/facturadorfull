@@ -66,6 +66,7 @@ class PurchaseOrderController extends Controller
 
     public function create($id = null)
     {
+        //dd($id);
         $sale_opportunity = null;
         return view('purchase::purchase-orders.form', compact('id', 'sale_opportunity'));
     }
@@ -602,8 +603,10 @@ class PurchaseOrderController extends Controller
             $company = Company::active();
             $records = PurchaseOrder::where($wheres)->get()->transform(function ($row) {
                 $UserName = $this->getUser( $row->user_id);
+
                 return [
                     'id' => $row->id,
+                    'number' => $row->number_full,
                     'userName' => $UserName[0]['name'],
                     'date_of_issue' => $row->date_of_issue,
                     'date_of_due' => $row->date_of_due,
@@ -616,11 +619,14 @@ class PurchaseOrderController extends Controller
                     'total_igv'=>$row->total_igv,
                     'total'=>$row->total,
                     'items' => collect($row->items)->transform(function ($row) {
+
                         $items_des = $row->item;
                         return [
                             'item_id' => $row->item_id,
                             'unit_type_id'=>$items_des->{'unit_type_id'},
+                            'internal_id' => $row->itemss->item_code,
                             'unit_price'=>$row->unit_price,
+                            'quantity'=>$row->quantity,
                             'total'=>$row->total_value,
                             'description'=>$items_des->{'description'},
                         ];
@@ -635,7 +641,7 @@ class PurchaseOrderController extends Controller
         //dd($record);
         set_time_limit(0);
 
-        $pdf = PDF::loadView($view, compact("record", "company"));
+        $pdf = PDF::loadView($view, compact("records", "company"));
         $filename = "Reporte_pdf";
 
         return $pdf->download($filename . '.pdf');

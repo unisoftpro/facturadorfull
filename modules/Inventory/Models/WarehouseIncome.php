@@ -15,7 +15,7 @@ class WarehouseIncome extends ModelTenant
 {
 
     protected $table = 'warehouse_income';
-
+    protected $with = ['warehouse_income_reason','items'];
     protected $fillable = [
         'user_id',
         'soap_type_id',

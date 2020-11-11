@@ -15,7 +15,8 @@ use Modules\Purchase\Models\PurchaseOrder;
 use Modules\Purchase\Models\PurchaseOrderItem;
 use Modules\Inventory\Http\Requests\PurchaseOrderIncomeRequest;
 use App\Models\Tenant\Company;
-
+use App\Models\Tenant\Item;
+use Modules\Inventory\Http\Controllers\WarehouseIncomeController as WarehouseIncomeController;
 
 class PurchaseOrderIncomeController extends Controller
 {
@@ -102,6 +103,7 @@ class PurchaseOrderIncomeController extends Controller
     public function store(PurchaseOrderIncomeRequest $request)
     {
 
+
         $record = DB::connection('tenant')->transaction(function () use ($request) {
 
             $purchase_order = $request->purchase_order;
@@ -115,14 +117,14 @@ class PurchaseOrderIncomeController extends Controller
                 'number' =>  self::newNumber(),
                 'purchase_order_id' => $purchase_order['id']
             ]);
-
+            $attended=[];
             //income
             foreach ($purchase_order['items'] as $item)
             {
 
                 if($item['attended_quantity'] > 0){
-
-                    $purchase_order_income->inventories()->create([
+                    array_push($attended,['id'=>$item['id'],'quantity'=>$item['attended_quantity']]);
+                    /*$purchase_order_income->inventories()->create([
                         'type' => null,
                         'description' => 'Ingreso desde O. Compra',
                         'item_id' => $item['item_id'],
@@ -130,7 +132,7 @@ class PurchaseOrderIncomeController extends Controller
                         'warehouse_destination_id' => null,
                         'inventory_transaction_id' => null,
                         'quantity' => $item['attended_quantity'],
-                    ]);
+                    ]);*/
 
                     $p_order_item = PurchaseOrderItem::find($item['id']);
 
@@ -155,11 +157,63 @@ class PurchaseOrderIncomeController extends Controller
                 $find_purchase_order->save();
 
             }
+            //dd($attended);
+            $data = PurchaseOrderIncome::where('id', $purchase_order_income->id)->get()->transform(function($row) {
 
+                return [
+                    'warehouse_id' => $row->warehouse_id,
+                    'purchase_order_id' => $row->purchase_order_id,
+                    'date_of_issue'=>$row->date_of_issue,
+                    'supplier_id'=> $row->purchase_order->supplier_id,
+                    'warehouse_income_reason_id'=> $row->purchase_order->purchase_order_type_id='01'? '104' : '103',
+                    'work_order_id'=>$row->purchase_order->work_order_id,
+                    'currency_type_id'=>$row->purchase_order->currency_type_id,
+                    'document_reference'=>$row->purchase_order->reference,
+                    'cat_document_types_id'=>'01',
+                    'observation'=>$row->purchase_order->observation,
+                    'reference_date'=>$row->purchase_order->date_of_issue->format('Y-m-d'),
+                    'original_total'=>$row->purchase_order->total_value,
+                    'exchange_rate_sale'=>$row->purchase_order->exchange_rate_sale,
+                    "national_total"=>$row->purchase_order->total_value,
+                    'total_value'=>$row->purchase_order->total_value,
+                    "total"=>$row->purchase_order->total,
+                    'items' => $row->purchase_order->items->transform(function($item) {
+                        $CateFami= $this->getItemsPurchase($item->item_id);
+
+                        return [
+                            'category_id' => $CateFami[0]->category_id,
+                            'family_id' =>  $CateFami[0]->family_id,
+                            'discount_four' => 0,
+                            'discount_one' => 0,
+                            'discount_three' => 0,
+                            'discount_two' => 0,
+                            'item_id' =>$item->item_id,
+                            'last_factor' => "0.00",
+                            'last_purchase_price'=> $item->previous_cost,
+                            'letter_price'=> null,
+                            'list_price'=> $item->unit_price,
+                            'num_price'=> 0,
+                            'price_fob_alm'=> 0,
+                            'price_fob_alm_igv'=> 0,
+                            'quantity'=>   $item->quantity,
+                            'retail_price'=> 0,
+                            'sale_profit_factor'=> 0,
+                            'total'=> $item->total,
+                            'total_value'=> $item->total_value,
+                            'unit_price'=> $item->unit_price,
+                            'unit_value'=> $item->unit_value,
+                            'warehouse_factor'=>0,
+                            'item'=>$item->itemss,
+                        ];
+                    })
+                ];
+            });
+            //$new->sotore2($data);
 
             return  [
                 'success' => true,
-                'message' => 'Ingreso creado con éxito'
+                'message' => 'Ingreso creado con éxito',
+                'data'=>$data
             ];
 
         });
@@ -168,7 +222,10 @@ class PurchaseOrderIncomeController extends Controller
 
 
     }
-
+    public function getItemsPurchase($id){
+        $data = Item::where('id',$id)->select('category_id','family_id')->get();
+        return $data;
+    }
     private static function newNumber(){
 
         $number = PurchaseOrderIncome::select('number')->max('number');

@@ -170,7 +170,11 @@
                 :class="{ 'has-danger': errors.purchase_order_id }"
               >
                 <label class="control-label">O. Compra</label>
-                <el-select v-model="form.purchase_order_id" filterable>
+                <el-select
+                  v-model="form.purchase_order_id"
+                  filterable
+                  @change="changePurcharse"
+                >
                   <el-option
                     v-for="option in purchase_orders"
                     :key="option.id"
@@ -352,6 +356,8 @@
                       <th>Descripción</th>
                       <th class="text-center">Unidad</th>
                       <th class="text-right">Cantidad</th>
+                      <th class="text-right">Pendientes</th>
+                      <th class="text-right">Atendido</th>
                       <th class="text-right">Precio lista</th>
                       <th class="text-right">Precio Venta Público</th>
                       <th class="text-right">Total</th>
@@ -361,9 +367,24 @@
                   <tbody>
                     <tr v-for="(row, index) in form.items" :key="index">
                       <td>{{ index + 1 }}</td>
-                      <td>{{ row.item.description }}</td>
+                      <td>{{ row.item.full_description }}</td>
                       <td class="text-center">{{ row.item.unit_type_id }}</td>
-                      <td class="text-right">{{ row.quantity }}</td>
+                      <td class="text-right">{{ row.quantity2 }}</td>
+                      <td class="text-right">
+                        {{ row.pending_quantity_income }}
+                      </td>
+                      <td class="text-right">
+                        <input
+                          @change="changeQuantityIncome(index, row.item_id)"
+                          type="number"
+                          name="number"
+                          :id="index"
+                          value=""
+                          :min="0"
+                          :max="row.pending_quantity_income"
+                          step="1"
+                        />
+                      </td>
                       <td class="text-right">
                         {{ currency_type.symbol }} {{ row.list_price }}
                       </td>
@@ -380,6 +401,13 @@
                           @click.prevent="clickRemoveItem(index)"
                         >
                           x
+                        </button>
+                        <button
+                          type="button"
+                          class="btn waves-effect waves-light btn-xs btn-warning"
+                          @click.prevent="clickEdit(row)"
+                        >
+                          Editar
                         </button>
                       </td>
                     </tr>
@@ -424,6 +452,7 @@
       :exchange-rate-sale="form.exchange_rate_sale"
       :purchase-order-id="form.purchase_order_id"
       :warehouse-income-reason-id="form.warehouse_income_reason_id"
+      :idItems="idItems"
       @add="addRow"
       ref="item_form"
     ></item-form>
@@ -441,6 +470,7 @@ import ItemForm from "./partials/item.vue";
 import WarehouseIncomeOptions from "./partials/options.vue";
 
 export default {
+  props: ["id"],
   components: { ItemForm, WarehouseIncomeOptions },
   data() {
     return {
@@ -448,13 +478,14 @@ export default {
       resource: "warehouse-income",
       errors: {},
       form: {},
+      additems: {},
       warehouses: [],
       purchase_orders: [],
       warehouse_income_reasons: [],
       suppliers: [],
       currency_types: [],
       work_orders: [],
-      documents_type:[],
+      documents_type: [],
       company: null,
       number: null,
       recordId: null,
@@ -468,11 +499,13 @@ export default {
         factor: null,
         currency_type_id: null,
       },
+      idItems: null,
     };
   },
   async created() {
     await this.initForm();
     await this.getTables();
+    await this.isUpdate();
   },
   computed: {
     enableButtonProcessPrice() {
@@ -480,8 +513,29 @@ export default {
     },
   },
   methods: {
+    async isUpdate() {
+      if (this.id) {
+        // console.log(this.id);
+        await this.$http
+          .get(`/${this.resource}/record_warehouse/${this.id}`)
+          .then((response) => {
+            this.form.warehouse_id = response.data.data.warehouse_id;
+            this.form.warehouse_income_reason_id =
+              response.data.data.warehouse_income_reason_id;
+            this.form.supplier_id = response.data.data.supplier_id;
+            this.form.date_of_issue = response.data.data.date_of_issue;
+            this.form.reference_date = response.data.data.reference_date;
+            this.form.currency_type_id = response.data.data.currency_type_id;
+            this.form.items = response.data.data.items;
+
+            // this.form.suppliers = Object.values(response.data.data.purchase_quotation.suppliers);
+          });
+      } else {
+      }
+    },
     changeSupplier() {
       this.getExchangeRatePurchaseOrder();
+      this.getPurchase();
     },
     changeDateReference() {
       this.getExchangeRatePurchaseOrder();
@@ -536,14 +590,100 @@ export default {
           });
       }
     },
+    changeQuantityIncome(index, id) {
+      var x = $("#" + index).val();
+      this.form.items.map(function (dato) {
+        if (id == dato.item_id) {
+          dato.attended_quantity = parseInt(x);
+          dato.quantity = parseInt(x);
+        }
+      });
+    },
+    async getPurchase() {
+      if (this.form.supplier_id) {
+        await this.$http
+          .get(`/${this.resource}/purcharse/${this.form.supplier_id}`)
+          .then((response) => {
+            this.purchase_orders = response.data.record;
+            //this.form.exchange_rate_sale = response.data.exchange_rate_sale;
+
+            /*if (!response.data.success) {
+              this.$message.warning(response.data.message);
+            }*/
+          });
+      }
+    },
+    async changePurcharse() {
+      if (this.form.purchase_order_id) {
+        await this.$http
+          .get(`/${this.resource}/workorder/${this.form.purchase_order_id}`)
+          .then((response) => {
+            this.work_orders = response.data.work_order;
+
+            //this.form.exchange_rate_sale = response.data.exchange_rate_sale;
+
+            /*if (!response.data.success) {
+              this.$message.warning(response.data.message);
+            }*/
+          });
+        this.purchase_orders.forEach((row) => {
+          //console.log(row.items);
+          this.addItems(row.items);
+          this.form.currency_type_id = row.currency_type_id;
+          this.form.work_order_id = row.work_order_id;
+          this.form.date_of_issue = row.date_of_issue;
+
+          if (row.purchase_order_type_id == "01") {
+            this.form.warehouse_income_reason_id = "104";
+          } else {
+            this.form.warehouse_income_reason_id = "103";
+          }
+        });
+      }
+    },
+    async addItems(data) {
+      for (let index = 0; index < data.length; index++) {
+        if (parseInt(data[index]["pending_quantity_income"]) > 0) {
+          let datos = {
+            item_id: data[index]["item_id"],
+            category_id: data[index]["itemss"]["category_id"],
+            family_id: data[index]["itemss"]["family_id"],
+            quantity2: data[index]["quantity"],
+            quantity: data[index]["quantity"],
+            pending_quantity_income: parseInt(
+              data[index]["pending_quantity_income"]
+            ),
+            list_price: data[index]["unit_price"],
+            total: data[index]["total"],
+            total_value: data[index]["total_value"],
+            attended_quantity: 0,
+            unit_value: data[index]["unit_value"],
+            unit_price: data[index]["unit_price"],
+            item: data[index]["item"],
+            unit_type_id: data[index]["itemss"]["unit_type_id"],
+            discount_four: 0,
+            discount_one: 0,
+            discount_three: 0,
+            discount_two: 0,
+            last_factor: "0.00",
+          };
+          /*this.additems.item_id = data[index]["item_id"];
+        this.addItems.category_id=  data[index]["itemss"]['category_id'];
+        this.addItems.family_id=data[index]["itemss"]['family_id'];
+        this.addItems.item= data[index]["item"];
+        this.addItems.total = data[index]["total"];*/
+          this.addRow(datos);
+        }
+      }
+    },
     async getTables() {
       await this.$http.get(`/${this.resource}/tables`).then((response) => {
         this.warehouses = response.data.warehouses;
-        this.purchase_orders = response.data.purchase_orders;
+        //this.purchase_orders = response.data.purchase_orders;
         this.warehouse_income_reasons = response.data.warehouse_income_reasons;
         this.suppliers = response.data.suppliers;
         this.currency_types = response.data.currency_types;
-        this.work_orders = response.data.work_orders;
+        //this.work_orders = response.data.work_orders;
         this.documents_type = response.data.document_types_invoice;
         this.currency_type = _.find(this.currency_types, {
           id: this.form.currency_type_id,
@@ -574,6 +714,7 @@ export default {
     },
     addRow(row) {
       this.form.items.push(row);
+
       this.calculateTotal();
     },
     calculateTotal() {
@@ -595,10 +736,11 @@ export default {
     },
     initForm() {
       this.errors = {};
+      this.idItems=null,
       this.form = {
         warehouse_id: null,
-        document_reference:null,
-        cat_document_types_id : null,
+        document_reference: null,
+        cat_document_types_id: null,
         warehouse_income_reason_id: null,
         date_of_issue: moment().format("YYYY-MM-DD"),
         supplier_id: null,
@@ -678,8 +820,6 @@ export default {
       this.requestProcessPrices(payload);
     },
     async clickProccessExterior() {
-
-
       if (this.form.items.length > 0) {
         if (
           !this.form_process_price.list_type_id ||
@@ -697,14 +837,14 @@ export default {
         this.form_process_price = {
           list_type_id: null,
           factor: null,
-          currency_type_id:null,
+          currency_type_id: null,
         };
       } else {
-          this.$message.error("Debe agregar productos o servicios.");
-          this.form_process_price = {
+        this.$message.error("Debe agregar productos o servicios.");
+        this.form_process_price = {
           list_type_id: null,
           factor: null,
-          currency_type_id:null,
+          currency_type_id: null,
         };
       }
     },
@@ -773,6 +913,11 @@ export default {
 
         return { price_fob, price_list };
       }
+    },
+    clickEdit(data) {
+
+      this.idItems = data.item_id;
+      this.showDialogAddItem = true;
     },
   },
 };

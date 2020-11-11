@@ -1,16 +1,16 @@
 <?php
 
 namespace Modules\Inventory\Models;
- 
-use App\Models\Tenant\ModelTenant; 
+
+use App\Models\Tenant\ModelTenant;
 use App\Models\Tenant\SoapType;
 use Modules\Purchase\Models\PurchaseOrder;
 
 class PurchaseOrderIncome extends ModelTenant
 {
-    
-    protected $table = 'purchase_order_income';
 
+    protected $table = 'purchase_order_income';
+    protected $with = ['purchase_order'];
     protected $fillable = [
         'soap_type_id',
         'date_of_issue',
@@ -19,7 +19,7 @@ class PurchaseOrderIncome extends ModelTenant
         'warehouse_id',
         'purchase_order_id',
     ];
- 
+
     public function soap_type()
     {
         return $this->belongsTo(SoapType::class);
@@ -29,7 +29,7 @@ class PurchaseOrderIncome extends ModelTenant
     {
         return $this->belongsTo(Warehouse::class, 'warehouse_id');
     }
-    
+
     public function purchase_order()
     {
         return $this->belongsTo(PurchaseOrder::class);
@@ -39,5 +39,5 @@ class PurchaseOrderIncome extends ModelTenant
     {
         return $this->hasMany(Inventory::class);
     }
-    
+
 }

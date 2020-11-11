@@ -23,6 +23,7 @@ class ReportKardexCollection extends ResourceCollection
       $this->calcularRestante(self::$re);
 
       return $this->collection->transform(function($row, $key) {
+
         return self::determinateRow($row);
       });
     }
@@ -91,13 +92,25 @@ class ReportKardexCollection extends ResourceCollection
                 $transaction = '';
                 $input = '';
                 $output = '';
-
+                $reason_id='';
+                $currency_type_id='';
+                $warehouse_income_reason_description ='';
                 if($row->inventory_kardexable->purchase_order_income_id){
-                    
+
                     $input = $row->quantity;
                     $output = "-";
-                    $number = optional($row->inventory_kardexable->purchase_order_income)->number;
+                    $number = $row->inventory_kardexable->purchase_order_income->purchase_order->prefix."-".$row->inventory_kardexable->purchase_order_income->purchase_order->id;
                     $date_of_issue = optional($row->inventory_kardexable->purchase_order_income)->date_of_issue;
+
+                    $currency_type_id= $row->inventory_kardexable->purchase_order_income->purchase_order->currency_type_id;
+                    if($row->inventory_kardexable->purchase_order_income->purchase_order->purchase_order_type_id=="01"){
+                        $reason_id="104";
+                        $warehouse_income_reason_description="COMPRAS DE ARTICULOS LOCAL";
+                    }else{
+                        $reason_id="103";
+                        $warehouse_income_reason_description="COMPRAS DE ARTICULOS EXTERIOR";
+                    }
+
 
                 }else{
 
@@ -106,6 +119,7 @@ class ReportKardexCollection extends ResourceCollection
                     }
 
                     if($row->inventory_kardexable->type != null){
+
                         $input = ($row->inventory_kardexable->type == 1) ? $row->quantity : "-";
                     }
                     else{
@@ -118,9 +132,11 @@ class ReportKardexCollection extends ResourceCollection
                     else{
                         $output = ($transaction->type == 'output') ? $row->quantity : "-";
                     }
-
+                    $currency_type_id=$row->inventory_kardexable->item->currency_type_id;
                     $number = "-";
                     $date_of_issue = "-";
+                    $reason_id='-';
+                    $warehouse_income_reason_description='-';
                 }
 
                 return [
@@ -134,7 +150,11 @@ class ReportKardexCollection extends ResourceCollection
                     'output' => $output,
                     'balance' => self::$balance+= $row->quantity,
                     'sale_note_asoc' => '-',
-                    'doc_asoc' => '-'
+                    'doc_asoc' => '-',
+                    'warehouse_description'=>$row->inventory_kardexable->warehouse->description,
+                    'warehouse_income_reason_id'=>$reason_id,
+                    'currency_type_id'=>$currency_type_id,
+                    'warehouse_income_reason_description'=>$warehouse_income_reason_description
                 ];
             }
 
@@ -155,18 +175,24 @@ class ReportKardexCollection extends ResourceCollection
                 ];
 
             case $models[5]:
+
+
                 return [
                     'id' => $row->id,
                     'item_name' => $row->item->description,
                     'date_time' => $row->created_at->format('Y-m-d H:i:s'),
                     'date_of_issue' => optional($row->inventory_kardexable)->date_of_issue,
                     'type_transaction' => 'Ingreso a almacén',
-                    'number' => optional($row->inventory_kardexable)->number,
+                    'number' =>'IM-'. $row->inventory_kardexable->id,
                     'input' => $row->quantity,
                     'output' => "-",
                     'balance' => self::$balance+= $row->quantity,
                     'sale_note_asoc' => '-',
-                    'doc_asoc' => '-'
+                    'doc_asoc' => '-',
+                    'warehouse_description'=>$row->inventory_kardexable->warehouse->description,
+                    'warehouse_income_reason_id'=>$row->inventory_kardexable->warehouse_income_reason_id,
+                    'currency_type_id'=>$row->inventory_kardexable->warehouse_income_reason_id,
+                    'warehouse_income_reason_description'=>$row->inventory_kardexable->warehouse_income_reason->description
                 ];
         }
 

@@ -29,7 +29,7 @@ use Modules\Inventory\Traits\{
 use Barryvdh\DomPDF\Facade as PDF;
 use Modules\Inventory\Models\Warehouse as ModuleWarehouse;
 use App\Models\Tenant\TypeListPrice;
-
+use Modules\Inventory\Http\Resources\WareHouseIncomeCollection2;
 
 class WarehouseIncomeController extends Controller
 {
@@ -44,9 +44,9 @@ class WarehouseIncomeController extends Controller
         return view('inventory::warehouse-income.index');
     }
 
-    public function create()
+    public function create($id = null)
     {
-        return view('inventory::warehouse-income.form');
+        return view('inventory::warehouse-income.form', compact('id'));
     }
 
     public function columns()
@@ -71,6 +71,12 @@ class WarehouseIncomeController extends Controller
 
         return new WarehouseIncomeResource($record);
     }
+    public function record_warehouse($id)
+    {
+        $record = WarehouseIncome::findOrFail($id);
+        //dd( $record );
+        return new WareHouseIncomeCollection2($record);
+    }
 
 
     public function tables()
@@ -84,7 +90,7 @@ class WarehouseIncomeController extends Controller
             'currency_types' => CurrencyType::whereActive()->get(),
             'work_orders' => WorkOrder::get(),
             'type_list_prices' => TypeListPrice::all(),
-            'document_types_invoice'=> DocumentType::all(),
+            'document_types_invoice' => DocumentType::all(),
         ];
     }
 
@@ -103,7 +109,7 @@ class WarehouseIncomeController extends Controller
 
         $item = PurchaseOrderItem::where([['purchase_order_id', $purchase_order_id], ['item_id', $item_id]])->first();
 
-        if($item){
+        if ($item) {
             return [
                 'list_price' => round($item->unit_value, 2)
             ];
@@ -120,7 +126,7 @@ class WarehouseIncomeController extends Controller
 
         $record = PurchaseOrder::where([['date_of_issue', $date_reference], ['supplier_id', $supplier_id]])->first();
 
-        if($record){
+        if ($record) {
             return [
                 'success' => true,
                 'message' => '',
@@ -135,21 +141,30 @@ class WarehouseIncomeController extends Controller
             'message' => 'No se encontró una O. Compra asociada al proveedor, se obtendra el T/C del día',
             'exchange_rate_sale' => (array_key_exists('sale', $exchange_rate)) ? $exchange_rate['sale'] : 1
         ];
-
     }
-
+    public function getPurcharse($supplier_id)
+    {
+        $record = PurchaseOrder::where('supplier_id', $supplier_id)->where('purchase_order_state_id', '03')->get();
+        return compact('record');
+    }
+    public function getWorkOrder($purchase_order_id)
+    {
+        $record = PurchaseOrder::where('id', $purchase_order_id)->select('work_order_id')->first();
+        $work_order = WorkOrder::where('id', $record->work_order_id)->get();
+        return compact('work_order');
+    }
 
     public function getAdditionalValues($item_id)
     {
 
         $record = WarehouseIncomeItem::where('item_id', $item_id)
-                                    ->whereHas('warehouse_income', function($q){
-                                        $q->whereIn('warehouse_income_reason_id', ["103", "104"]);
-                                    })
-                                    ->latest('id')
-                                    ->first();
+            ->whereHas('warehouse_income', function ($q) {
+                $q->whereIn('warehouse_income_reason_id', ["103", "104"]);
+            })
+            ->latest('id')
+            ->first();
 
-        if($record){
+        if ($record) {
             return [
                 'last_purchase_price' => $record->list_price,
                 'last_factor' => $record->sale_profit_factor,
@@ -160,15 +175,14 @@ class WarehouseIncomeController extends Controller
             'last_purchase_price' => 0,
             'last_factor' => 0,
         ];
-
     }
-    public function getItemsWareHouseIncome($id){
+    public function getItemsWareHouseIncome($id)
+    {
 
         //dd($id);
         $record = WarehouseIncomeItem::where('warehouse_income_id', $id)->get();
-        //dd($record);
-        return compact('record');
 
+        return compact('record');
     }
 
 
@@ -180,27 +194,27 @@ class WarehouseIncomeController extends Controller
         switch ($table) {
             case 'purchase_orders':
 
-                $data = PurchaseOrder::get()->transform(function($row) {
-                                        return [
-                                            'id' => $row->id,
-                                            'number' => $row->id,
-                                        ];
-                                    });
+                $data = PurchaseOrder::get()->transform(function ($row) {
+                    return [
+                        'id' => $row->id,
+                        'number' => $row->id,
+                    ];
+                });
 
                 break;
 
             case 'suppliers':
 
-                $data = Person::whereType('suppliers')->orderBy('name')->get()->transform(function($row) {
-                                    return [
-                                        'id' => $row->id,
-                                        'description' => $row->number.' - '.$row->name,
-                                        'name' => $row->name,
-                                        'number' => $row->number,
-                                        'email' => $row->email,
-                                        'identity_document_type_id' => $row->identity_document_type_id,
-                                    ];
-                                });
+                $data = Person::whereType('suppliers')->orderBy('name')->get()->transform(function ($row) {
+                    return [
+                        'id' => $row->id,
+                        'description' => $row->number . ' - ' . $row->name,
+                        'name' => $row->name,
+                        'number' => $row->number,
+                        'email' => $row->email,
+                        'identity_document_type_id' => $row->identity_document_type_id,
+                    ];
+                });
 
                 break;
 
@@ -208,56 +222,93 @@ class WarehouseIncomeController extends Controller
             case 'items':
 
                 $data = Item::orderBy('description')
-                                ->whereNotIsSet()
-                                ->whereIsActive()
-                                ->get()
-                                ->transform(function($row) {
+                    ->whereNotIsSet()
+                    ->whereIsActive()
+                    ->get()
+                    ->transform(function ($row) {
 
-                                    $full_description = ($row->internal_id)?$row->internal_id.' - '.$row->description:$row->description;
-                                        return [
-                                            'id' => $row->id,
-                                            'full_description' => $full_description,
-                                            'description' => $row->description,
-                                            'currency_type_id' => $row->currency_type_id,
-                                            'currency_type_symbol' => $row->currency_type->symbol,
-                                            'sale_unit_price' => $row->sale_unit_price,
-                                            'purchase_unit_price' => $row->purchase_unit_price,
-                                            'unit_type_id' => $row->unit_type_id,
-                                            'category_id' => $row->category_id,
-                                            'family_id' => $row->family_id,
-                                            'line_id' => $row->line_id,
-                                            'brand_id' => $row->brand_id,
+                        $full_description = ($row->internal_id) ? $row->internal_id . ' - ' . $row->description : $row->description;
+                        return [
+                            'id' => $row->id,
+                            'full_description' => $full_description,
+                            'description' => $row->description,
+                            'currency_type_id' => $row->currency_type_id,
+                            'currency_type_symbol' => $row->currency_type->symbol,
+                            'sale_unit_price' => $row->sale_unit_price,
+                            'purchase_unit_price' => $row->purchase_unit_price,
+                            'unit_type_id' => $row->unit_type_id,
+                            'category_id' => $row->category_id,
+                            'family_id' => $row->family_id,
+                            'line_id' => $row->line_id,
+                            'brand_id' => $row->brand_id,
 
-                                    ];
-
-                                });
+                        ];
+                    });
 
                 break;
         }
 
         return $data;
-
     }
 
 
     public function store(WarehouseIncomeRequest $request)
     {
 
-        // dd($request->all());
+
         $record = DB::connection('tenant')->transaction(function () use ($request) {
 
             $data = $this->mergeData($request);
+
             $this->warehouse_income = WarehouseIncome::create($data);
 
             foreach ($data['items'] as $row) {
+
                 $this->warehouse_income->items()->create($row);
             }
+            if ($data['purchase_order_id'] != null) {
+                foreach ($data['items'] as $item) {
+
+                    if ($item['attended_quantity'] > 0) {
+
+                        /*$purchase_order_income->inventories()->create([
+                            'type' => null,
+                            'description' => 'Ingreso desde O. Compra',
+                            'item_id' => $item['item_id'],
+                            'warehouse_id' => $request->warehouse_id,
+                            'warehouse_destination_id' => null,
+                            'inventory_transaction_id' => null,
+                            'quantity' => $item['attended_quantity'],
+                        ]);*/
+                        //dd($item['attended_quantity']);
+                        $p_order_item = PurchaseOrderItem::where([['purchase_order_id', $data['purchase_order_id']], ['item_id', $item['item_id']]])->get();
+                        //dd($p_order_item[0]['pending_quantity_income']);
+                        if ((int)$p_order_item[0]['pending_quantity_income'] != (int) $p_order_item[0]['quantity']) {
+                            (int) $p_order_item[0]['attended_quantity'] += (int) $item['attended_quantity'];
+                        } else {
+                            (int) $p_order_item[0]['attended_quantity'] = (int) $item['attended_quantity'];
+                        }
+
+                        (int) $p_order_item[0]['pending_quantity_income'] -= (int) $item['attended_quantity'];
+                        //dd((int) $p_order_item[0]['attended_quantity'],(int) $p_order_item[0]['pending_quantity_income']);
+                        PurchaseOrderItem::where([['purchase_order_id', $data['purchase_order_id']], ['item_id', $item['item_id']]])->update(['attended_quantity' => (int) $p_order_item[0]['attended_quantity'], 'pending_quantity_income' => (int) $p_order_item[0]['pending_quantity_income']]);
+                    }
+                }
+
+                $pending_quantity_po = PurchaseOrderItem::where([['purchase_order_id', $data['purchase_order_id']], ['pending_quantity_income', '>', 0]])->count();
+
+                if ($pending_quantity_po == 0) {
+
+                    $find_purchase_order = PurchaseOrder::find($data['purchase_order_id']);
+                    $find_purchase_order->purchase_order_state_id = '13';
+                    $find_purchase_order->save();
+                }
+            } else {
+            }
+
 
             $this->setFilename($this->warehouse_income);
             $this->createPdf($this->warehouse_income, "a4", 'warehouse_income');
-
-
-
         });
 
         return  [
@@ -293,8 +344,8 @@ class WarehouseIncomeController extends Controller
 
     public function download($external_id, $template)
     {
-       // $establishment_id = auth()->user()->establishment_id;
-       // $warehouse = ModuleWarehouse::where('establishment_id', $establishment_id)->first();
+        // $establishment_id = auth()->user()->establishment_id;
+        // $warehouse = ModuleWarehouse::where('establishment_id', $establishment_id)->first();
         $company = Company::first();
 
         $record = WarehouseIncome::where('external_id', $external_id)->first();
@@ -305,8 +356,6 @@ class WarehouseIncomeController extends Controller
         $pdf = PDF::loadView($view, compact("record", "company"));
         $filename = "Reporte_{$template}";
 
-        return $pdf->download($filename.'.pdf');
+        return $pdf->download($filename . '.pdf');
     }
-
-
 }

@@ -23,10 +23,11 @@ class WarehouseIncomeRequest  extends FormRequest
             ],
             'supplier_id' => [
                 'required',
-            ], 
+            ],
+            /*
             'purchase_order_id' => [
                 'required_if:warehouse_income_reason_id,"103", "104"',
-            ],
+            ],*/
             'date_of_issue' => [
                 'required',
             ]

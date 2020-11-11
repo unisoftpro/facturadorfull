@@ -509,8 +509,9 @@
                     // console.log(this.id);
                     await this.$http.get(`/${this.resource}/record/${this.id}`)
                         .then(response => {
-                            // console.log(response)
+                            console.log(response.data.data.purchase_order);
                             this.form = response.data.data.purchase_order;
+
                             if(this.form.upload_filename){
                                 this.fileList.push({
                                     name:this.form.upload_filename,

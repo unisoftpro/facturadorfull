@@ -160,12 +160,17 @@ if($hostname) {
                 Route::get('item/tables', 'WarehouseIncomeController@item_tables');
                 Route::get('tables', 'WarehouseIncomeController@tables');
                 Route::get('record/{record}', 'WarehouseIncomeController@record');
+                Route::get('record_warehouse/{record}', 'WarehouseIncomeController@record_warehouse');
+
                 Route::post('/', 'WarehouseIncomeController@store');
-                Route::get('create', 'WarehouseIncomeController@create')->name('tenant.warehouse-income.create');
+                Route::get('create/{id?}', 'WarehouseIncomeController@create')->name('tenant.warehouse-income.create');
                 Route::get('item/list-price/{item_id}/{purchase_order_id}', 'WarehouseIncomeController@getListPrice');
                 Route::get('exchange-rate/{date_reference}/{supplier_id}', 'WarehouseIncomeController@getExchangeRate');
                 Route::get('item/additional-values/{item_id}', 'WarehouseIncomeController@getAdditionalValues');
                 Route::get('items/{id}', 'WarehouseIncomeController@getItemsWareHouseIncome');
+                Route::get('purcharse/{id}', 'WarehouseIncomeController@getPurcharse');
+                Route::get('workorder/{id}', 'WarehouseIncomeController@getWorkOrder');
+
 
                 Route::get('download/{external_id}/{template}', 'WarehouseIncomeController@download');
 

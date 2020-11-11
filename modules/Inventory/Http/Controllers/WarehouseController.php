@@ -3,10 +3,12 @@
 namespace Modules\Inventory\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Tenant\InventoryKardex;
 use Illuminate\Http\Request;
 use Modules\Inventory\Http\Resources\WarehouseCollection;
 use Modules\Inventory\Http\Resources\WarehouseResource;
 use Modules\Inventory\Http\Requests\WarehouseRequest;
+use Modules\Inventory\Http\Resources\WareIncomenCollection;
 use Modules\Inventory\Models\Warehouse;
 
 class WarehouseController extends Controller
@@ -25,10 +27,49 @@ class WarehouseController extends Controller
 
     public function records(Request $request)
     {
-        $records = Warehouse::where($request->column, 'like', "%{$request->value}%")
+        $records = $this->getRecords($request->all());
+
+        /*$records = Warehouse::where($request->column, 'like', "%{$request->value}%")
                             ->orderBy('description');
 
-        return new WarehouseCollection($records->paginate(config('tenant.items_per_page')));
+        return new WarehouseCollection($records->paginate(config('tenant.items_per_page')));*/
+        return new WareIncomenCollection($records->paginate(config('tenant.items_per_page')));
+    }
+    public function getRecords($request){
+
+        $item_id = $request['item_id'];
+        $date_start = $request['date_start'];
+        $date_end = $request['date_end'];
+
+        $records = $this->data($item_id, $date_start, $date_end);
+
+        return $records;
+
+    }
+    private function data($item_id, $date_start, $date_end)
+    {
+
+        $warehouse = Warehouse::where('establishment_id', auth()->user()->establishment_id)->first();
+
+        if($date_start && $date_end){
+
+            $data = InventoryKardex::with(['inventory_kardexable'])
+                        //->where([['warehouse_id', $warehouse->id]])
+                        ->whereBetween('date_of_issue', [$date_start, $date_end])
+                        ->orderBy('item_id')->orderBy('id');
+
+        }else{
+
+            $data = InventoryKardex::with(['inventory_kardexable'])
+                        //->where([['warehouse_id', $warehouse->id]])
+                        ->orderBy('item_id')->orderBy('id');
+        }
+
+        if($item_id){
+            $data = $data->where('item_id', $item_id);
+        }
+        return $data;
+
     }
 
     public function record($id)

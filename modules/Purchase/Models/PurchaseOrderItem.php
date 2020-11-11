@@ -1,15 +1,16 @@
 <?php
 
-namespace Modules\Purchase\Models; 
- 
+namespace Modules\Purchase\Models;
+
 use App\Models\Tenant\ModelTenant;
 use App\Models\Tenant\Catalogs\AffectationIgvType;
 use App\Models\Tenant\Catalogs\PriceType;
 use App\Models\Tenant\Catalogs\SystemIscType;
+use App\Models\Tenant\Item;
 
 class PurchaseOrderItem extends ModelTenant
 {
-    protected $with = ['affectation_igv_type', 'system_isc_type', 'price_type'];
+    protected $with = ['affectation_igv_type', 'system_isc_type', 'price_type','itemss'];
     public $timestamps = false;
 
     protected $fillable = [
@@ -116,7 +117,11 @@ class PurchaseOrderItem extends ModelTenant
     {
         return $this->belongsTo(Item::class);
     }
-    
+    public function itemss()
+    {
+        return $this->belongsTo(Item::class,'item_id');
+    }
+
     public function purchase_order()
     {
         return $this->belongsTo(PurchaseOrder::class);

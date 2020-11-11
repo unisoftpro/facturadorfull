@@ -12,7 +12,7 @@
                 </li>
             </ol>
             <div class="right-wrapper pull-right">
-                <a href="#" @click.prevent="clickCreate()" class="btn btn-custom btn-sm mt-2 mr-2">
+                <a :href="`/${resource}/create`"  class="btn btn-custom btn-sm mt-2 mr-2">
                     <i class="fa fa-plus-circle"></i> Nuevo
                 </a>
             </div>
@@ -48,6 +48,12 @@
                         <td>{{ row.national_total}}</td>
                         <td class="text-right">
                             <button  type="button" class="btn waves-effect waves-light btn-xs btn-primary" @click.prevent="clickOptions(row.id)">Opciones</button>
+                            <button
+                                    type="button"
+                                    v-if="!row.has_purchases && row.state_type_id!='11'"
+                                    class="btn waves-effect waves-light btn-xs btn-custom m-1__2"
+                                    @click.prevent="clickCreate(row.id)"
+                                >Editar</button>
                             <template v-if="row.warehouse_income_reason_id == '103' || row.warehouse_income_reason_id == '104' ">
                                     <button  type="button" class="btn waves-effect waves-light btn-xs btn-warning m-1__2" @click.prevent="clickProcess(row.id,row.warehouse_income_reason_id)">
                                         Procesar
@@ -106,8 +112,8 @@
                 this.showDialogProcess = true
                 this.wareHouseIncomeId = wareHouseIncomeId
             },
-            clickCreate(recordId = null) {
-                location.href = `/${this.resource}/create`;
+            clickCreate(id = "") {
+                location.href = `/${this.resource}/create/${id}`;
             },
             clickDelete(id) {
                 this.destroy(`/${this.resource}/${id}`).then(() =>

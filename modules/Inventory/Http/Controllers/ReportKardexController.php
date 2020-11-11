@@ -73,6 +73,7 @@ class ReportKardexController extends Controller
     {
         $records = $this->getRecords($request->all());
 
+
         return new ReportKardexCollection($records->paginate(config('tenant.items_per_page')));
     }
 
@@ -110,14 +111,14 @@ class ReportKardexController extends Controller
         if($date_start && $date_end){
 
             $data = InventoryKardex::with(['inventory_kardexable'])
-                        ->where([['warehouse_id', $warehouse->id]])
+                        //->where([['warehouse_id', $warehouse->id]])
                         ->whereBetween('date_of_issue', [$date_start, $date_end])
                         ->orderBy('item_id')->orderBy('id');
 
         }else{
 
             $data = InventoryKardex::with(['inventory_kardexable'])
-                        ->where([['warehouse_id', $warehouse->id]])
+                        //->where([['warehouse_id', $warehouse->id]])
                         ->orderBy('item_id')->orderBy('id');
         }
 
