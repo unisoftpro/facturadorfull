@@ -277,7 +277,10 @@
                 <button
                   type="button"
                   class="btn waves-effect waves-light btn-primary"
-                  @click.prevent="showDialogAddItem = true"
+                  @click.prevent="
+                    showDialogAddItem = true;
+                    editCreate = false;
+                  "
                 >
                   + Agregar Producto
                 </button>
@@ -355,9 +358,14 @@
                       <th>#</th>
                       <th>Descripción</th>
                       <th class="text-center">Unidad</th>
-                      <th class="text-right">Cantidad</th>
-                      <th class="text-right">Pendientes</th>
-                      <th class="text-right">Atendido</th>
+                      <template v-if="this.id">
+                        <th class="text-right">Cantidad</th>
+                      </template>
+                      <template v-else>
+                        <th class="text-right">Cantidad</th>
+                        <th class="text-right">Pendientes</th>
+                        <th class="text-right">Atendido</th>
+                      </template>
                       <th class="text-right">Precio lista</th>
                       <th class="text-right">Precio Venta Público</th>
                       <th class="text-right">Total</th>
@@ -369,22 +377,28 @@
                       <td>{{ index + 1 }}</td>
                       <td>{{ row.item.full_description }}</td>
                       <td class="text-center">{{ row.item.unit_type_id }}</td>
-                      <td class="text-right">{{ row.quantity2 }}</td>
-                      <td class="text-right">
-                        {{ row.pending_quantity_income }}
-                      </td>
-                      <td class="text-right">
-                        <input
-                          @change="changeQuantityIncome(index, row.item_id)"
-                          type="number"
-                          name="number"
-                          :id="index"
-                          value=""
-                          :min="0"
-                          :max="row.pending_quantity_income"
-                          step="1"
-                        />
-                      </td>
+                      <template  v-if="{editItemstable}">
+                        <td class="text-right">{{ row.quantity }}</td>
+                      </template>
+                      <template v-else>
+                        <td class="text-right">{{ row.quantity2 }}</td>
+                        <td class="text-right">
+                          {{ row.pending_quantity_income }}
+                        </td>
+                        <td class="text-right">
+                          <input
+                            @change="changeQuantityIncome(index, row.item_id)"
+                            type="number"
+                            name="number"
+                            :id="index"
+                            value=""
+                            :min="0"
+                            :max="row.pending_quantity_income"
+                            step="1"
+                          />
+                        </td>
+                      </template>
+
                       <td class="text-right">
                         {{ currency_type.symbol }} {{ row.list_price }}
                       </td>
@@ -445,8 +459,21 @@
         </div>
       </form>
     </div>
-
-    <item-form
+    <tenant-item-warehouse-income
+      :showDialog.sync="showDialogAddItem"
+      :currency-type-id-active="form.currency_type_id"
+      :exchange-rate-sale="form.exchange_rate_sale"
+      :purchase-order-id="form.purchase_order_id"
+      :warehouse-income-reason-id="form.warehouse_income_reason_id"
+      :idItems="idItems"
+      :quantityEdit="quantity"
+      :editCreate="editCreate"
+      :listPrice="list_price"
+      @add="addRow"
+      ref="item_form"
+    >
+    </tenant-item-warehouse-income>
+    <!--<item-form
       :showDialog.sync="showDialogAddItem"
       :currency-type-id-active="form.currency_type_id"
       :exchange-rate-sale="form.exchange_rate_sale"
@@ -455,7 +482,7 @@
       :idItems="idItems"
       @add="addRow"
       ref="item_form"
-    ></item-form>
+    ></item-form>-->
 
     <warehouse-income-options
       :showDialog.sync="showDialogOptions"
@@ -478,6 +505,8 @@ export default {
       resource: "warehouse-income",
       errors: {},
       form: {},
+      quantity: null,
+      editCreate: null,
       additems: {},
       warehouses: [],
       purchase_orders: [],
@@ -500,6 +529,8 @@ export default {
         currency_type_id: null,
       },
       idItems: null,
+      list_price: null,
+      editItemstable: false,
     };
   },
   async created() {
@@ -515,6 +546,7 @@ export default {
   methods: {
     async isUpdate() {
       if (this.id) {
+        this.form.id = this.id;
         // console.log(this.id);
         await this.$http
           .get(`/${this.resource}/record_warehouse/${this.id}`)
@@ -527,7 +559,11 @@ export default {
             this.form.reference_date = response.data.data.reference_date;
             this.form.currency_type_id = response.data.data.currency_type_id;
             this.form.items = response.data.data.items;
-
+            this.editItemstable= true;
+            this.form.cat_document_types_id= response.data.data.cat_document_types_id;
+            this.form.document_reference = response.data.data.document_reference;
+            this.form.warehouse_id = response.data.data.warehouse_id;
+            this.form.observation =  response.data.data.observation;
             // this.form.suppliers = Object.values(response.data.data.purchase_quotation.suppliers);
           });
       } else {
@@ -604,6 +640,7 @@ export default {
         await this.$http
           .get(`/${this.resource}/purcharse/${this.form.supplier_id}`)
           .then((response) => {
+            console.log(response.data.record);
             this.purchase_orders = response.data.record;
             //this.form.exchange_rate_sale = response.data.exchange_rate_sale;
 
@@ -665,6 +702,9 @@ export default {
             discount_one: 0,
             discount_three: 0,
             discount_two: 0,
+            warehouse_factor: 0,
+            last_factor: 0,
+            num_price: 0,
             last_factor: "0.00",
           };
           /*this.additems.item_id = data[index]["item_id"];
@@ -713,9 +753,29 @@ export default {
       this.calculateTotal();
     },
     addRow(row) {
-      this.form.items.push(row);
-
-      this.calculateTotal();
+      if (this.form.items.length > 0) {
+        this.form.items.map(function (dato) {
+          if (row.item_id == dato.item_id) {
+            dato.discount_four = row.discount_four;
+            dato.discount_one = row.discount_one;
+            dato.discount_three = row.discount_three;
+            dato.discount_two = row.discount_two;
+            dato.last_factor = row.last_factor;
+            dato.last_purchase_price = row.last_purchase_price;
+            dato.letter_price = row.letter_price;
+            dato.price_fob_alm = row.price_fob_alm;
+            dato.price_fob_alm_igv = row.price_fob_alm_igv;
+            dato.retail_price = row.retail_price;
+            dato.sale_profit_factor = row.sale_profit_factor;
+            dato.last_factor = row.last_factor;
+            dato.num_price = row.num_price;
+            dato.warehouse_factor = row.warehouse_factor;
+          }
+        });
+      } else {
+        this.form.items.push(row);
+        this.calculateTotal();
+      }
     },
     calculateTotal() {
       let total_value = 0;
@@ -736,7 +796,7 @@ export default {
     },
     initForm() {
       this.errors = {};
-      this.idItems=null,
+
       this.form = {
         warehouse_id: null,
         document_reference: null,
@@ -754,6 +814,7 @@ export default {
         national_total: 0,
         total_value: 0,
         total: 0,
+        id: null,
         items: [],
       };
     },
@@ -917,7 +978,10 @@ export default {
     clickEdit(data) {
 
       this.idItems = data.item_id;
+      this.editCreate = true;
       this.showDialogAddItem = true;
+      this.quantity = data.pending_quantity_income;
+      this.list_price = data.list_price;
     },
   },
 };

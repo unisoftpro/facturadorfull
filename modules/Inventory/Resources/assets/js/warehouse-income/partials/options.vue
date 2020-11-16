@@ -46,7 +46,9 @@
             }
         },
         created() {
-            this.initForm()
+            this.initForm();
+
+
         },
         methods: {
             clickDownload(template)
@@ -82,6 +84,7 @@
                 this.$emit('update:showDialog', false)
                 this.initForm()
             },
+
         }
     }
 </script>

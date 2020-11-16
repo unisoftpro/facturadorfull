@@ -260,13 +260,12 @@ class WarehouseIncomeController extends Controller
 
             $data = $this->mergeData($request);
 
-            $this->warehouse_income = WarehouseIncome::create($data);
-
+            $this->warehouse_income = WarehouseIncome::updateOrCreate(['id' => (int)$data['id']],$data);
             foreach ($data['items'] as $row) {
 
-                $this->warehouse_income->items()->create($row);
+                $this->warehouse_income->items()->updateOrCreate(['warehouse_income_id' => $data['id']],$row);
             }
-            if ($data['purchase_order_id'] != null) {
+            if ($data['purchase_order_id'] != null && $data['id']==null) {
                 foreach ($data['items'] as $item) {
 
                     if ($item['attended_quantity'] > 0) {
@@ -304,6 +303,7 @@ class WarehouseIncomeController extends Controller
                     $find_purchase_order->save();
                 }
             } else {
+
             }
 
 

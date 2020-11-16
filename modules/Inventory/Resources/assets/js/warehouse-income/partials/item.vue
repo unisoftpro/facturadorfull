@@ -392,6 +392,10 @@ export default {
     "purchaseOrderId",
     "warehouseIncomeReasonId",
     "idItems",
+    "editCreate",
+    "quantityEdit",
+    "listPrice"
+
   ],
   data() {
     return {
@@ -413,7 +417,6 @@ export default {
     this.initForm();
     this.initLetters();
     this.getTables();
-    console.log(this.idItems);
   },
   methods: {
     getTables() {
@@ -550,7 +553,6 @@ export default {
       this.form = {
         item_id: null,
         item: {},
-        item_id: null,
         category_id: null,
         family_id: null,
         quantity: 1,
@@ -596,6 +598,8 @@ export default {
     create() {
       this.initForm();
       this.verifyCalcPrices();
+      this.editItem();
+
     },
     verifyCalcPrices() {
       this.enabled_calc_prices = ["103", "104"].includes(
@@ -644,6 +648,7 @@ export default {
 
       this.form.quantity2 = this.form.quantity;
       this.form.pending_quantity_income = this.form.quantity;
+      console.log(this.form);
       await this.$emit("add", this.form);
       await this.initForm();
     },
@@ -676,6 +681,16 @@ export default {
       this.form.total = _.round(this.form.unit_price * this.form.quantity, 2);
 
       return this.form;
+    },
+    async editItem() {
+      if (this.editCreate) {
+
+          this.form.item_id=this.idItems;
+          this.form.list_price= this.listPrice;
+          this.form.quantity = this.quantityEdit;
+          await this.changeItem();
+          this.inputListPrice();
+      }
     },
   },
 };

@@ -263,6 +263,7 @@ Vue.component('tenant-promotions-index', require('./views/tenant/promotions/inde
 
 Vue.component('tenant-item-sets-index', require('./views/tenant/item_sets/index.vue'));
 Vue.component('tenant-person-types-index', require('./views/tenant/person_types/index.vue'));
+Vue.component('tenant-item-warehouse-income',require('@viewsModuleInventory/warehouse-income/partials/item.vue'));
 
 Vue.component('tenant-orders-index', require('./views/tenant/orders/index.vue'));
 
