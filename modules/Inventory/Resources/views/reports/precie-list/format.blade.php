@@ -71,7 +71,6 @@
                           <th class="td-custom" style="padding: 10px">
                              Descripcion
                           </th>
-
                           <th class="td-custom" style="padding: 10px">
                              Cod.Equivalente
                           </th>
@@ -86,6 +85,55 @@
                           </th>
                     </tr>
                 </thead>
+                <tbody style="border-right: 0px !important">
+                    @if($record->count())
+                        @inject('serviceFamily', 'App\Services\ItemReportFamilyService')
+                        @php
+                        $rows = $serviceFamily->GroupeByFamilyPreciList( $record );
+                        //dd($rows);
+                    @endphp
+                        @foreach ($rows as $family => $family_value)
+                            <tr>
+                                <td colspan="2" style="border-bottom: 1px solid black;padding: 8px !important;">
+                                    {{ $family }}
+                                </td>
+                            </tr>
+                            @foreach($family_value as $line => $line_value)
+                                <tr>
+                                    <td colspan="1">
+
+                                    </td>
+                                    <td colspan="2" style="border-bottom: 1px solid black;padding: 8px !important;">
+                                        {{ $line }}
+                                    </td>
+                                </tr>
+                                @foreach($line_value as $brand => $brand_value)
+                                    <tr>
+                                        <td colspan="2">
+
+                                        </td>
+                                        <td colspan="2" style="border-bottom: 1px solid black;padding: 8px !important;">
+                                            {{ $brand }}
+                                        </td>
+                                    </tr>
+
+
+                                    @foreach($brand_value as $key => $it)
+                                        <tr>
+                                            <td >{{ $it->{'item_code'} }}</td>
+                                            <td > {{ $it->{'description'} }} </td>
+                                            <td >{{ $it->{'item_code'} }}</td>
+                                            <td > {{ $it->{'unit_type_id'} }} </td>
+                                            <td > {{ $it->{'price_list'} }} </td>
+                                            <td > {{ $it->{'stock'} }} </td>
+                                        </tr>
+                                    @endforeach
+                                @endforeach
+                            @endforeach
+                        @endforeach
+                    @else
+                    @endif
+                </tbody>
             </table>
         </div>
     </body>

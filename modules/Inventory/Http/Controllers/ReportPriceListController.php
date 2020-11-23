@@ -72,13 +72,15 @@ class ReportPriceListController extends Controller
                     'items.item_code',
                     'items.unit_type_id',
                     'list_price_item.price_list',
+                    'list_price_item.currency_type_id',
                     DB::raw('sum(item_warehouse.stock) as stock')
                 )
                 ->where($wheres)
-                ->groupBy('items.id', 'items.name', 'families.name', 'brands.name', 'lines.name', 'items.item_code', 'items.unit_type_id', 'list_price_item.price_list');
+                ->groupBy('items.id', 'items.name', 'families.name', 'brands.name', 'lines.name', 'items.item_code', 'items.unit_type_id', 'list_price_item.price_list','list_price_item.currency_type_id');
         } else {
             $record = ItemWarehouse::join('list_price_item', 'item_warehouse.item_id', '=', 'list_price_item.item_id')
                 ->join('items', 'items.id', '=', 'list_price_item.item_id')
+
                 ->join('families', 'families.id', 'items.family_id')
                 ->join('brands', 'brands.id', '=', 'items.brand_id')
                 ->join('lines', 'lines.id', '=', 'items.line_id')
@@ -90,11 +92,12 @@ class ReportPriceListController extends Controller
                     'lines.name AS descriptionl',
                     'items.item_code',
                     'items.unit_type_id',
+                    'list_price_item.currency_type_id',
                     DB::raw('round((list_price_item.price_list * 1.18),2) as price_list'),
                     DB::raw('sum(item_warehouse.stock) as stock')
                 )
                 ->where($wheres)
-                ->groupBy('items.id', 'items.name', 'families.name', 'brands.name', 'lines.name', 'items.item_code', 'items.unit_type_id', 'list_price_item.price_list');
+                ->groupBy('items.id', 'items.name', 'families.name', 'brands.name', 'lines.name', 'items.item_code', 'items.unit_type_id', 'list_price_item.price_list','list_price_item.currency_type_id');
         }
 
 
@@ -147,10 +150,13 @@ class ReportPriceListController extends Controller
                     'items.item_code',
                     'items.unit_type_id',
                     'list_price_item.price_list',
+                    'families.id as idFamilia',
+                    'brands.id as idBrands',
+                    'lines.id as idLines',
                     DB::raw('sum(item_warehouse.stock) as stock')
                 )
                 ->where($wheres)
-                ->groupBy('items.id', 'items.name', 'families.name', 'brands.name', 'lines.name', 'items.item_code', 'items.unit_type_id', 'list_price_item.price_list');
+                ->groupBy('items.id','brands.id','list_price_item.currency_type_id','lines.id','items.name', 'families.id','families.name', 'brands.name', 'lines.name', 'items.item_code', 'items.unit_type_id', 'list_price_item.price_list')->get();
         } else {
             $record = ItemWarehouse::join('list_price_item', 'item_warehouse.item_id', '=', 'list_price_item.item_id')
                 ->join('items', 'items.id', '=', 'list_price_item.item_id')
@@ -161,20 +167,25 @@ class ReportPriceListController extends Controller
                     'items.id',
                     'items.name AS description',
                     'families.name as descriptionf',
+                    'families.id as idFamilia',
                     'brands.name AS descripctionb',
                     'lines.name AS descriptionl',
                     'items.item_code',
                     'items.unit_type_id',
+                    'brands.id as idBrands',
+                    'lines.id as idLines',
+                    'list_price_item.currency_type_id',
                     DB::raw('round((list_price_item.price_list * 1.18),2) as price_list'),
                     DB::raw('sum(item_warehouse.stock) as stock')
                 )
                 ->where($wheres)
-                ->groupBy('items.id', 'items.name', 'families.name', 'brands.name', 'lines.name', 'items.item_code', 'items.unit_type_id', 'list_price_item.price_list');
+                ->groupBy('items.id','list_price_item.currency_type_id', 'items.name','lines.id','brands.id','families.id', 'families.name', 'brands.name', 'lines.name', 'items.item_code', 'items.unit_type_id', 'list_price_item.price_list')->get();
         }
         $view = "inventory::reports.precie-list.format";
 
         set_time_limit(0);
         $igv = $request->price_default;
+
         $pdf = PDF::loadView($view, compact("record", "igv"));
         $filename = "Reporte_Salida";
 

@@ -21,6 +21,7 @@ class ReportPrecieListCollection extends ResourceCollection
                 'item_code' => $row->item_code,
                 'unit_type_id' => $row->unit_type_id,
                 'price_list'=>$row->price_list,
+                'currency_type_id'=>$row->currency_type_id,
             ];
         });
     }

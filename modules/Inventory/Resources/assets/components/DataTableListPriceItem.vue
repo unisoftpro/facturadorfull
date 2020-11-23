@@ -58,7 +58,7 @@ export default {
     async getRecords() {
       await this.$http.get(`/${this.resource}/records`).then((response) => {
           this.records = response.data.data;
-          console.log(this.records);
+
           this.pagination = response.data.meta;
           this.pagination.per_page = parseInt(response.data.meta.per_page);
           this.loading_submit = false;

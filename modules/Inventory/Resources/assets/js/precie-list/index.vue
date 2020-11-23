@@ -22,6 +22,7 @@
             <th>Codigo</th>
             <th>Descripcion</th>
             <th class="text-center">Unidad</th>
+            <th class="text-center">Moneda</th>
             <th class="text-center">Precio Lista</th>
             <th class="text-center">Stock</th>
           </tr>
@@ -29,7 +30,8 @@
             <td>{{ index }}</td>
             <td>{{ row.item_code }}</td>
             <td>{{ row.description }}</td>
-            <td class="text-center">{{ row.unit_type_id }}</td>
+            <td>{{ row.unit_type_id }}</td>
+            <td class="text-center">{{ row.currency_type_id}}</td>
             <td class="text-center">{{ row.price_list }}</td>
             <td class="text-center">{{ row.stock }}</td>
           </tr>

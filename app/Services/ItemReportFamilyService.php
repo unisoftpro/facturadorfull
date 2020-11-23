@@ -44,6 +44,29 @@ class ItemReportFamilyService
         return $grouped->toArray();
     }
 
+    public function GroupeByFamilyPreciList($data){
+
+        $records = $data->transform(function($row){
+            return (object)[
+
+
+                'id' => $row->id,
+                'description' =>  $row->description,
+                'descriptionf' => $row->descriptionf,
+                'descripctionb' => $row->descripctionb,
+                'descriptionl' => $row->descriptionl,
+                'item_code' => $row->item_code,
+                'unit_type_id' => $row->unit_type_id,
+                'price_list' => $row->price_list,
+                'idFamilia' => $row->idFamilia,
+                'idBrands' => $row->idBrands,
+                'idLines' => $row->idLines,
+                'stock' => $row->stock
+            ];
+        });
+        $grouped = $records->groupBy(['descriptionf', 'descriptionl','descripctionb']);
+        return $grouped->toArray();
+    }
     public function GroupedByFamilyExpense($id)
     {
         $items = WarehouseExpenseItem::where('warehouse_expense_id', $id)->get();
