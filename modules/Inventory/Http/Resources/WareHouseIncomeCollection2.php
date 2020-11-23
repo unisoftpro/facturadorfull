@@ -32,6 +32,7 @@ class WareHouseIncomeCollection2 extends JsonResource
             'currency_type_id'=>$this->currency_type_id,
             'items'=> $warehouseitems,
             'purchase_order_id'=>$this->purchase_order_id,
+            'work_order_id'=>$this->work_order_id
         ];
     }
 

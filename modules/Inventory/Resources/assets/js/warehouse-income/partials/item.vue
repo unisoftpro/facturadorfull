@@ -394,8 +394,12 @@ export default {
     "idItems",
     "editCreate",
     "quantityEdit",
-    "listPrice"
-
+    "listPrice",
+    "descontOne",
+    "descontTwo",
+    "descontThree",
+    "factorAlma",
+    "factorVenta"
   ],
   data() {
     return {
@@ -648,7 +652,7 @@ export default {
 
       this.form.quantity2 = this.form.quantity;
       this.form.pending_quantity_income = this.form.quantity;
-      console.log(this.form);
+
       await this.$emit("add", this.form);
       await this.initForm();
     },
@@ -688,8 +692,15 @@ export default {
           this.form.item_id=this.idItems;
           this.form.list_price= this.listPrice;
           this.form.quantity = this.quantityEdit;
+          this.form.discount_one = this.descontOne;
+          this.form.discount_two = this.descontTwo;
+          this.form.discount_three = this.descontThree;
+          this.form.sale_profit_factor = this.factorVenta;
+          this.form.warehouse_factor = this.factorAlma;
           await this.changeItem();
           this.inputListPrice();
+          this.changeWarehouseFactor();
+          this.inputSaleProfitFactor();
       }
     },
   },

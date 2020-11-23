@@ -248,6 +248,7 @@
                 await this.$http.get(`/${this.resource}/items/${this.recordId}`).then((response) => {
                     this.form.items = response.data.record;
                 });
+                console.log(this.form.items);
                 return this.form.items.map((row) => {
                     const { price_fob, price_list } = this.calculateValuesExterior(
                         row,

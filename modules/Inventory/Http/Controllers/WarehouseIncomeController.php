@@ -147,6 +147,10 @@ class WarehouseIncomeController extends Controller
         $record = PurchaseOrder::where('supplier_id', $supplier_id)->where('purchase_order_state_id', '03')->get();
         return compact('record');
     }
+    public function getPurcharseId($supplier_id,$id){
+        $record = PurchaseOrder::where('supplier_id', $supplier_id)->where('id', $id)->get();
+        return compact('record');
+    }
     public function getWorkOrder($purchase_order_id)
     {
         $record = PurchaseOrder::where('id', $purchase_order_id)->select('work_order_id')->first();
@@ -261,9 +265,14 @@ class WarehouseIncomeController extends Controller
             $data = $this->mergeData($request);
 
             $this->warehouse_income = WarehouseIncome::updateOrCreate(['id' => (int)$data['id']],$data);
+           /* for ($i=0; $i < count($data['items']) ; $i++) {
+                $this->warehouse_income->items()->updateOrCreate(['warehouse_income_id' => $data['id']],$row);
+            }*/
+            //dd($data['items']);
             foreach ($data['items'] as $row) {
 
-                $this->warehouse_income->items()->updateOrCreate(['warehouse_income_id' => $data['id']],$row);
+                $this->warehouse_income->items()->updateOrCreate(['warehouse_income_id' =>(int)$data['id'],'item_id'=>(int)$row['item_id']],$row);
+
             }
             if ($data['purchase_order_id'] != null && $data['id']==null) {
                 foreach ($data['items'] as $item) {

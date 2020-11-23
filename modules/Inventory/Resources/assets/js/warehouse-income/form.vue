@@ -353,34 +353,74 @@
             <div class="col-md-12">
               <div class="table-responsive">
                 <table class="table">
-                  <thead>
-                    <tr>
-                      <th>#</th>
-                      <th>Descripción</th>
-                      <th class="text-center">Unidad</th>
-                      <template v-if="this.id">
+                  <template v-if="this.editHeadTable">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Descripción</th>
+                        <th class="text-center">Unidad</th>
                         <th class="text-right">Cantidad</th>
-                      </template>
-                      <template v-else>
-                        <th class="text-right">Cantidad</th>
-                        <th class="text-right">Pendientes</th>
-                        <th class="text-right">Atendido</th>
-                      </template>
-                      <th class="text-right">Precio lista</th>
-                      <th class="text-right">Precio Venta Público</th>
-                      <th class="text-right">Total</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="(row, index) in form.items" :key="index">
-                      <td>{{ index + 1 }}</td>
-                      <td>{{ row.item.full_description }}</td>
-                      <td class="text-center">{{ row.item.unit_type_id }}</td>
-                      <template  v-if="{editItemstable}">
+
+                        <th class="text-right">Precio lista</th>
+                        <th class="text-right">Precio Venta Público</th>
+                        <th class="text-right">Total</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(row, index) in form.items" :key="index">
+                        <td>{{ index + 1 }}</td>
+                        <td>{{ row.item.full_description }}</td>
+                        <td class="text-center">{{ row.item.unit_type_id }}</td>
                         <td class="text-right">{{ row.quantity }}</td>
-                      </template>
-                      <template v-else>
+                        <td class="text-right">
+                          {{ currency_type.symbol }} {{ row.list_price }}
+                        </td>
+                        <td class="text-right">
+                          {{ currency_type.symbol }} {{ row.retail_price }}
+                        </td>
+                        <td class="text-right">
+                          {{ currency_type.symbol }} {{ row.total }}
+                        </td>
+                        <td class="text-right">
+                          <button
+                            type="button"
+                            class="btn waves-effect waves-light btn-xs btn-danger"
+                            @click.prevent="clickRemoveItem(index)"
+                          >
+                            x
+                          </button>
+                          <button
+                            type="button"
+                            class="btn waves-effect waves-light btn-xs btn-warning"
+                            @click.prevent="clickEdit(row)"
+                          >
+                            Editar
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </template>
+                  <template v-else>
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Descripción</th>
+                        <th class="text-center">Unidad</th>
+                        <th class="text-right">Cantidad</th>
+                        <th class="text-right">Cantidad Pendiete</th>
+                        <th class="text-right">Cantidad Pendiete</th>
+                        <th class="text-right">Precio lista</th>
+                        <th class="text-right">Precio Venta Público</th>
+                        <th class="text-right">Total</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(row, index) in form.items" :key="index">
+                        <td>{{ index + 1 }}</td>
+                        <td>{{ row.item.full_description }}</td>
+                        <td class="text-center">{{ row.item.unit_type_id }}</td>
                         <td class="text-right">{{ row.quantity2 }}</td>
                         <td class="text-right">
                           {{ row.pending_quantity_income }}
@@ -397,35 +437,34 @@
                             step="1"
                           />
                         </td>
-                      </template>
-
-                      <td class="text-right">
-                        {{ currency_type.symbol }} {{ row.list_price }}
-                      </td>
-                      <td class="text-right">
-                        {{ currency_type.symbol }} {{ row.retail_price }}
-                      </td>
-                      <td class="text-right">
-                        {{ currency_type.symbol }} {{ row.total }}
-                      </td>
-                      <td class="text-right">
-                        <button
-                          type="button"
-                          class="btn waves-effect waves-light btn-xs btn-danger"
-                          @click.prevent="clickRemoveItem(index)"
-                        >
-                          x
-                        </button>
-                        <button
-                          type="button"
-                          class="btn waves-effect waves-light btn-xs btn-warning"
-                          @click.prevent="clickEdit(row)"
-                        >
-                          Editar
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
+                        <td class="text-right">
+                          {{ currency_type.symbol }} {{ row.list_price }}
+                        </td>
+                        <td class="text-right">
+                          {{ currency_type.symbol }} {{ row.retail_price }}
+                        </td>
+                        <td class="text-right">
+                          {{ currency_type.symbol }} {{ row.total }}
+                        </td>
+                        <td class="text-right">
+                          <button
+                            type="button"
+                            class="btn waves-effect waves-light btn-xs btn-danger"
+                            @click.prevent="clickRemoveItem(index)"
+                          >
+                            x
+                          </button>
+                          <button
+                            type="button"
+                            class="btn waves-effect waves-light btn-xs btn-warning"
+                            @click.prevent="clickEdit(row)"
+                          >
+                            Editar
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </template>
                 </table>
               </div>
             </div>
@@ -469,6 +508,11 @@
       :quantityEdit="quantity"
       :editCreate="editCreate"
       :listPrice="list_price"
+      :descontOne="descuento1"
+      :descontTwo="descuento2"
+      :descontThree="descuento3"
+      :factorAlma="factorAlmacen"
+      :factorVenta="factorVenta"
       @add="addRow"
       ref="item_form"
     >
@@ -506,6 +550,7 @@ export default {
       errors: {},
       form: {},
       quantity: null,
+      purcharse_id: null,
       editCreate: null,
       additems: {},
       warehouses: [],
@@ -530,7 +575,13 @@ export default {
       },
       idItems: null,
       list_price: null,
+      descuento1: null,
+      descuento2: null,
+      descuento3: null,
+      factorAlmacen: null,
+      factorVenta: null,
       editItemstable: false,
+      editHeadTable: false,
     };
   },
   async created() {
@@ -547,7 +598,7 @@ export default {
     async isUpdate() {
       if (this.id) {
         this.form.id = this.id;
-        // console.log(this.id);
+
         await this.$http
           .get(`/${this.resource}/record_warehouse/${this.id}`)
           .then((response) => {
@@ -559,11 +610,26 @@ export default {
             this.form.reference_date = response.data.data.reference_date;
             this.form.currency_type_id = response.data.data.currency_type_id;
             this.form.items = response.data.data.items;
-            this.editItemstable= true;
-            this.form.cat_document_types_id= response.data.data.cat_document_types_id;
-            this.form.document_reference = response.data.data.document_reference;
+            this.editItemstable = true;
+            this.editHeadTable = true;
+
+            this.form.cat_document_types_id =
+              response.data.data.cat_document_types_id;
+            this.form.document_reference =
+              response.data.data.document_reference;
             this.form.warehouse_id = response.data.data.warehouse_id;
-            this.form.observation =  response.data.data.observation;
+            this.form.observation = response.data.data.observation;
+            this.calculateTotal();
+
+            this.purcharse_id= response.data.data.purchase_order_id;
+
+            this.changeSupplier();
+            //this.getPurchaseId(this.purcharse_id);
+
+            this.form.purchase_order_id = response.data.data.purchase_order_id;
+
+            this.changePurcharse();
+            this.form.work_order_id= response.data.data.work_order_id;
             // this.form.suppliers = Object.values(response.data.data.purchase_quotation.suppliers);
           });
       } else {
@@ -572,6 +638,8 @@ export default {
     changeSupplier() {
       this.getExchangeRatePurchaseOrder();
       this.getPurchase();
+
+      this.getPurchaseId(this.purcharse_id);
     },
     changeDateReference() {
       this.getExchangeRatePurchaseOrder();
@@ -640,7 +708,6 @@ export default {
         await this.$http
           .get(`/${this.resource}/purcharse/${this.form.supplier_id}`)
           .then((response) => {
-            console.log(response.data.record);
             this.purchase_orders = response.data.record;
             //this.form.exchange_rate_sale = response.data.exchange_rate_sale;
 
@@ -650,69 +717,117 @@ export default {
           });
       }
     },
+    async getPurchaseId(id_p) {
+      if (this.form.supplier_id & this.form.id) {
+
+        await this.$http
+          .get(`/${this.resource}/purcharse2/${this.form.supplier_id}/${id_p}`)
+          .then((response) => {
+            this.purchase_orders.push(response.data.record[0]);
+
+          });
+      }
+    },
     async changePurcharse() {
       if (this.form.purchase_order_id) {
+          if(this.form.id){
+
+          }else{
+            this.form.items = [];
+          }
+
         await this.$http
           .get(`/${this.resource}/workorder/${this.form.purchase_order_id}`)
           .then((response) => {
             this.work_orders = response.data.work_order;
-
-            //this.form.exchange_rate_sale = response.data.exchange_rate_sale;
-
-            /*if (!response.data.success) {
-              this.$message.warning(response.data.message);
-            }*/
           });
-        this.purchase_orders.forEach((row) => {
-          //console.log(row.items);
-          this.addItems(row.items);
-          this.form.currency_type_id = row.currency_type_id;
-          this.form.work_order_id = row.work_order_id;
-          this.form.date_of_issue = row.date_of_issue;
+          if(this.form.id){
 
-          if (row.purchase_order_type_id == "01") {
+          }else{
+            this.addItems("a");
+          }
+
+        /*if (this.form.id) {
+        } else {
+
+        }*/
+      }
+    },
+    async addItems(data) {
+      for (let i = 0; i < this.purchase_orders.length; i++) {
+        if (this.purchase_orders[i]["id"] == this.form.purchase_order_id) {
+          this.form.currency_type_id = "";
+          this.form.work_order_id = "";
+          this.form.date_of_issue = "";
+          this.form.warehouse_income_reason_id = "";
+          this.form.currency_type_id = this.purchase_orders[i][
+            "currency_type_id"
+          ];
+          this.form.work_order_id = this.purchase_orders[i]["work_order_id"];
+          this.form.date_of_issue = this.purchase_orders[i]["date_of_issue"];
+
+          if (this.purchase_orders[i]["purchase_order_type_id"] == "01") {
             this.form.warehouse_income_reason_id = "104";
           } else {
             this.form.warehouse_income_reason_id = "103";
           }
-        });
-      }
-    },
-    async addItems(data) {
-      for (let index = 0; index < data.length; index++) {
-        if (parseInt(data[index]["pending_quantity_income"]) > 0) {
-          let datos = {
-            item_id: data[index]["item_id"],
-            category_id: data[index]["itemss"]["category_id"],
-            family_id: data[index]["itemss"]["family_id"],
-            quantity2: data[index]["quantity"],
-            quantity: data[index]["quantity"],
-            pending_quantity_income: parseInt(
-              data[index]["pending_quantity_income"]
-            ),
-            list_price: data[index]["unit_price"],
-            total: data[index]["total"],
-            total_value: data[index]["total_value"],
-            attended_quantity: 0,
-            unit_value: data[index]["unit_value"],
-            unit_price: data[index]["unit_price"],
-            item: data[index]["item"],
-            unit_type_id: data[index]["itemss"]["unit_type_id"],
-            discount_four: 0,
-            discount_one: 0,
-            discount_three: 0,
-            discount_two: 0,
-            warehouse_factor: 0,
-            last_factor: 0,
-            num_price: 0,
-            last_factor: "0.00",
-          };
-          /*this.additems.item_id = data[index]["item_id"];
-        this.addItems.category_id=  data[index]["itemss"]['category_id'];
-        this.addItems.family_id=data[index]["itemss"]['family_id'];
-        this.addItems.item= data[index]["item"];
-        this.addItems.total = data[index]["total"];*/
-          this.addRow(datos);
+          for (
+            let index = 0;
+            index < this.purchase_orders[i]["items"].length;
+            index++
+          ) {
+            if (
+              parseInt(
+                this.purchase_orders[i]["items"][index][
+                  "pending_quantity_income"
+                ]
+              ) > 0
+            ) {
+              let datos = {
+                item_id: this.purchase_orders[i]["items"][index]["item_id"],
+                category_id: this.purchase_orders[i]["items"][index]["itemss"][
+                  "category_id"
+                ],
+                family_id: this.purchase_orders[i]["items"][index]["itemss"][
+                  "family_id"
+                ],
+                quantity2: this.purchase_orders[i]["items"][index]["quantity"],
+                quantity: this.purchase_orders[i]["items"][index]["quantity"],
+                pending_quantity_income: parseInt(
+                  this.purchase_orders[i]["items"][index][
+                    "pending_quantity_income"
+                  ]
+                ),
+                list_price: this.purchase_orders[i]["items"][index][
+                  "unit_price"
+                ],
+                total: this.purchase_orders[i]["items"][index]["total"],
+                total_value: this.purchase_orders[i]["items"][index][
+                  "total_value"
+                ],
+                attended_quantity: 0,
+                unit_value: this.purchase_orders[i]["items"][index][
+                  "unit_value"
+                ],
+                unit_price: this.purchase_orders[i]["items"][index][
+                  "unit_price"
+                ],
+                item: this.purchase_orders[i]["items"][index]["item"],
+                unit_type_id: this.purchase_orders[i]["items"][index]["itemss"][
+                  "unit_type_id"
+                ],
+                discount_four: 0,
+                discount_one: 0,
+                discount_three: 0,
+                discount_two: 0,
+                warehouse_factor: 0,
+                last_factor: 0,
+                num_price: 0,
+                last_factor: "0.00",
+              };
+              this.addRow(datos);
+            }
+          }
         }
       }
     },
@@ -753,9 +868,9 @@ export default {
       this.calculateTotal();
     },
     addRow(row) {
-      if (this.form.items.length > 0) {
+      if ((this.form.items.length > 0) & this.id & this.showDialogAddItem) {
         this.form.items.map(function (dato) {
-          if (row.item_id == dato.item_id) {
+          if (row.item_id === dato.item_id) {
             dato.discount_four = row.discount_four;
             dato.discount_one = row.discount_one;
             dato.discount_three = row.discount_three;
@@ -772,6 +887,27 @@ export default {
             dato.warehouse_factor = row.warehouse_factor;
           }
         });
+        this.calculateTotal();
+      } else if ((this.form.items.length > 0) & this.showDialogAddItem) {
+        this.form.items.map(function (dato) {
+          if (row.item_id === dato.item_id) {
+            dato.discount_four = row.discount_four;
+            dato.discount_one = row.discount_one;
+            dato.discount_three = row.discount_three;
+            dato.discount_two = row.discount_two;
+            dato.last_factor = row.last_factor;
+            dato.last_purchase_price = row.last_purchase_price;
+            dato.letter_price = row.letter_price;
+            dato.price_fob_alm = row.price_fob_alm;
+            dato.price_fob_alm_igv = row.price_fob_alm_igv;
+            dato.retail_price = row.retail_price;
+            dato.sale_profit_factor = row.sale_profit_factor;
+            dato.last_factor = row.last_factor;
+            dato.num_price = row.num_price;
+            dato.warehouse_factor = row.warehouse_factor;
+          }
+        });
+        this.calculateTotal();
       } else {
         this.form.items.push(row);
         this.calculateTotal();
@@ -796,7 +932,7 @@ export default {
     },
     initForm() {
       this.errors = {};
-
+      this.purcharse_id=null;
       this.form = {
         warehouse_id: null,
         document_reference: null,
@@ -976,11 +1112,20 @@ export default {
       }
     },
     clickEdit(data) {
-
       this.idItems = data.item_id;
       this.editCreate = true;
       this.showDialogAddItem = true;
-      this.quantity = data.pending_quantity_income;
+      if (this.id) {
+        this.quantity = data.quantity;
+      } else {
+        this.quantity = data.pending_quantity_income;
+      }
+      this.descuento1 = data.discount_one;
+      this.descuento2 = data.discount_two;
+      this.descuento3 = data.discount_three;
+      this.factorAlmacen = data.warehouse_factor;
+      this.factorVenta = data.sale_profit_factor;
+
       this.list_price = data.list_price;
     },
   },

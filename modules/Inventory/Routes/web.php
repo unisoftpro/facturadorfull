@@ -169,6 +169,7 @@ if($hostname) {
                 Route::get('item/additional-values/{item_id}', 'WarehouseIncomeController@getAdditionalValues');
                 Route::get('items/{id}', 'WarehouseIncomeController@getItemsWareHouseIncome');
                 Route::get('purcharse/{id}', 'WarehouseIncomeController@getPurcharse');
+                Route::get('purcharse2/{idsuppli}/{idpucharse}', 'WarehouseIncomeController@getPurcharseId');
                 Route::get('workorder/{id}', 'WarehouseIncomeController@getWorkOrder');
 
 
