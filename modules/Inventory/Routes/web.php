@@ -93,6 +93,7 @@ if($hostname) {
                 Route::get('precie-list/tables', 'ReportPriceListController@filters');
                 Route::get('precie-list/records', 'ReportPriceListController@records');
                 Route::get('precie-list/pdf', 'ReportPriceListController@pdf');
+                Route::get('valuted-balances/pdf', 'ReportValutedBalancesController@pdf');
 
                 Route::get('valuted-balances','ReportValutedBalancesController@index')->name('reports.valuted-balances.index');
                 Route::get('valuted-balances/tables', 'ReportValutedBalancesController@filters');

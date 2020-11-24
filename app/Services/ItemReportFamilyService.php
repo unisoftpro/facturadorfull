@@ -67,6 +67,29 @@ class ItemReportFamilyService
         $grouped = $records->groupBy(['descriptionf', 'descriptionl','descripctionb']);
         return $grouped->toArray();
     }
+    public function GroupeByFamilySaldos($data){
+        $collection = collect($data);
+        $records = $collection->transform(function($row){
+
+            return (object)[
+
+                'item_code' => $row['item_code'],
+                'description' =>  $row['description'],
+                'warehouse_id' => $row['warehouse_id'],
+                'name' => $row['name'],
+                'descriptionf' => $row['descriptionf'],
+                'descriptionl' => $row['descriptionl'],
+                'saldos' => $row['saldos'],
+                'idF' => $row['idF'],
+                'idL' => $row['idL'],
+                'price_fob' => $row['price_fob'],
+                'Totalart' => $row['Totalart'],
+                'currency_type_id' => $row['currency_type_id']
+            ];
+        });
+        $grouped = $records->groupBy(['descriptionf', 'descriptionl']);
+        return $grouped->toArray();
+    }
     public function GroupedByFamilyExpense($id)
     {
         $items = WarehouseExpenseItem::where('warehouse_expense_id', $id)->get();
