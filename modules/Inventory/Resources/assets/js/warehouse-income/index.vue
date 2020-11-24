@@ -55,7 +55,7 @@
                                     @click.prevent="clickCreate(row.id)"
                                 >Editar</button>
                             <template v-if="row.warehouse_income_reason_id == '103' || row.warehouse_income_reason_id == '104' ">
-                                    <button  type="button" class="btn waves-effect waves-light btn-xs btn-warning m-1__2" @click.prevent="clickProcess(row.id,row.warehouse_income_reason_id)">
+                                    <button  type="button" class="btn waves-effect waves-light btn-xs btn-warning m-1__2" @click.prevent="clickProcess(row.id,row.warehouse_income_reason_id,row.currency_type_id)">
                                         Procesar
                                     </button>
                             </template>
@@ -70,6 +70,7 @@
             <process-options :showDialog.sync="showDialogProcess"
                             :recordId="recordIdProcess"
                             :wareHouseIncomeId="wareHouseIncomeId"
+                            :currencyType="currencyType"
                             :showClose="true">
             </process-options>
         </div>
@@ -94,6 +95,7 @@
                 showDialogProcess:false,
                 recordIdProcess:null,
                 wareHouseIncomeId:null,
+                currencyType:null,
                 resource: 'warehouse-income',
                 recordId: null,
                 typeTransaction: null,
@@ -107,10 +109,11 @@
                 this.recordId = recordId
                 this.showDialogOptions = true
             },
-            clickProcess(recordIdProcess = null,wareHouseIncomeId=null){
+            clickProcess(recordIdProcess = null,wareHouseIncomeId=null,currencyType=null){
                 this.recordIdProcess = recordIdProcess
                 this.showDialogProcess = true
                 this.wareHouseIncomeId = wareHouseIncomeId
+                this.currencyType =currencyType
             },
             clickCreate(id = "") {
                 location.href = `/${this.resource}/create/${id}`;

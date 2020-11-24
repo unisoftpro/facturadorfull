@@ -25,6 +25,7 @@
             <th>Descripcion</th>
             <th class="text-center">Codigo Equivalente</th>
             <th class="text-center">Moneda</th>
+            <th class="text-center">Saldo</th>
             <th class="text-center">Precio FOB</th>
             <th class="text-center">Total Art.x Mon</th>
             <th class="text-center">Total Art.En Soles</th>
@@ -35,6 +36,7 @@
             <td>{{ row.description }}</td>
             <td class="text-center">{{ row.internal_id }}</td>
             <td class="text-center">{{ row.currency_type_id }}</td>
+            <td class="text-center">{{ row.saldos }}</td>
             <td class="text-center">{{ row.price_fob }}</td>
             <td class="text-center">{{ row.Totalart }}</td>
             <td class="text-center">{{ row.Totalart }}</td>
