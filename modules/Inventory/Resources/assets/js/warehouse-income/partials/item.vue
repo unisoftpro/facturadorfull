@@ -399,7 +399,8 @@ export default {
     "descontTwo",
     "descontThree",
     "factorAlma",
-    "factorVenta"
+    "factorVenta",
+    "currencyTypeId",
   ],
   data() {
     return {
@@ -617,7 +618,14 @@ export default {
       this.$emit("update:showDialog", false);
     },
     async changeItem() {
+
       this.form.item = await _.find(this.items, { id: this.form.item_id });
+       var id_money = this.currencyTypeId;
+      if (id_money === "PEN") {
+        this.form.item.currency_type_symbol = "S/";
+      } else {
+        this.form.item.currency_type_symbol = "$";
+      }
       this.form.category_id = this.form.item.category_id;
       this.form.family_id = this.form.item.family_id;
       await this.getListPrice();
@@ -690,6 +698,7 @@ export default {
       if (this.editCreate) {
 
           this.form.item_id=this.idItems;
+          await this.changeItem();
           this.form.list_price= this.listPrice;
           this.form.quantity = this.quantityEdit;
           this.form.discount_one = this.descontOne;
@@ -697,7 +706,7 @@ export default {
           this.form.discount_three = this.descontThree;
           this.form.sale_profit_factor = this.factorVenta;
           this.form.warehouse_factor = this.factorAlma;
-          await this.changeItem();
+
           this.inputListPrice();
           this.changeWarehouseFactor();
           this.inputSaleProfitFactor();

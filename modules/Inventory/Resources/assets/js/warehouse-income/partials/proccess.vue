@@ -288,11 +288,13 @@ export default {
         .then((response) => {
           this.form.items = response.data.record;
         });
+
       return this.form.items.map((row) => {
         const { price_fob, price_list } = this.getPriceFob(
           row,
           currency_type_id
         );
+
         return {
           item_id: row.item_id,
           list_type_id: list_type_id,
@@ -315,7 +317,53 @@ export default {
         let price_fob =parseFloat( row.unit_value);
         //const price_fob_alm_igv = price_fob * 1.18
         let price_list =parseFloat( row.unit_value * factor);
-        console.log(price_fob,this.exchange_rate_sale);
+
+        if (
+          this.currencyType === "PEN" &&
+          this.currencyType !== currency_type_id_new
+        ) {
+          price_fob = price_fob / this.exchange_rate_sale;
+          price_list = price_list / this.exchange_rate_sale;
+        }
+
+        if (
+          currency_type_id_new === "PEN" && this.currencyType !== currency_type_id_new
+        ) {
+
+          price_fob = price_fob * this.exchange_rate_sale;
+          price_list = price_list * this.exchange_rate_sale;
+        }
+        return { price_fob, price_list };
+      } else if (type == "103") {
+        //exterior
+        let price_fob = parseFloat(row.unit_value * row.warehouse_factor);
+        //const price_fob_alm_igv = price_fob * 1.18
+        let price_list = parseFloat(price_fob * factor);
+        if (
+          this.currencyType === "PEN" &&
+          this.currencyType !== currency_type_id_new
+        ) {
+          price_fob = price_fob / this.exchange_rate_sale;
+          price_list = price_list / this.exchange_rate_sale;
+        }
+
+        if (
+          currency_type_id_new === "PEN" &&
+          this.currencyType !== currency_type_id_new
+        ) {
+          price_fob = price_fob * this.exchange_rate_sale;
+          price_list = price_list * this.exchange_rate_sale;
+        }
+        return { price_fob, price_list };
+      }
+    },
+    getPriceFob(row, currency_type_id_new) {
+      const type = this.wareHouseIncomeId;
+
+      if (type == "104") {
+        let price_fob = parseFloat(row.unit_value);
+        let price_list =parseFloat(row.retail_price);
+
         if (
           this.currencyType === "PEN" &&
           this.currencyType !== currency_type_id_new
@@ -333,66 +381,22 @@ export default {
         }
         return { price_fob, price_list };
       } else if (type == "103") {
-        //exterior
-        const price_fob = row.unit_value * row.warehouse_factor;
-        //const price_fob_alm_igv = price_fob * 1.18
-        const price_list = price_fob * factor;
+
+        let price_fob = parseFloat(row.price_fob_alm);
+        let price_list = parseFloat (row.retail_price);
         if (
           this.currencyType === "PEN" &&
           this.currencyType !== currency_type_id_new
         ) {
-          price_fob = price_fob / exchange_rate_sale;
-          price_list = price_list / exchange_rate_sale;
-        }
-
-        if (
-          currency_type_id_new === "PEN" &&
-          this.currencyType !== currency_type_id_new
-        ) {
-          price_fob = price_fob * exchange_rate_sale;
-          price_list = price_list * exchange_rate_sale;
-        }
-        return { price_fob, price_list };
-      }
-    },
-    getPriceFob(row, currency_type_id_new) {
-      const type = this.wareHouseIncomeId;
-
-      if (type == "104") {
-        const price_fob = row.unit_value;
-        const price_list = row.retail_price;
-        if (
-          this.currencyType === "PEN" &&
-          this.currencyType !== currency_type_id_new
-        ) {
-          price_fob = price_fob / exchange_rate_sale;
-          price_list = price_list / exchange_rate_sale;
-        }
-
-        if (
-          currency_type_id_new === "PEN" &&
-          this.currencyType !== currency_type_id_new
-        ) {
-          price_fob = price_fob * exchange_rate_sale;
-          price_list = price_list * exchange_rate_sale;
-        }
-        return { price_fob, price_list };
-      } else if (type == "103") {
-        const price_fob = row.price_fob_alm;
-        const price_list = row.retail_price;
-        if (
-          this.currencyType === "PEN" &&
-          this.currencyType !== currency_type_id_new
-        ) {
-          price_fob = price_fob / exchange_rate_sale;
-          price_list = price_list / exchange_rate_sale;
+          price_fob = price_fob / this.exchange_rate_sale;
+          price_list = price_list / this.exchange_rate_sale;
         }
         if (
           currency_type_id_new === "PEN" &&
           this.currencyType !== currency_type_id_new
         ) {
-          price_fob = price_fob * exchange_rate_sale;
-          price_list = price_list * exchange_rate_sale;
+          price_fob = price_fob * this.exchange_rate_sale;
+          price_list = price_list * this.exchange_rate_sale;
         }
         return { price_fob, price_list };
       }

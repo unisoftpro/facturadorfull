@@ -75,7 +75,23 @@
               </el-radio-group>
             </div>
           </div>
-          <div class="col-lg-7 col-md-7 col-md-7 col-sm-12" style="margin-top: 29px">
+          <div class="col-lg-4">
+            <div class="form-group">
+              <label class="control-label">Moneda</label>
+              <el-select v-model="form.currencytype_id" filterable>
+                <el-option
+                  v-for="option in currencytype"
+                  :key="option.id"
+                  :value="option.id"
+                  :label="option.description"
+                ></el-option>
+              </el-select>
+            </div>
+          </div>
+          <div
+            class="col-lg-7 col-md-7 col-md-7 col-sm-12"
+            style="margin-top: 29px"
+          >
             <el-button
               class="submit"
               type="primary"
@@ -141,6 +157,7 @@ export default {
       records: [],
       pagination: {},
       warehouse: [],
+      currencytype: [],
       form: {},
       loading_submit: false,
     };
@@ -157,6 +174,7 @@ export default {
         this.brands = response.data.brands;
         this.lines = response.data.lines;
         this.warehouse = response.data.warehouse;
+        this.currencytype = response.data.cat_currency_types;
       });
     },
     initForm() {
@@ -169,6 +187,7 @@ export default {
         lines_id: null,
         warehouse_id: null,
         price_default: 2,
+        currencytype_id:null
       };
     },
     customIndex(index) {

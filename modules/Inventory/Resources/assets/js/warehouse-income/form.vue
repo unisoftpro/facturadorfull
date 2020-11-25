@@ -501,6 +501,7 @@
     <tenant-item-warehouse-income
       :showDialog.sync="showDialogAddItem"
       :currency-type-id-active="form.currency_type_id"
+      :currency-type-id="form.currency_type_id"
       :exchange-rate-sale="form.exchange_rate_sale"
       :purchase-order-id="form.purchase_order_id"
       :warehouse-income-reason-id="form.warehouse_income_reason_id"
@@ -621,7 +622,7 @@ export default {
             this.form.observation = response.data.data.observation;
             this.calculateTotal();
 
-            this.purcharse_id= response.data.data.purchase_order_id;
+            this.purcharse_id = response.data.data.purchase_order_id;
 
             this.changeSupplier();
             //this.getPurchaseId(this.purcharse_id);
@@ -629,7 +630,7 @@ export default {
             this.form.purchase_order_id = response.data.data.purchase_order_id;
 
             this.changePurcharse();
-            this.form.work_order_id= response.data.data.work_order_id;
+            this.form.work_order_id = response.data.data.work_order_id;
             // this.form.suppliers = Object.values(response.data.data.purchase_quotation.suppliers);
           });
       } else {
@@ -648,6 +649,8 @@ export default {
       // this.renewCalculate()
     },
     async changeCurrencyType() {
+
+
       if (this.form.currency_type_id == "USD") {
         if (!this.form.supplier_id) {
           this.form.currency_type_id = "PEN";
@@ -709,6 +712,7 @@ export default {
           .get(`/${this.resource}/purcharse/${this.form.supplier_id}`)
           .then((response) => {
             this.purchase_orders = response.data.record;
+
             //this.form.exchange_rate_sale = response.data.exchange_rate_sale;
 
             /*if (!response.data.success) {
@@ -719,33 +723,29 @@ export default {
     },
     async getPurchaseId(id_p) {
       if (this.form.supplier_id & this.form.id) {
-
         await this.$http
           .get(`/${this.resource}/purcharse2/${this.form.supplier_id}/${id_p}`)
           .then((response) => {
             this.purchase_orders.push(response.data.record[0]);
-
           });
       }
     },
     async changePurcharse() {
       if (this.form.purchase_order_id) {
-          if(this.form.id){
-
-          }else{
-            this.form.items = [];
-          }
+        if (this.form.id) {
+        } else {
+          this.form.items = [];
+        }
 
         await this.$http
           .get(`/${this.resource}/workorder/${this.form.purchase_order_id}`)
           .then((response) => {
             this.work_orders = response.data.work_order;
           });
-          if(this.form.id){
-
-          }else{
-            this.addItems("a");
-          }
+        if (this.form.id) {
+        } else {
+          this.addItems("a");
+        }
 
         /*if (this.form.id) {
         } else {
@@ -754,6 +754,7 @@ export default {
       }
     },
     async addItems(data) {
+        console.log(data);
       for (let i = 0; i < this.purchase_orders.length; i++) {
         if (this.purchase_orders[i]["id"] == this.form.purchase_order_id) {
           this.form.currency_type_id = "";
@@ -763,6 +764,7 @@ export default {
           this.form.currency_type_id = this.purchase_orders[i][
             "currency_type_id"
           ];
+          this.changeCurrencyType();
           this.form.work_order_id = this.purchase_orders[i]["work_order_id"];
           this.form.date_of_issue = this.purchase_orders[i]["date_of_issue"];
 
@@ -825,6 +827,7 @@ export default {
                 num_price: 0,
                 last_factor: "0.00",
               };
+
               this.addRow(datos);
             }
           }
@@ -932,7 +935,7 @@ export default {
     },
     initForm() {
       this.errors = {};
-      this.purcharse_id=null;
+      this.purcharse_id = null;
       this.form = {
         warehouse_id: null,
         document_reference: null,
@@ -940,7 +943,7 @@ export default {
         warehouse_income_reason_id: null,
         date_of_issue: moment().format("YYYY-MM-DD"),
         supplier_id: null,
-        currency_type_id: "PEN",
+        currency_type_id: 'PEN',
         observation: null,
         reference_date: moment().format("YYYY-MM-DD"),
         purchase_order_id: null,

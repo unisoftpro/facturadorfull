@@ -15,6 +15,7 @@ class WarehouseIncomeCollection extends ResourceCollection
     public function toArray($request)
     {
         return $this->collection->transform(function($row, $key) {
+
             return [
                 'id' => $row->id,
                 'date_of_issue' => $row->date_of_issue,
@@ -28,6 +29,8 @@ class WarehouseIncomeCollection extends ResourceCollection
                 'currency_type_description' => $row->currency_type->description,
                 'original_total' => $row->original_total,
                 'national_total' => $row->national_total,
+                'document' => $row->person->number,
+                'suppliers' => $row->person->number .'-'. $row->person->name,
             ];
         });
     }

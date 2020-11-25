@@ -27,6 +27,7 @@
                         <th >#</th>
                         <th class="text-center">Número</th>
                         <th>Fecha emisión</th>
+                        <th>Proveedor</th>
                         <th>Almacén</th>
                         <th>Motivo</th>
                         <th>Fec. Referencia</th>
@@ -40,6 +41,7 @@
                         <td>{{ index }}</td>
                         <td class="text-center">{{ row.number }}</td>
                         <td>{{ row.date_of_issue }}</td>
+                        <td>{{ row.suppliers }}</td>
                         <td>{{ row.warehouse_description }}</td>
                         <td>{{ row.warehouse_income_reason_description }}</td>
                         <td>{{ row.reference_date}}</td>

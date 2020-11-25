@@ -3,6 +3,7 @@
 namespace Modules\Inventory\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Tenant\Catalogs\CurrencyType;
 use Illuminate\Support\Facades\DB;
 use App\Models\Tenant\TypeListPrice;
 use Modules\Item\Models\Brand;
@@ -27,7 +28,8 @@ class ReportPriceListController extends Controller
             'brands' => Brand::all(),
             'families' => Family::all(),
             'lines' => Line::all(),
-            'warehouse' => Warehouse::all()
+            'warehouse' => Warehouse::all(),
+            'cat_currency_types'=> CurrencyType::all()
 
         ];
     }
@@ -54,6 +56,10 @@ class ReportPriceListController extends Controller
         endif;
         if ($request->warehouse_id) :
             $array1 = ['item_warehouse.warehouse_id', $request->warehouse_id];
+            array_push($wheres, $array1);
+        endif;
+        if ($request->currencytype_id) :
+            $array1 = ['list_price_item.currency_type_id', $request->currencytype_id];
             array_push($wheres, $array1);
         endif;
 
@@ -134,6 +140,10 @@ class ReportPriceListController extends Controller
             $array1 = ['item_warehouse.warehouse_id', $request->warehouse_id];
             array_push($wheres, $array1);
         endif;
+        if ($request->currencytype_id) :
+            $array1 = ['list_price_item.currency_type_id', $request->currencytype_id];
+            array_push($wheres, $array1);
+        endif;
 
         if ($request->price_default === "2") {
             $record = ItemWarehouse::join('list_price_item', 'item_warehouse.item_id', '=', 'list_price_item.item_id')
@@ -187,7 +197,7 @@ class ReportPriceListController extends Controller
         $igv = $request->price_default;
 
         $pdf = PDF::loadView($view, compact("record", "igv"));
-        $filename = "Reporte_Salida";
+        $filename = "Reporte_Lista_Precio";
 
         return $pdf->download($filename . '.pdf');
     }
