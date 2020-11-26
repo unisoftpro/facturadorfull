@@ -367,4 +367,48 @@ class WarehouseIncomeController extends Controller
 
         return $pdf->download($filename . '.pdf');
     }
+    public function destroy($id)
+    {
+
+        DB::connection('tenant')->transaction(function () use ($id) {
+
+            $record = WarehouseIncome::findOrFail($id);
+
+            $items_ingresos = $record->items;
+            //dd($record,$items_ingresos);
+            for ($i=0; $i < count($items_ingresos) ; $i++) {
+
+                $purcharse_order = PurchaseOrderItem::where([['purchase_order_id',$record->purchase_order_id],['item_id',$items_ingresos[$i]['item_id']]])->first();
+                $purcharse_order->pending_quantity_income += $items_ingresos[$i]['quantity'];
+                $purcharse_order->attended_quantity -= $items_ingresos[$i]['quantity'];
+                $purcharse_order->update();
+
+            }
+            $record->items()->delete();
+            $record->delete();
+            /*$origin_inv_kardex = $record->inventory_kardex->first();
+            $destination_inv_kardex = $record->inventory_kardex->last();
+
+            $destination_item_warehouse = ItemWarehouse::where([['item_id',$destination_inv_kardex->item_id],['warehouse_id', $destination_inv_kardex->warehouse_id]])->first();
+            $destination_item_warehouse->stock -= $record->quantity;
+            $destination_item_warehouse->update();
+
+            $origin_item_warehouse = ItemWarehouse::where([['item_id',$origin_inv_kardex->item_id],['warehouse_id', $origin_inv_kardex->warehouse_id]])->first();
+            $origin_item_warehouse->stock += $record->quantity;
+            $origin_item_warehouse->update();
+
+            $record->inventory_kardex()->delete();
+            $record->delete();*/
+
+        });
+
+
+        return [
+            'success' => true,
+            'message' => 'Ingreso eliminado con éxito'
+        ];
+
+
+
+    }
 }

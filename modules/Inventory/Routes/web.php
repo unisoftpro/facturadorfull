@@ -175,7 +175,7 @@ if($hostname) {
 
 
                 Route::get('download/{external_id}/{template}', 'WarehouseIncomeController@download');
-
+                Route::delete('{id}','WarehouseIncomeController@destroy');
 
             });
 
