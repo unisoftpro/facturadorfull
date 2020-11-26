@@ -189,7 +189,7 @@ if($hostname) {
                 Route::get('record/{record}', 'WarehouseExpenseController@record');
                 Route::post('/', 'WarehouseExpenseController@store');
                 Route::get('create', 'WarehouseExpenseController@create')->name('tenant.warehouse-income.create');
-                Route::get('item/list-price/{item_id}/{purchase_order_id}', 'WarehouseExpenseController@getListPrice');
+                Route::get('item/list-price/{item_id}', 'WarehouseExpenseController@getListPrice');
                 Route::get('exchange-rate/{date_reference}/{supplier_id}', 'WarehouseExpenseController@getExchangeRate');
                 Route::get('item/additional-values/{item_id}', 'WarehouseExpenseController@getAdditionalValues');
                 Route::get('download/{id}', 'WarehouseExpenseController@download');

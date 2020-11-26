@@ -28,8 +28,8 @@ use Modules\Inventory\Traits\{
 use Barryvdh\DomPDF\Facade as PDF;
 use Modules\Inventory\Models\Warehouse as ModuleWarehouse;
 use Exception;
-
-
+use Modules\Inventory\Models\WarehouseIncome;
+use Modules\Inventory\Models\WarehouseIncomeItem;
 
 class WarehouseExpenseController extends Controller
 {
@@ -94,14 +94,16 @@ class WarehouseExpenseController extends Controller
     }
 
 
-    public function getListPrice($item_id, $purchase_order_id)
+    public function getListPrice($item_id)
     {
 
-        $item = PurchaseOrderItem::where([['purchase_order_id', $purchase_order_id], ['item_id', $item_id]])->first();
+        $item = WarehouseIncomeItem::where([['item_id', $item_id]])->latest('id')->first();
+        $currentype = WarehouseIncome::where('id',$item->warehouse_income_id)->first();
 
         if($item){
             return [
-                'list_price' => round($item->unit_value, 2)
+                'list_price' => round($item->list_price, 2),
+                'currentype'=>$currentype->currency_type_id,
             ];
         }
 

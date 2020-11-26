@@ -211,7 +211,7 @@
         methods: {
             changeOT()
             {
-                
+
             },
             changeSupplier(){
                 this.getExchangeRatePurchaseOrder()
@@ -359,7 +359,7 @@
                 }
 
                 this.loading_submit = true
-                debugger
+
                 await this.$http.post(`/${this.resource}`, this.form)
                     .then(response => {
 
