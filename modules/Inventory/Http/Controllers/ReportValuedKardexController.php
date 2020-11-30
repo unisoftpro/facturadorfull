@@ -56,7 +56,7 @@ class ReportValuedKardexController extends Controller
         ];
 
         $records = $this->data($params);
-        dd($records );
+
         return $records;
 
     }
