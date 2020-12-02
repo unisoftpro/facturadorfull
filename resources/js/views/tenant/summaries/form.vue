@@ -133,7 +133,7 @@
                 this.form.documents.splice(index, 1)
             },
             submit() {
-                this.loading_submit = true
+                // this.loading_submit = true
                 this.$http.post(`${this.resource}`, this.form)
                     .then(response => {
                         if (response.data.success) {

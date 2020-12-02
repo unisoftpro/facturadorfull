@@ -18,8 +18,12 @@ class SummaryInput
         $date_of_issue = date('Y-m-d');
         $summary_status_type_id = $inputs['summary_status_type_id'];
         
-        $identifier = Functions::identifier($soap_type_id, $date_of_issue, Summary::class);
-        $filename = $company->number.'-'.$identifier;
+        // $identifier = Functions::identifier($soap_type_id, $date_of_issue, Summary::class);
+        // $filename = $company->number.'-'.$identifier;
+        
+        $identifier = null;
+        $filename = null;
+
         $inputs['type'] = 'summary';
         
         return [

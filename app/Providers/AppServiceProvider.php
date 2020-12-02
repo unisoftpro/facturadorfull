@@ -6,12 +6,19 @@ use App\Models\Tenant\Document;
 use App\Observers\DocumentObserver;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
+use App\Models\Tenant\Summary;
+use App\Observers\SummaryObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
     public function boot() {
+
         if (config('tenant.force_https')) URL::forceScheme('https');
+
         Document::observe(DocumentObserver::class);
+        
+        Summary::observe(SummaryObserver::class);
+
     }
     
     public function register() {
