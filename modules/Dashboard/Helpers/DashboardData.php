@@ -21,7 +21,6 @@ class DashboardData
 
     public function data($request)
     {
-// dd($request);
         $establishment_id = $request['establishment_id'];
         $period = $request['period'];
         $date_start = $request['date_start'];
@@ -166,7 +165,7 @@ class DashboardData
         $document_total_note_credit_pen = 0;
 
         $document_total_pen = collect($documents->whereIn('state_type_id', ['01','03','05','07','13'])->whereIn('document_type_id', ['01','03','08']))->where('currency_type_id', 'PEN')->sum('total');
-        
+
 
         //USD
         $document_total_usd = 0;
@@ -191,7 +190,7 @@ class DashboardData
 
                     $document_total_payment_pen += collect($document->payments)->sum('payment');
                     $document_total_note_credit_pen += ($document->document_type_id == '07') ? $document->total:0; //nota de credito
-                
+
                 }
 
 
@@ -201,7 +200,7 @@ class DashboardData
 
                     $document_total_payment_usd += collect($document->payments)->sum('payment') * $document->exchange_rate_sale;
                     $document_total_note_credit_usd += ($document->document_type_id == '07') ? $document->total * $document->exchange_rate_sale:0; //nota de credito
-                
+
                 }
 
             }
