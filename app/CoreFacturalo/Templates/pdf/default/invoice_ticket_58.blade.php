@@ -98,7 +98,15 @@
 
     <tr>
         <td class="align-top"><p class="desc">Cliente:</p></td>
-        <td><p class="desc">{{ $customer->name }}</p></td>
+        <td>
+            <p class="desc">
+                {{ $customer->name }}
+                @if ($customer->internal_code ?? false)
+                <br>
+                <small>{{ $customer->internal_code ?? '' }}</small>
+                @endif
+            </p>
+        </td>
     </tr>
     <tr>
         <td><p class="desc">{{ $customer->identity_document_type->description }}:</p></td>
