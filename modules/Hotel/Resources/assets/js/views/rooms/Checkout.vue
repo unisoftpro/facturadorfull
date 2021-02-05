@@ -280,13 +280,8 @@ export default {
       const date = moment();
       const itemsHard = this.onCalculateNewPriceRoom();
       const items = itemsHard.map((i) => {
-        const description =
-          i.type === "HAB"
-            ? `${i.item.item.description} x ${this.room.item.quantity} noche(s)`
-            : i.item.item.description;
-        return {
+        const nItem =  {
           codigo_interno: i.item.item.internal_id || "",
-          descripcion: description,
           codigo_producto_sunat: "",
           unidad_de_medida: i.item.item.unit_type_id,
           cantidad: i.item.quantity,
@@ -296,12 +291,21 @@ export default {
           codigo_tipo_afectacion_igv: i.item.affectation_igv_type_id,
           total_base_igv: i.item.total_value,
           porcentaje_igv: 18,
-          total_igv: 18,
+          total_igv: i.item.total_igv,
           total_impuestos: i.item.total_igv,
           total_valor_item: i.item.total_value,
           total_item: i.item.total,
         };
+        if (i.type === "HAB") {
+            nItem.descripcion = i.item.item.description + ' x ' + this.room.item.quantity + ' noche(s)';
+        } else {
+            nItem.descripcion = i.item.item.description;
+        }
+        return nItem;
       });
+      const totalIgv = itemsHard
+        .map((i) => i.item.total_igv)
+        .reduce((a, b) => a + b, 0);
       const totalOpeGravada = itemsHard
         .map((i) => i.item.total_value)
         .reduce((a, b) => a + b, 0);
@@ -339,8 +343,8 @@ export default {
           total_operaciones_inafectas: 0.0,
           total_operaciones_exoneradas: 0.0,
           total_operaciones_gratuitas: 0.0,
-          total_igv: 18.0,
-          total_impuestos: 18.0,
+          total_igv: totalIgv,
+          total_impuestos: totalIgv,
           total_valor: totalOpeGravada,
           total_venta: totalVenta,
         },
