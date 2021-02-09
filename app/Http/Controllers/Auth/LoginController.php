@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Tenant\Company;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Support\Facades\Config;
 
@@ -45,6 +46,7 @@ class LoginController extends Controller
      */
     public function showLoginForm()
     {
-        return view('tenant.auth.login');
+        $company = Company::first();
+        return view('tenant.auth.login', compact('company'));
     }
 }

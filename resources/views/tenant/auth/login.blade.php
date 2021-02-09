@@ -1,7 +1,45 @@
 @extends('tenant.layouts.auth')
 
 @section('content')
-    <section class="body-sign">
+<section class="auth">
+    <article class="auth__image" style="background-image: url({{ asset('images/login-fondo-1.png') }})">
+        @if($company->logo)
+            <img class="auth__logo" src="{{ asset('storage/uploads/logos/' . $company->logo) }}" alt="Logo" />
+        @else
+            <img class="auth__logo" src="{{asset('logo/700x300.jpg')}}" alt="Logo" />
+        @endif
+        {{-- <img src="{{  }}" alt="Fondo del login" class="auth__bg"> --}}
+    </article>
+    <article class="auth__form">
+        <form method="POST" action="{{ route('login') }}">
+            @csrf
+            <h1 class="auth__title">Bienvenido a<br>{{ $company->trade_name }}</h1>
+            <p>Ingresa a tu cuenta</p>
+            <div class="form-group">
+                <label for="email">Correo electrónico</label>
+                <input type="email" name="email" id="email" class="form-control {{ $errors->has('email') ? 'is-invalid' : '' }}" value="{{ old('email') }}">
+                @if ($errors->has('email'))
+                <div class="invalid-feedback">{{ $errors->first('email') }}</div>
+                @endif
+            </div>
+            <div class="form-group">
+                <div class="d-flex justify-content-between">
+                    <label for="password">Contraseña</label>
+                    <a href="#">¿Has olvidado tu contraseña?</a>
+                </div>
+                <input type="password" name="password" id="password" class="form-control hide-password {{ $errors->has('password') ? 'is-invalid' : '' }}">
+                @if ($errors->has('password'))
+                <div class="invalid-feedback">{{ $errors->first('password') }}</div>
+                @endif
+                <button type="button" class="btn btn-eye" id="btnEye">
+                    <i class="fa fa-eye"></i>
+                </button>
+            </div>
+            <button type="submit" class="btn btn-signin btn-block">INICIAR SESIÓN</button>
+        </form>
+    </article>
+</section>
+    {{-- <section class="body-sign">
         <div class="center-sign">
             <div class="card">
                 <div class="card card-header card-primary" style="background:#0088CC">
@@ -56,7 +94,23 @@
                         </div>
                     </form>
                 </div>
-            {{-- <p class="text-center text-muted mt-3 mb-3">&copy; Copyright {{ date('Y') }}. Todos los derechos reservados</p> --}}
         </div>
-    </section>
+    </section> --}}
 @endsection
+@push('scripts')
+    <script>
+        var inputPassword = document.getElementById('password');
+        var btnEye = document.getElementById('btnEye');
+        btnEye.addEventListener('click', function () {
+            if (inputPassword.classList.contains('hide-password')) {
+                inputPassword.type = 'text';
+                inputPassword.classList.remove('hide-password');
+                btnEye.innerHTML = '<i class="fa fa-eye-slash"></i>'
+            } else {
+                inputPassword.type = 'password';
+                inputPassword.classList.add('hide-password');
+                btnEye.innerHTML = '<i class="fa fa-eye"></i>'
+            }
+        });
+    </script>
+@endpush
