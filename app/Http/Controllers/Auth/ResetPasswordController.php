@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 use App\Models\Tenant\Company;
+use App\Http\Controllers\Controller;
+use App\Models\Tenant\Configuration;
 use Illuminate\Foundation\Auth\ResetsPasswords;
 
 class ResetPasswordController extends Controller
@@ -51,8 +52,10 @@ class ResetPasswordController extends Controller
     public function showResetForm(Request $request, $token = null)
     {
         $company = Company::first();
+        $config = Configuration::first();
+        $login = $config->login;
         return view('tenant.auth.passwords.reset')->with(
-            ['token' => $token, 'email' => $request->email, 'company' => $company]
+            ['token' => $token, 'email' => $request->email, 'company' => $company, 'login' => $login]
         );
     }
 }

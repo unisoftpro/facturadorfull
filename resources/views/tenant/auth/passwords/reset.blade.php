@@ -5,6 +5,7 @@
     @include('tenant.auth.partials.side_left')
     <article class="auth__form">
         <form class="form-material" id="loginform" method="POST" action="{{ route('password.update') }}">
+            @include('tenant.auth.partials.form_logo')
             <h1 class="auth__title">Bienvenido a<br>{{ $company->trade_name }}</h1>
             <p>Su nueva contraseña debe ser diferente de las contraseñas utilizadas anteriormente</p>
             @csrf
@@ -58,6 +59,7 @@
                     <i class="fa fa-arrow-left mr-2"></i> Regresar al login
                 </a>
             </div>
+            @include('tenant.auth.partials.socials')
         </form>
     </article>
 </section>

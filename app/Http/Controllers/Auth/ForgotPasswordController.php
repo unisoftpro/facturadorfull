@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Models\Tenant\Company;
 use App\Http\Controllers\Controller;
+use App\Models\Tenant\Configuration;
 use Illuminate\Foundation\Auth\SendsPasswordResetEmails;
 
 class ForgotPasswordController extends Controller
@@ -34,6 +35,8 @@ class ForgotPasswordController extends Controller
     public function showLinkRequestForm()
     {
         $company = Company::first();
-        return view('tenant.auth.passwords.email', compact('company'));
+        $config = Configuration::first();
+        $login = $config->login;
+        return view('tenant.auth.passwords.email', compact('company', 'login'));
     }
 }

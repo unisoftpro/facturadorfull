@@ -41,4 +41,31 @@ class LoginConfigurationController extends Controller
             'message' => 'Información actualizada.',
         ], 200);
     }
+
+    public function update()
+    {
+        request()->validate([
+            'position_form' => 'required|in:left,right',
+            'show_logo_in_form' => 'boolean',
+            'position_logo' => 'required|in:top-left,top-right,bottom-left,bottom-right',
+            'show_socials' => 'boolean',
+            'facebook' => 'max:200',
+            'twitter' => 'max:200',
+            'instagram' => 'max:200',
+            'linkedin' => 'max:200',
+        ]);
+
+        $config = Configuration::first();
+        $loginConfig = $config->login;
+        foreach(request()->all() as $key => $option) {
+            $loginConfig->$key = $option;
+        }
+        $config->login = $loginConfig;
+        $config->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Información actualizada.',
+        ], 200);
+    }
 }

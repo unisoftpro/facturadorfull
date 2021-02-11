@@ -1,11 +1,12 @@
 @extends('tenant.layouts.auth')
 
 @section('content')
-<section class="auth">
+<section class="auth auth__form-{{ $login->position_form }}">
     @include('tenant.auth.partials.side_left')
     <article class="auth__form">
         <form method="POST" action="{{ route('login') }}">
             @csrf
+            @include('tenant.auth.partials.form_logo')
             <h1 class="auth__title">Bienvenido a<br>{{ $company->trade_name }}</h1>
             <p>Ingresa a tu cuenta</p>
             <div class="form-group">
@@ -29,6 +30,7 @@
                 </button>
             </div>
             <button type="submit" class="btn btn-signin btn-block">INICIAR SESIÓN</button>
+            @include('tenant.auth.partials.socials')
         </form>
     </article>
 </section>

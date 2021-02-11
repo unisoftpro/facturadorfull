@@ -22,6 +22,14 @@ class AddLoginColumnToConfigurationsTable extends Migration
         $login = [
             'type' => 'image',
             'image' => asset('images/login-fondo-1.png'),
+            'position_form' => 'right',
+            'show_logo_in_form' => false,
+            'position_logo' => 'top-left',
+            'show_socials' => false,
+            'facebook' => null,
+            'twitter' => null,
+            'instagram' => null,
+            'linkedin' => null,
         ];
         $configuration->login = $login;
         $configuration->save();
