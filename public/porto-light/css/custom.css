@@ -1,7 +1,7 @@
-ul.nav-main > li.nav-active > a {
+/* ul.nav-main > li.nav-active > a {
     -webkit-box-shadow: 4px 0 0 #0088cc inset;
     box-shadow: 4px 0 0 #0088cc inset;
-}
+} */
 
 .bg-info {
     background: #0088cc !important;
@@ -31,9 +31,9 @@ ul.nav-main > li.nav-active > a {
     width: auto;
 }
 
-ul.nav-main li .nav-children li.nav-active > a {
+/* ul.nav-main li .nav-children li.nav-active > a {
     color: #0088CC;
-}
+} */
 
 /*ul.nav-main li i {
     font-size: 2rem;
