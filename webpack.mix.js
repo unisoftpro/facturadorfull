@@ -14,7 +14,8 @@ const mix = require('laravel-mix');
 mix.js('resources/js/app.js', 'public/js')
    .sass('resources/sass/style.scss', 'public/css/app.css')
    .sass('resources/sass/auth.scss', 'public/css/auth.css')
-   .extract(['vue']);
+   .extract(['vue'])
+   .version();
 
 mix.webpackConfig({
     resolve: {
